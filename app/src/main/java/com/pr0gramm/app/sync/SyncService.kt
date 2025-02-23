@@ -9,10 +9,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.system.measureTimeMillis
-import kotlin.time.ExperimentalTime
 
-
-@OptIn(ExperimentalTime::class)
 class SyncService(private val userService: UserService,
                   private val notificationService: NotificationService,
                   private val singleShotService: SingleShotService,

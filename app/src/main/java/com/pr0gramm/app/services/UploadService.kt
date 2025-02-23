@@ -26,11 +26,7 @@ import okio.BufferedSink
 import retrofit2.HttpException
 import java.io.*
 import java.util.*
-import kotlin.time.ExperimentalTime
 
-
-/**
- */
 class UploadService(
     private val api: Api,
     private val userService: UserService,
@@ -222,7 +218,6 @@ class UploadService(
         throw IllegalStateException("can not map result to state")
     }
 
-    @OptIn(ExperimentalTime::class)
     private fun waitOnQueue(queue: Long): Flow<State> {
         return flow {
             while (true) {

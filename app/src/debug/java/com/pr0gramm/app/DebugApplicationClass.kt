@@ -1,9 +1,7 @@
 package com.pr0gramm.app
 
-import android.content.Context
 import android.os.Debug
 import android.os.StrictMode
-import androidx.multidex.MultiDex
 import com.pr0gramm.app.util.doInBackground
 
 
@@ -26,10 +24,5 @@ class DebugApplicationClass : ApplicationClass() {
                 }
             }
         }
-    }
-
-    override fun attachBaseContext(base: Context) {
-        super.attachBaseContext(base)
-        MultiDex.install(this)
     }
 }
