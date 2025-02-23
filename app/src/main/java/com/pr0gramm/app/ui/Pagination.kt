@@ -10,7 +10,6 @@ import com.pr0gramm.app.util.directName
 import com.pr0gramm.app.util.postOrSetValue
 import kotlinx.coroutines.*
 import kotlin.reflect.KMutableProperty0
-import kotlin.time.ExperimentalTime
 
 class PaginationController(
         private val pagination: Pagination<*>,
@@ -28,7 +27,6 @@ class PaginationController(
     }
 }
 
-@OptIn(ExperimentalTime::class)
 class Pagination<E : Any>(private val baseScope: CoroutineScope, private val loader: Loader<E>) {
 
     private val logger = Logger("Pagination(${javaClass.directName})")

@@ -29,9 +29,7 @@ import kotlinx.coroutines.withTimeout
 import kotterknife.bindView
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration.Companion.minutes
-import kotlin.time.ExperimentalTime
 
-@OptIn(ExperimentalTime::class)
 class StatisticsActivity : BaseAppCompatActivity("StatisticsActivity") {
 
     private val userService: UserService by instance()

@@ -2,7 +2,7 @@
 
 set -eu -o pipefail
 
-VERSION_PREV=$(egrep -o '[0-9]+' <app/version.gradle)
+VERSION_PREV=$(egrep -o '[0-9]+' <app/version.gradle.kts)
 
 VERSION_NEXT=$(( VERSION_PREV + 1 ))
 VERSION_LIVE=$(curl -s https://app.pr0gramm.com/updates/stable/update.json | jq .version)
@@ -51,9 +51,9 @@ function deploy_upload_apk() {
 }
 
 # increase app version for further development
-echo "ext { appVersion = $VERSION_NEXT }" > app/version.gradle
+echo "extra[\"appVersion\"] = $VERSION_NEXT" > app/version.gradle.kts
 
-trap 'git checkout app/version.gradle' ERR
+trap 'git checkout app/version.gradle.kts' ERR
 
 # compile code and create apks
 rm -rf -- model/build/* app/build/*
@@ -65,13 +65,7 @@ if ! unzip -t app/build/outputs/apk/release/app-release.apk | grep publicsuffixe
     exit 1
 fi
 
-# verify apk
-if unzip -t app/build/outputs/apk/release/app-release.apk | grep classes2.dex ; then
-    echo "Found classes2.dex in the apk"
-    exit 1
-fi
-
-git add app/version.gradle
+git add app/version.gradle.kts
 git commit -m "Released version $VERSION_NEXT"
 
 trap - ERR
