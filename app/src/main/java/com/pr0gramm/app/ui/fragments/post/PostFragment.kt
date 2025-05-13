@@ -996,7 +996,7 @@ class PostFragment : BaseFragment("PostFragment"), NewTagDialogFragment.OnAddNew
 
     private fun collectClicked() {
         doIfAuthorizedHelper.runAuthNoRetry {
-            CollectionsSelectionDialog.addToCollection(this@PostFragment, feedItem.id)
+            CollectionsSelectionDialog.addToCollection(this@PostFragment, feedItem)
         }
     }
 
@@ -1379,7 +1379,8 @@ class PostFragment : BaseFragment("PostFragment"), NewTagDialogFragment.OnAddNew
 
         override fun showCollectionsClicked() {
             doIfAuthorizedHelper.runAuthNoRetry {
-                val dialog = CollectionsSelectionDialog.newInstance(feedItem.id)
+                val dialog = CollectionsSelectionDialog.newInstance(feedItem)
+
                 dialog.show(childFragmentManager, null)
             }
         }

@@ -23,10 +23,15 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.snackbar.Snackbar
 import com.pr0gramm.app.Logger
 import com.pr0gramm.app.R
+import com.pr0gramm.app.Settings
+import com.pr0gramm.app.feed.FeedItem
+import com.pr0gramm.app.orm.Vote
+import com.pr0gramm.app.parcel.getParcelableOrThrow
 import com.pr0gramm.app.services.CollectionItemsService
 import com.pr0gramm.app.services.CollectionsService
 import com.pr0gramm.app.services.PostCollection
 import com.pr0gramm.app.services.UserService
+import com.pr0gramm.app.services.VoteService
 import com.pr0gramm.app.ui.AsyncListAdapter
 import com.pr0gramm.app.ui.ListItemTypeAdapterDelegate
 import com.pr0gramm.app.ui.base.launchUntilDestroy
@@ -41,7 +46,7 @@ import com.pr0gramm.app.util.di.LazyInjectorAware
 import com.pr0gramm.app.util.di.PropertyInjector
 import com.pr0gramm.app.util.di.injector
 import com.pr0gramm.app.util.di.instance
-import com.pr0gramm.app.util.find
+import com.pr0gramm.app.util.*
 import com.pr0gramm.app.util.fragmentArgument
 import com.pr0gramm.app.util.inflateDetachedChild
 import com.pr0gramm.app.util.setOnCheckedChangeListenerWithInitial
@@ -55,9 +60,11 @@ class CollectionsSelectionDialog : BottomSheetDialogFragment(), LazyInjectorAwar
     override val injector: PropertyInjector = PropertyInjector()
 
     private val itemId: Long by fragmentArgument("itemId")
+    private val feedItem: FeedItem by fragmentArgument("feedItem")
     private val collectionsService: CollectionsService by instance()
     private val collectionItemsService: CollectionItemsService by instance()
     private val userService: UserService by instance()
+    private val voteService: VoteService by instance()
 
     override fun getTheme(): Int = R.style.MyBottomSheetDialog
 
@@ -116,6 +123,7 @@ class CollectionsSelectionDialog : BottomSheetDialogFragment(), LazyInjectorAwar
                 if (isSelected) {
                     // TODO error handling
                     collectionItemsService.addToCollection(itemId, collection.id)
+                    if (Settings.upvoteOnCollect) voteService.vote(feedItem, Vote.UP)
                 } else {
                     collectionItemsService.removeFromCollection(collection.id, itemId)
                 }
@@ -142,21 +150,22 @@ class CollectionsSelectionDialog : BottomSheetDialogFragment(), LazyInjectorAwar
     }
 
     companion object {
-        fun newInstance(itemId: Long): CollectionsSelectionDialog {
+        fun newInstance(feedItem: FeedItem): CollectionsSelectionDialog {
             return CollectionsSelectionDialog().arguments {
-                putLong("itemId", itemId)
+                putLong("itemId", feedItem.id)
+                putParcelable("feedItem", feedItem)
             }
         }
 
-        fun addToCollection(parent: Fragment, itemId: Long) {
+        fun addToCollection(parent: Fragment, feedItem: FeedItem) {
             val fragmentView = parent.view ?: return
             val context = fragmentView.context
 
             val collectionItemsService: CollectionItemsService = context.injector.instance()
 
             // if the item is already part of a collection, directly show the dialog.
-            if (collectionItemsService.isItemInAnyCollection(itemId)) {
-                return newInstance(itemId).show(parent.childFragmentManager, null)
+            if (collectionItemsService.isItemInAnyCollection(feedItem.id)) {
+                return newInstance(feedItem).show(parent.childFragmentManager, null)
             }
 
             val collectionsService: CollectionsService = context.injector.instance()
@@ -170,7 +179,7 @@ class CollectionsSelectionDialog : BottomSheetDialogFragment(), LazyInjectorAwar
                 snackbar.show()
 
                 // add to default collection
-                val result = collectionItemsService.addToCollection(itemId, collectionId = null)
+                val result = collectionItemsService.addToCollection(feedItem.id, collectionId = null)
 
                 when (result) {
                     is CollectionItemsService.Result.ItemAdded -> {
@@ -189,7 +198,7 @@ class CollectionsSelectionDialog : BottomSheetDialogFragment(), LazyInjectorAwar
                         snackbar.duration = Snackbar.LENGTH_SHORT
 
                         snackbar.setAction(R.string.action_change) {
-                            newInstance(itemId).show(parent.childFragmentManager, null)
+                            newInstance(feedItem).show(parent.childFragmentManager, null)
                         }
 
                         snackbar.show()
