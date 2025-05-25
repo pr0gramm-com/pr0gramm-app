@@ -4,8 +4,10 @@ import androidx.lifecycle.MutableLiveData
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import com.pr0gramm.app.Logger
+import com.pr0gramm.app.Settings
 import com.pr0gramm.app.api.pr0gramm.Api
 import com.pr0gramm.app.db.CollectionItemQueries
+import com.pr0gramm.app.orm.Vote
 import com.pr0gramm.app.time
 import com.pr0gramm.app.ui.base.AsyncScope
 import com.pr0gramm.app.ui.base.launchIgnoreErrors
@@ -18,13 +20,13 @@ import kotlinx.coroutines.runInterruptible
 import java.util.Locale
 
 data class PostCollection(
-        val id: Long,
-        val key: String,
-        val title: String,
-        val uniqueTitle: String,
-        val isPublic: Boolean,
-        val isDefault: Boolean,
-        val owner: Owner?,
+    val id: Long,
+    val key: String,
+    val title: String,
+    val uniqueTitle: String,
+    val isPublic: Boolean,
+    val isDefault: Boolean,
+    val owner: Owner?,
 ) {
 
     val isCuratorCollection: Boolean
@@ -50,7 +52,8 @@ data class PostCollection(
             val collections = input.allCollections
 
             return collections.map { apiCollection ->
-                val titleIsUnique = collections.count { it.titleWithOwner() == apiCollection.titleWithOwner() } == 1
+                val titleIsUnique =
+                    collections.count { it.titleWithOwner() == apiCollection.titleWithOwner() } == 1
 
                 val collectionOwner = apiCollection.owner
                 val collectionOwnerMark = apiCollection.ownerMark
@@ -62,13 +65,13 @@ data class PostCollection(
                 }
 
                 PostCollection(
-                        id = apiCollection.id,
-                        key = apiCollection.keyword,
-                        title = apiCollection.name,
-                        uniqueTitle = if (titleIsUnique) apiCollection.name else "${apiCollection.name} (${apiCollection.keyword})",
-                        isPublic = apiCollection.isPublic,
-                        isDefault = apiCollection.isDefault,
-                        owner = owner,
+                    id = apiCollection.id,
+                    key = apiCollection.keyword,
+                    title = apiCollection.name,
+                    uniqueTitle = if (titleIsUnique) apiCollection.name else "${apiCollection.name} (${apiCollection.keyword})",
+                    isPublic = apiCollection.isPublic,
+                    isDefault = apiCollection.isDefault,
+                    owner = owner,
                 )
             }
         }
@@ -126,13 +129,15 @@ class CollectionsService(private val api: Api, private val userService: UserServ
     }
 
     suspend fun create(name: String, isPublic: Boolean, isDefault: Boolean): Result<Long> {
-        val response = Result.ofValue(api.collectionsCreate(null, name, isPublic.toInt(), isDefault.toInt()))
+        val response =
+            Result.ofValue(api.collectionsCreate(null, name, isPublic.toInt(), isDefault.toInt()))
         handleCollectionUpdated(response)
         return response.map { it.collectionId }
     }
 
     suspend fun edit(id: Long, name: String, isPublic: Boolean, isDefault: Boolean): Result<Long> {
-        val response = Result.ofValue(api.collectionsEdit(null, id, name, isPublic.toInt(), isDefault.toInt()))
+        val response =
+            Result.ofValue(api.collectionsEdit(null, id, name, isPublic.toInt(), isDefault.toInt()))
         handleCollectionUpdated(response)
         return response.map { it.collectionId }
     }
@@ -148,7 +153,11 @@ class CollectionsService(private val api: Api, private val userService: UserServ
     }
 }
 
-class CollectionItemsService(private val api: Api, private val db: CollectionItemQueries) {
+class CollectionItemsService(
+    private val api: Api,
+    private val db: CollectionItemQueries,
+    private val voteService: VoteService
+) {
     private val logger = Logger("CollectionItemsService")
 
     private val lock = Any()
@@ -197,6 +206,11 @@ class CollectionItemsService(private val api: Api, private val db: CollectionIte
             runInterruptible(Dispatchers.IO) {
                 db.add(itemId, result.collectionId)
             }
+        }
+
+        if (Settings.upvoteOnCollect) {
+            logger.info { "Upvote item $itemId on collect" }
+            voteService.vote(itemId = itemId, Vote.UP)
         }
 
         return result

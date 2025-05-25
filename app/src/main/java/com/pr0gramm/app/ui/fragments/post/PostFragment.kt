@@ -987,10 +987,6 @@ class PostFragment : BaseFragment("PostFragment"), NewTagDialogFragment.OnAddNew
     }
 
     private fun doCollectOnDoubleTap() {
-        if (Settings.upvoteOnCollect) {
-            doVoteOnDoubleTap(Vote.UP)
-        }
-
         collectClicked()
     }
 

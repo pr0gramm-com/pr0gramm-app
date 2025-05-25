@@ -70,13 +70,13 @@ class InfoLineView(context: Context) : LinearLayout(context), InjectorViewMixin 
             popup.setOnMenuItemClickListener { followMenuClicked(it.itemId); true }
 
             popup.menu.findItem(R.id.action_follow_off)?.icon = DrawableCache
-                    .get(R.drawable.ic_action_follow_off, iconColor)
+                .get(R.drawable.ic_action_follow_off, iconColor)
 
             popup.menu.findItem(R.id.action_follow_normal)?.icon = DrawableCache
-                    .get(R.drawable.ic_action_follow_normal, iconColor)
+                .get(R.drawable.ic_action_follow_normal, iconColor)
 
             popup.menu.findItem(R.id.action_follow_full)?.icon = DrawableCache
-                    .get(R.drawable.ic_action_follow_full, iconColor)
+                .get(R.drawable.ic_action_follow_full, iconColor)
 
             popup.show()
         }
@@ -88,9 +88,9 @@ class InfoLineView(context: Context) : LinearLayout(context), InjectorViewMixin 
                 val text = "${item.up} Blussies, ${item.down} Minus\nErstellt am $date"
 
                 Snackbar.make(this, text, Snackbar.LENGTH_SHORT)
-                        .configureNewStyle()
-                        .setAction(R.string.okay) {}
-                        .show()
+                    .configureNewStyle()
+                    .setAction(R.string.okay) {}
+                    .show()
             }
 
             true
@@ -108,12 +108,8 @@ class InfoLineView(context: Context) : LinearLayout(context), InjectorViewMixin 
 
     private fun collectClicked() {
         if (!collectionView.isCollected && voteController.currentVote !== Vote.UP) {
-            when {
-                Settings.upvoteOnCollect -> {
-                    triggerUpvoteOnCollect()
-                }
-
-                singleShotService.markAsDoneOnce("hint:upvoteOnCollect") -> {
+            if (!Settings.upvoteOnCollect) {
+                if (singleShotService.markAsDoneOnce("hint:upvoteOnCollect")) {
                     askUpvoteOnCollect()
                 }
             }
@@ -210,7 +206,8 @@ class InfoLineView(context: Context) : LinearLayout(context), InjectorViewMixin 
         dPlus.setBounds(0, 0, textSize, textSize + offset)
 
         ViewUpdater.replaceText(captionView, feedItem.created) {
-            val date = DurationFormat.timeSincePastPointInTime(context, feedItem.created, short = true)
+            val date =
+                DurationFormat.timeSincePastPointInTime(context, feedItem.created, short = true)
             val score = formatScore(vote)
 
             buildString {
@@ -230,9 +227,9 @@ class InfoLineView(context: Context) : LinearLayout(context), InjectorViewMixin 
             else -> FollowState.NONE
         }
         followStateView.animate()
-                .rotationYBy(360f)
-                .setDuration(250L)
-                .start()
+            .rotationYBy(360f)
+            .setDuration(250L)
+            .start()
 
         // update view
         updateFollowState(state)
@@ -256,17 +253,32 @@ class InfoLineView(context: Context) : LinearLayout(context), InjectorViewMixin 
         when {
             followState.subscribed -> {
                 val color = context.getColorCompat(ThemeHelper.accentColor)
-                followStateView.setImageDrawable(DrawableCache.get(R.drawable.ic_action_follow_full, color))
+                followStateView.setImageDrawable(
+                    DrawableCache.get(
+                        R.drawable.ic_action_follow_full,
+                        color
+                    )
+                )
             }
 
             followState.following -> {
                 val color = context.getColorCompat(ThemeHelper.accentColor)
-                followStateView.setImageDrawable(DrawableCache.get(R.drawable.ic_action_follow_normal, color))
+                followStateView.setImageDrawable(
+                    DrawableCache.get(
+                        R.drawable.ic_action_follow_normal,
+                        color
+                    )
+                )
             }
 
             else -> {
                 val color = context.getStyledColor(android.R.attr.textColorSecondary)
-                followStateView.setImageDrawable(DrawableCache.get(R.drawable.ic_action_follow_off, color))
+                followStateView.setImageDrawable(
+                    DrawableCache.get(
+                        R.drawable.ic_action_follow_off,
+                        color
+                    )
+                )
             }
         }
     }

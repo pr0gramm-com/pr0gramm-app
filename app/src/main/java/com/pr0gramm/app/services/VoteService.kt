@@ -27,9 +27,11 @@ import java.io.ByteArrayInputStream
 /**
  */
 
-class VoteService(private val api: Api,
-                  private val seenService: SeenService,
-                  private val appDB: AppDB) {
+class VoteService(
+    private val api: Api,
+    private val seenService: SeenService,
+    private val appDB: AppDB
+) {
 
     private val logger = Logger("VoteService")
 
@@ -41,11 +43,16 @@ class VoteService(private val api: Api,
      * @param vote The vote to send to the server
      */
     suspend fun vote(item: FeedItem, vote: Vote) {
-        logger.info { "Voting feed item ${item.id} $vote" }
+        vote(itemId = item.id, vote)
+    }
+
+    @JvmName("voteByItemId")
+    suspend fun vote(itemId: Long, vote: Vote) {
+        logger.info { "Voting feed item $itemId $vote" }
         Track.votePost(vote)
 
-        doInBackground { storeVoteValueInTx(CachedVote.Type.ITEM, item.id, vote) }
-        api.vote(null, item.id, vote.voteValue)
+        doInBackground { storeVoteValueInTx(CachedVote.Type.ITEM, itemId, vote) }
+        api.vote(null, itemId, vote.voteValue)
     }
 
     suspend fun vote(comment: Api.Comment, vote: Vote) {
@@ -71,8 +78,8 @@ class VoteService(private val api: Api,
     fun getItemVote(itemId: Long): Flow<Vote> {
         return CachedVote
             .find(appDB.cachedVoteQueries, CachedVote.Type.ITEM, itemId)
-                .map { vote -> vote.vote }
-                .distinctUntilChanged()
+            .map { vote -> vote.vote }
+            .distinctUntilChanged()
     }
 
     /**
@@ -253,12 +260,17 @@ class VoteService(private val api: Api,
         val counts = CachedVote.count(appDB.cachedVoteQueries)
 
         counts.mapValues { entry ->
-            Summary(up = entry.value[Vote.UP] ?: 0,
-                    down = entry.value[Vote.DOWN] ?: 0)
+            Summary(
+                up = entry.value[Vote.UP] ?: 0,
+                down = entry.value[Vote.DOWN] ?: 0
+            )
         }
     }
 
-    private fun findCachedVotes(type: CachedVote.Type, ids: List<Long>): Flow<LongSparseArray<Vote>> {
+    private fun findCachedVotes(
+        type: CachedVote.Type,
+        ids: List<Long>
+    ): Flow<LongSparseArray<Vote>> {
         return CachedVote.find(appDB.cachedVoteQueries, type, ids).map { cachedVotes ->
             val result = LongSparseArray<Vote>(cachedVotes.size)
 
@@ -279,18 +291,19 @@ class VoteService(private val api: Api,
 
     companion object {
         private val VOTE_ACTIONS: Map<Int, VoteAction> = hashMapOf(
-                1 to VoteAction(CachedVote.Type.ITEM, Vote.DOWN),
-                2 to VoteAction(CachedVote.Type.ITEM, Vote.NEUTRAL),
-                3 to VoteAction(CachedVote.Type.ITEM, Vote.UP),
-                4 to VoteAction(CachedVote.Type.COMMENT, Vote.DOWN),
-                5 to VoteAction(CachedVote.Type.COMMENT, Vote.NEUTRAL),
-                6 to VoteAction(CachedVote.Type.COMMENT, Vote.UP),
-                7 to VoteAction(CachedVote.Type.TAG, Vote.DOWN),
-                8 to VoteAction(CachedVote.Type.TAG, Vote.NEUTRAL),
-                9 to VoteAction(CachedVote.Type.TAG, Vote.UP))
+            1 to VoteAction(CachedVote.Type.ITEM, Vote.DOWN),
+            2 to VoteAction(CachedVote.Type.ITEM, Vote.NEUTRAL),
+            3 to VoteAction(CachedVote.Type.ITEM, Vote.UP),
+            4 to VoteAction(CachedVote.Type.COMMENT, Vote.DOWN),
+            5 to VoteAction(CachedVote.Type.COMMENT, Vote.NEUTRAL),
+            6 to VoteAction(CachedVote.Type.COMMENT, Vote.UP),
+            7 to VoteAction(CachedVote.Type.TAG, Vote.DOWN),
+            8 to VoteAction(CachedVote.Type.TAG, Vote.NEUTRAL),
+            9 to VoteAction(CachedVote.Type.TAG, Vote.UP)
+        )
 
         private val FOLLOW_ACTION: Map<Int, FollowState> = hashMapOf(
-                12 to FollowState.FOLLOW,
+            12 to FollowState.FOLLOW,
             13 to FollowState.NONE,
             14 to FollowState.SUBSCRIBED,
             15 to FollowState.FOLLOW
