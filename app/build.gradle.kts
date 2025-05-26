@@ -14,7 +14,6 @@ val appVersion: Int by extra
 
 android {
     namespace = "com.pr0gramm.app"
-    // Upgrade to 35 breaks SubsamplingImageView
     compileSdk = 35
 
     defaultConfig {

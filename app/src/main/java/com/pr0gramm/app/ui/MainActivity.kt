@@ -1,9 +1,11 @@
 package com.pr0gramm.app.ui
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.net.Uri
 import android.os.Build
@@ -14,9 +16,13 @@ import android.view.MenuItem
 import android.view.View
 import android.view.Window
 import android.view.WindowManager
+import androidx.activity.result.contract.ActivityResultContracts.RequestPermission
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.graphics.drawable.DrawerArrowDrawable
 import androidx.appcompat.view.menu.ActionMenuItem
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
@@ -109,7 +115,8 @@ class MainActivity : BaseAppCompatActivity("MainActivity"),
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         // prepare drawer layout
-        drawerToggle = ActionBarDrawerToggle(this, views.drawerLayout, R.string.app_name, R.string.app_name)
+        drawerToggle =
+            ActionBarDrawerToggle(this, views.drawerLayout, R.string.app_name, R.string.app_name)
         views.drawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START)
         views.drawerLayout.addDrawerListener(drawerToggle)
 
@@ -178,6 +185,60 @@ class MainActivity : BaseAppCompatActivity("MainActivity"),
         }
 
         askConsent()
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            // TODO better move this into the onboarding activity?
+            askNotificationPermission()
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    fun askNotificationPermission() {
+        // Register the permissions callback, which handles the user's response to the
+        // system permissions dialog. Save the return value, an instance of
+        // ActivityResultLauncher. You can use either a val, as shown in this snippet,
+        // or a lateinit var in your onAttach() or onCreate() method.
+        val requestPermissionLauncher =
+            registerForActivityResult(RequestPermission()) { isGranted: Boolean ->
+                if (isGranted) {
+                    // Permission is granted. Continue the action or workflow in your
+                    // app.
+                    logger.info { "Some permission was granted." }
+                } else {
+                    // Explain to the user that the feature is unavailable because the
+                    // feature requires a permission that the user has denied. At the
+                    // same time, respect the user's decision. Don't link to system
+                    // settings in an effort to convince the user to change their
+                    // decision.
+                    logger.info { "Some permission was not granted" }
+                }
+            }
+
+        when {
+            ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED -> {
+                logger.info { "We have notification permission" }
+                // You can use the API that requires the permission.
+            }
+
+            ActivityCompat.shouldShowRequestPermissionRationale(
+                this, Manifest.permission.POST_NOTIFICATIONS
+            ) -> {
+                requestPermissionLauncher.launch(
+                    Manifest.permission.POST_NOTIFICATIONS
+                )
+            }
+
+            else -> {
+                // You can directly ask for the permission.
+                // The registered ActivityResultCallback gets the result of this request.
+                requestPermissionLauncher.launch(
+                    Manifest.permission.POST_NOTIFICATIONS
+                )
+            }
+        }
     }
 
     private fun askConsent() {
@@ -248,7 +309,8 @@ class MainActivity : BaseAppCompatActivity("MainActivity"),
         }
 
         val messageId = extras.getLong(EXTRA_MARK_AS_READ_MESSAGE_ID, 0)
-        val messageType = tryEnumValueOf<MessageType>(extras.getString(EXTRA_MARK_AS_READ_MESSAGE_TYPE))
+        val messageType =
+            tryEnumValueOf<MessageType>(extras.getString(EXTRA_MARK_AS_READ_MESSAGE_TYPE))
         if (messageId != 0L && messageType != null) {
             doInBackground {
                 inboxService.markAsReadOnline(messageType, messageId)
@@ -564,7 +626,11 @@ class MainActivity : BaseAppCompatActivity("MainActivity"),
             userService.logout()
 
             // show a short information.
-            Snackbar.make(views.contentContainer, R.string.logout_successful_hint, Snackbar.LENGTH_SHORT)
+            Snackbar.make(
+                views.contentContainer,
+                R.string.logout_successful_hint,
+                Snackbar.LENGTH_SHORT
+            )
                 .configureNewStyle()
                 .setAction(R.string.okay) { }
                 .show()
@@ -687,7 +753,10 @@ class MainActivity : BaseAppCompatActivity("MainActivity"),
 
     private fun clearBackStack() {
         try {
-            supportFragmentManager.popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+            supportFragmentManager.popBackStackImmediate(
+                null,
+                FragmentManager.POP_BACK_STACK_INCLUSIVE
+            )
         } catch (err: Exception) {
             AndroidUtility.logToCrashlytics(
                 RuntimeException(
