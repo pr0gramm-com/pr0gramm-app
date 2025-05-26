@@ -244,7 +244,7 @@ fun appInjector(app: Application) = Module.build {
     }
 
     bind<CollectionItemsService>() with singleton {
-        CollectionItemsService(instance(), instance())
+        CollectionItemsService(instance(), instance(), instance())
     }
 
     bind<Config>() with provider { instance<ConfigService>().config() }
