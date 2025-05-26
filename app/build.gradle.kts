@@ -80,7 +80,7 @@ android {
             isShrinkResources = false
             isCrunchPngs = false
 
-            proguardFiles("proguard-rules-base.pro", "proguard-rules-debug.pro")
+            proguardFiles("proguard-rules-base.pro", "proguard-rules-release.pro")
 
             signingConfig = signingConfigs.getByName("release")
         }
