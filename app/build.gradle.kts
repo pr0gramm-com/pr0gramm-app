@@ -1,5 +1,5 @@
-import java.io.ByteArrayOutputStream
 import org.gradle.internal.os.OperatingSystem
+import java.io.ByteArrayOutputStream
 
 plugins {
     alias(libs.plugins.android.application)
@@ -15,16 +15,16 @@ val appVersion: Int by extra
 android {
     namespace = "com.pr0gramm.app"
     // Upgrade to 35 breaks SubsamplingImageView
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.pr0gramm.app"
-        minSdk = 21
-        targetSdk = 31
+        minSdk = 23
+        targetSdk = 33
         versionCode = appVersion
         versionName = "1.${(appVersion / 10)}.${(appVersion % 10)}"
 
-        resourceConfigurations += listOf("en", "de")
+        androidResources.localeFilters += listOf("en", "de")
 
         vectorDrawables.useSupportLibrary = true
 
@@ -133,17 +133,19 @@ android.applicationVariants.configureEach {
             }
 
             pathsToApk.forEach { pathToApk ->
+                println(pathToApk)
                 if (file(pathToApk).exists()) {
-                    val output = ByteArrayOutputStream()
-                    exec {
-                        if (OperatingSystem.current().isWindows)
+                    val output = providers.exec {
+                        if (OperatingSystem.current().isWindows) {
                             commandLine("tar", "-tf", pathToApk)
-                        else
-                            commandLine("unzip", "-t", pathToApk)
-                        standardOutput = output
+                        } else {
+                            commandLine("unzip", "-v", pathToApk)
+                        }
                     }
 
-                    val outputStr = output.toString("UTF-8")
+                    println(output.result.get())
+
+                    val outputStr = output.standardOutput.asText.get()
 
                     if (!outputStr.contains("okhttp3/internal/publicsuffix/publicsuffixes.gz")) {
                         throw RuntimeException("publicsuffixes.gz not found in build")

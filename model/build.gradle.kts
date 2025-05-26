@@ -7,11 +7,11 @@ plugins {
 
 android {
     namespace = "com.pr0gramm.app.model"
-    compileSdk = 34
+    compileSdk = 35
 
 
     defaultConfig {
-        minSdk = 21
+        minSdk = 23
         lint.targetSdk = 31
 
         testInstrumentationRunner = "android.support.test.runner.AndroidJUnitRunner"

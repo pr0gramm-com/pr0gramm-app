@@ -109,7 +109,7 @@ private object DeviceInfoService {
             if (Modifier.isStatic(field.modifiers)) {
                 try {
                     val name = field.name.lowercase(Locale.getDefault()).replace('_', ' ')
-                    val value = formatValue(field.get(null))
+                    val value = formatValue(field.get(null)!!)
                     result.append(name).append(" = ").append(value).append("\n")
                 } catch (ignored: Exception) {
                 }
@@ -118,10 +118,10 @@ private object DeviceInfoService {
     }
 
     private fun formatValue(value: Any): String {
-        if (value is Array<*>) {
-            return value.toList().toString()
+        return if (value is Array<*>) {
+            value.toList().toString()
         } else {
-            return value.toString()
+            value.toString()
         }
     }
 

@@ -32,7 +32,10 @@ fun Bitmap.blur(radius: Int, inplace: Boolean = false): Bitmap {
     // the following line:
     //
     // Stack Blur Algorithm by Mario Klingemann <mario@quasimondo.com>
-    val bitmap: Bitmap = if (inplace) this else this.copy(this.config, true)
+    val bitmap: Bitmap = run {
+        val config = this.config
+        if (inplace || config == null) this else this.copy(config, true)
+    }
     if (radius < 1) {
         return bitmap
     }
