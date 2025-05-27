@@ -34,9 +34,6 @@ class SyncService(private val userService: UserService,
     suspend fun dailySync() {
         Stats().incrementCounter("jobs.sync-stats")
 
-        logger.info { "Doing some statistics related trackings" }
-        Track.statistics()
-
         catchAll {
             UpdateChecker().queryAll().let { response ->
                 if (response is UpdateChecker.Response.UpdateAvailable) {

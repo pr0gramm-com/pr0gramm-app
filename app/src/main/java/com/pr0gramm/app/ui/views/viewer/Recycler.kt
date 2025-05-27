@@ -1,8 +1,6 @@
 package com.pr0gramm.app.ui.views.viewer
 
 import android.content.Context
-import android.os.Handler
-import android.os.Looper
 import androidx.annotation.OptIn
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
@@ -12,58 +10,17 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
 import androidx.media3.exoplayer.util.EventLogger
 import com.pr0gramm.app.Logger
-import com.pr0gramm.app.time
 import com.pr0gramm.app.util.debugOnly
 
 @OptIn(UnstableApi::class)
 object ExoPlayerRecycler {
-    private val logger = Logger("ExoPlayerRecycler")
-
-    private val handler by lazy {
-        Handler(Looper.getMainLooper())
-    }
-
-    private var cached: ExoPlayer? = null
-
-    private val releaseCached = Runnable {
-        if (this.cached != null) {
-            logger.time("Release cached player") {
-                cached?.release()
-            }
-
-            cached = null
-        }
-    }
-
     fun release(exo: ExoPlayer) {
         exo.release()
         return
-
-        // release previously cached exo player
-        this.cached?.let { cached ->
-            logger.time("Released previously cached player") {
-                cached.release()
-            }
-        }
-
-        logger.debug { "Schedule player for delayed release" }
-        this.cached = exo
-
-        // schedule a release of the exo player in a moment while
-        handler.removeCallbacks(releaseCached)
-        handler.postDelayed(releaseCached, 2500)
     }
 
     fun get(context: Context): ExoPlayer {
-        val exo = cached ?: return newExoPlayer(context).also { exo ->
-            // keeps limited resources after calling .stop()
-            exo.setForegroundMode(true)
-        }
-
-        logger.debug { "Got cached exo player for reuse" }
-
-        this.cached = null
-        return exo
+        return return newExoPlayer(context)
     }
 
     private fun newExoPlayer(context: Context): ExoPlayer {
@@ -78,7 +35,6 @@ object ExoPlayerRecycler {
 
         val selector = DefaultTrackSelector(context, params)
 
-        logger.debug { "Create new exo player" }
         val player = ExoPlayer
             .Builder(ctx, DefaultRenderersFactory(ctx))
             .setTrackSelector(selector)
@@ -92,7 +48,16 @@ object ExoPlayerRecycler {
             .build()
 
         debugOnly {
-            player.addAnalyticsListener(EventLogger())
+            player.addAnalyticsListener(object : EventLogger() {
+                private val logger = Logger("ExoPlayerEventLogger")
+                override fun logd(msg: String) {
+                    logger.debug { msg }
+                }
+
+                override fun loge(msg: String) {
+                    logger.error { msg }
+                }
+            })
         }
 
         return player

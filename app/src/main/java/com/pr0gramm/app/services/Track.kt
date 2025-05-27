@@ -9,10 +9,8 @@ import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.pr0gramm.app.Stats
 import com.pr0gramm.app.feed.FeedFilter
 import com.pr0gramm.app.orm.Vote
-import com.pr0gramm.app.util.catchAll
 import com.pr0gramm.app.util.di.InjectorAware
 import com.pr0gramm.app.util.di.injector
-import com.pr0gramm.app.util.di.instance
 import com.pr0gramm.app.util.ignoreAllExceptions
 
 /**
@@ -23,7 +21,6 @@ object Track : InjectorAware {
     private lateinit var context: Context
     override val injector by lazy { context.injector }
 
-    private val settingsTracker by lazy { instance<SettingsTrackerService>() }
     private var installerTracked = false
 
     fun initialize(context: Context) {
@@ -192,12 +189,6 @@ object Track : InjectorAware {
 
     fun inboxActivity() {
         send("inbox")
-    }
-
-    suspend fun statistics() {
-        catchAll {
-            settingsTracker.track()
-        }
     }
 
     fun openZoomView(itemId: Long) {

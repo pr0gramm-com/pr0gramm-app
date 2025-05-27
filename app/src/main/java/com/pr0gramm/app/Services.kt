@@ -41,7 +41,6 @@ import com.pr0gramm.app.services.RecentSearchesServices
 import com.pr0gramm.app.services.RulesService
 import com.pr0gramm.app.services.SeenApiService
 import com.pr0gramm.app.services.SeenService
-import com.pr0gramm.app.services.SettingsTrackerService
 import com.pr0gramm.app.services.ShareService
 import com.pr0gramm.app.services.SingleShotService
 import com.pr0gramm.app.services.SiteSettingsService
@@ -225,8 +224,6 @@ fun appInjector(app: Application) = Module.build {
     }
 
     bind<SeenApiService>() with singleton { SeenApiService(instance()) }
-
-    bind<SettingsTrackerService>() with singleton { SettingsTrackerService(instance()) }
 
     bind<NotificationService>() with singleton { NotificationService(instance(), instance()) }
 

@@ -1,5 +1,6 @@
 package com.pr0gramm.app.io
 
+import android.annotation.SuppressLint
 import android.net.Uri
 import androidx.concurrent.futures.ResolvableFuture
 import com.google.common.io.Closer
@@ -31,8 +32,7 @@ internal class CacheEntry(
     private val fullyCached: File,
     private val uri: Uri
 ) : Cache.Entry {
-
-    private val logger = if (BuildConfig.DEBUG) Logger("CacheEntry(${uri.lastPathSegment})") else Logger("CacheEntry")
+    private val logger = Logger("CacheEntry(${uri.lastPathSegment})")
 
     // lock to guard all io operations
     private val lock = ReentrantLock()
@@ -249,6 +249,7 @@ internal class CacheEntry(
         }
     }
 
+    @SuppressLint("RestrictedApi")
     private inner class Cacher {
         val canceled get() = fileCacher !== this
 
@@ -386,9 +387,6 @@ internal class CacheEntry(
                         }
                     }
 
-                    @Suppress("NAME_SHADOWING")
-                    val totalSize = totalSize!!
-
                     // we now know the size, publish it to waiting consumers
                     this.totalSize.set(totalSize)
 
@@ -407,7 +405,7 @@ internal class CacheEntry(
                 }
 
             } catch (err: Exception) {
-                logger.error { "Error in caching thread ($err" }
+                logger.error { "Error in caching thread ($err)" }
                 this.totalSize.setException(err)
 
             } finally {
