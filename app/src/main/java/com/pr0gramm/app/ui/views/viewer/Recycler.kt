@@ -36,6 +36,9 @@ object ExoPlayerRecycler {
     }
 
     fun release(exo: ExoPlayer) {
+        exo.release()
+        return
+
         // release previously cached exo player
         this.cached?.let { cached ->
             logger.time("Released previously cached player") {
