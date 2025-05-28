@@ -31,7 +31,8 @@ import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.source.MediaSource
-import androidx.media3.exoplayer.source.ProgressiveMediaSource
+import androidx.media3.exoplayer.upstream.DefaultLoadErrorHandlingPolicy
+import androidx.media3.exoplayer.upstream.LoadErrorHandlingPolicy
 import androidx.media3.extractor.ExtractorsFactory
 import androidx.media3.extractor.mkv.MatroskaExtractor
 import androidx.media3.extractor.mp4.FragmentedMp4Extractor
@@ -222,8 +223,6 @@ class SimpleVideoMediaView(config: Config) :
         logger.info { "Starting exo for $effectiveUri" }
 
 
-        val mediaSource = createMediaSource()
-
         exo = ExoPlayerRecycler.get(context).apply {
             setVideoTextureView(find(R.id.texture_view))
 
@@ -237,6 +236,18 @@ class SimpleVideoMediaView(config: Config) :
 
             // don't forget to remove listeners in stop()
             addListener(playerListener)
+
+            val mediaSource = createMediaSource {
+                post {
+                    val ts = trackSelector ?: return@post
+
+                    val params = ts.parameters.buildUpon()
+                        .setTrackTypeDisabled(C.TRACK_TYPE_TEXT, true)
+                        .build()
+
+                    ts.parameters = params
+                }
+            }
 
             setMediaSource(mediaSource, false)
             prepare()
@@ -252,7 +263,7 @@ class SimpleVideoMediaView(config: Config) :
     }
 
     @OptIn(UnstableApi::class)
-    private fun createMediaSource(): MediaSource {
+    private fun createMediaSource(disableSubtitle: () -> Unit): MediaSource {
         val dataSourceFactory = DefaultDataSource.Factory(context) {
             val cache = context.injector.instance<Cache>()
             InputStreamCacheDataSource(cache)
@@ -291,8 +302,30 @@ class SimpleVideoMediaView(config: Config) :
             .setSubtitleConfigurations(subtitleConfigs.orEmpty())
             .build()
 
-        val mediaSourceFactory = DefaultMediaSourceFactory(dataSourceFactory, extractorsFactory)
-        return mediaSourceFactory.createMediaSource(mediaItem)
+        // TODO check that an exception during caching is actually propagated here.
+        //  Not entirely sure how to do that yet. We probably need to see if the caching
+        //  thread reads at least a few bytes before reporting background success
+        val policy = object : DefaultLoadErrorHandlingPolicy() {
+            override fun getRetryDelayMsFor(loadErrorInfo: LoadErrorHandlingPolicy.LoadErrorInfo): Long {
+                val isSubtitle = loadErrorInfo.loadEventInfo.uri.toString().endsWith(".vtt")
+                if (isSubtitle) {
+                    logger.warn { "Disable subtitles due to load error" }
+
+                    // disable the subtitle
+                    disableSubtitle()
+                }
+
+                return super.getRetryDelayMsFor(loadErrorInfo)
+            }
+
+            override fun getMinimumLoadableRetryCount(dataType: Int): Int {
+                return 3
+            }
+        }
+
+        return DefaultMediaSourceFactory(dataSourceFactory, extractorsFactory)
+            .setLoadErrorHandlingPolicy(policy)
+            .createMediaSource(mediaItem)
     }
 
     private fun stopVideo() {
