@@ -1,1 +1,1 @@
-extra["appVersion"] = 1995
+extra["appVersion"] = 1996
