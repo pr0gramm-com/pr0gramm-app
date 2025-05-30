@@ -19,7 +19,6 @@ appcompat = "1.7.0"
 swiperefreshlayout = "1.1.0"
 drawerlayout = "1.2.0"
 documentfile = "1.1.0"
-concurrentFutures = "1.2.0"
 pagingRuntime = "3.3.6"
 constraintlayout = "2.2.1"
 userMessagingPlatform = "3.2.0"
@@ -61,7 +60,6 @@ androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version
 androidx-swiperefreshlayout = { group = "androidx.swiperefreshlayout", name = "swiperefreshlayout", version.ref = "swiperefreshlayout" }
 androidx-drawerlayout = { group = "androidx.drawerlayout", name = "drawerlayout", version.ref = "drawerlayout" }
 androidx-documentfile = { group = "androidx.documentfile", name = "documentfile", version.ref = "documentfile" }
-androidx-concurrent-futures = { group = "androidx.concurrent", name = "concurrent-futures", version.ref = "concurrentFutures" }
 androidx-paging-runtime = { group = "androidx.paging", name = "paging-runtime", version.ref = "pagingRuntime" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 user-messaging-platform = { group = "com.google.android.ump", name = "user-messaging-platform", version.ref = "userMessagingPlatform" }

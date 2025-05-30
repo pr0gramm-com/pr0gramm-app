@@ -2,7 +2,6 @@ package com.pr0gramm.app.io
 
 import android.annotation.SuppressLint
 import android.net.Uri
-import androidx.concurrent.futures.ResolvableFuture
 import com.google.common.io.Closer
 import com.pr0gramm.app.Instant
 import com.pr0gramm.app.Logger
@@ -12,6 +11,8 @@ import com.pr0gramm.app.util.closeQuietly
 import com.pr0gramm.app.util.doInBackground
 import com.pr0gramm.app.util.readStream
 import com.pr0gramm.app.util.updateTimestamp
+import kotlinx.coroutines.CoroutineName
+import kotlinx.coroutines.withContext
 import okhttp3.CacheControl
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -24,7 +25,6 @@ import java.io.IOException
 import java.io.InputStream
 import java.io.InterruptedIOException
 import java.io.RandomAccessFile
-import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
@@ -37,11 +37,12 @@ import kotlin.contracts.contract
 import kotlin.math.max
 import kotlin.math.min
 
-private class LockState(val writtenUpdated: Condition) {
+private class LockState(val writtenUpdated: Condition, val resultAvailable: Condition) {
     // number of bytes currently written to disk.
     var written: Int = 0
 
     var totalSizeValue: Int = -1
+    var exception: Exception? = null
 
     var fp: RandomAccessFile? = null
 
@@ -53,6 +54,7 @@ private class Lock {
     private val lock = ReentrantLock()
     private val state = LockState(
         writtenUpdated = lock.newCondition(),
+        resultAvailable = lock.newCondition(),
     )
 
     inline fun <T> withLock(action: (state: LockState) -> T): T {
@@ -143,6 +145,10 @@ internal class CacheEntry(
         try {
             while (state.written < requiredCount) {
                 ensureCaching(state)
+
+                // this releases the lock and waits to be notified...
+                // if there is no notification, we'll re-acquire the lock after
+                // the timeout
                 state.writtenUpdated.await(250, TimeUnit.MILLISECONDS)
             }
         } catch (_: InterruptedException) {
@@ -221,7 +227,10 @@ internal class CacheEntry(
             state.written = fp.length().toInt()
 
             // start caching in background
-            state.totalSizeValue = resumeCaching(state)
+            resumeCaching(state)
+
+            // wait for the worker to set us a size value (or throw)
+            state.totalSizeValue = awaitTotalSize(state)
 
             if (state.written > state.totalSizeValue) {
                 // okay, someone fucked up! :/
@@ -271,28 +280,26 @@ internal class CacheEntry(
         }
     }
 
-    private fun resumeCaching(state: LockState): Int {
-        // start a new cache writer if required.
-        val worker = activeWorker.get() ?: Worker().also { newWorker ->
+    /**
+     * Returns the currently active caching Worker or starts a new Worker, if
+     * no worker is currently active
+     */
+    private fun resumeCaching(state: LockState): Worker {
+        return activeWorker.get() ?: Worker().also { newWorker ->
             // set this as the active worker. No need for compareAndSet, as we're the
             // only one setting this to a non-null value, and we are holding the lock.
-            this.activeWorker.set(newWorker)
+            activeWorker.set(newWorker)
 
             logger.debug { "Resume caching in a background thread" }
 
             // resume caching in the background.
             val offset = state.written
-            doInBackground { newWorker.resumeCaching(offset) }
-        }
 
-        return try {
-            logger.debug { "Wait for totalSize future to be available" }
-
-            @SuppressLint("RestrictedApi")
-            worker.totalSize.get()
-        } catch (err: ExecutionException) {
-            // throw the real error, not the wrapped one.
-            throw err.cause ?: err
+            doInBackground {
+                withContext(CoroutineName("CacheEntry.Worker")) {
+                    newWorker.resumeCaching(offset)
+                }
+            }
         }
     }
 
@@ -471,15 +478,26 @@ internal class CacheEntry(
         return totalCount
     }
 
+    private fun awaitTotalSize(state: LockState): Int {
+        while (state.totalSizeValue == -1) {
+            logger.debug { "Wait for totalSize future to be available" }
+            state.resultAvailable.await()
+
+            state.exception?.let { err ->
+                // if we got an error, we'll throw it here
+                throw err
+            }
+        }
+
+        // we got a valid size value
+        return state.totalSizeValue
+    }
 
     @SuppressLint("RestrictedApi")
     private inner class Worker {
         private val logger = Logger("${this@CacheEntry.logger}.Worker")
 
         val isActiveWorker get() = activeWorker.get() == this
-
-        // The total size that this worker determined for the file.
-        val totalSize: ResolvableFuture<Int> = ResolvableFuture.create()
 
         /**
          * This method is called from the caching thread once caching stops.
@@ -639,7 +657,11 @@ internal class CacheEntry(
 
             } catch (err: Exception) {
                 logger.error { "Error in caching thread ($err)" }
-                this.totalSize.setException(err)
+                lock.withLock { state ->
+                    // caching failed, propagate the exception to the caller.
+                    state.exception = err
+                    state.resultAvailable.signalAll()
+                }
 
             } finally {
                 cachingStopped()
@@ -660,7 +682,6 @@ internal class CacheEntry(
             // the cache of a file no one is reading from
             val minWorkThreshold = Instant.now().plus(1, TimeUnit.SECONDS)
 
-            var hasSetTotalSize = false
             readStream(stream, bufferSize = 64 * 1024) { buffer, byteCount ->
                 lock.withLock { state ->
                     val fp = state.fp
@@ -675,9 +696,9 @@ internal class CacheEntry(
                     // if the first read & write was successful. If an error would have occurred,
                     // it would be caught and set via totalSize.setException to propagate
                     // it to the caller
-                    if (!hasSetTotalSize) {
-                        this.totalSize.set(totalSize)
-                        hasSetTotalSize = true
+                    if (state.totalSizeValue == -1) {
+                        state.totalSizeValue = totalSize
+                        state.resultAvailable.signalAll()
                     }
 
                     if (!isActiveWorker) {

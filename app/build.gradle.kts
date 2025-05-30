@@ -174,7 +174,6 @@ dependencies {
     implementation(libs.androidx.swiperefreshlayout)
     implementation(libs.androidx.drawerlayout)
     implementation(libs.androidx.documentfile)
-    implementation(libs.androidx.concurrent.futures)
     implementation(libs.androidx.paging.runtime)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.user.messaging.platform)
