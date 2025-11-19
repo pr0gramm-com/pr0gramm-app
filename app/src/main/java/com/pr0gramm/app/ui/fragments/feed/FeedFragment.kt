@@ -423,6 +423,11 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
                     val repost = inMemoryCacheService.isRepost(id)
                     val preloaded = id in feedState.preloadedItemIds
 
+                    // skip seen items if hideSeenPosts is enabled
+                    if (Settings.hideSeenPosts && seen) {
+                        continue
+                    }
+
                     // show an ad banner every ~50 lines
                     if (feedState.adsVisible && (itemColumnIndex % (50 * thumbnailColumnCount)) == 0) {
                         entries += FeedAdapter.Entry.Ad(itemColumnIndex.toLong())
@@ -817,6 +822,15 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
             // never bookmark a user
             bookmark.isVisible = false
         }
+
+        menu.findItem(R.id.action_hide_seen_posts)?.let { item ->
+            item.setTitle(
+                if (Settings.hideSeenPosts)
+                    R.string.action_show_seen_posts
+                else
+                    R.string.action_hide_seen_posts
+            )
+        }
     }
 
     private fun switchFeedTypeTarget(filter: FeedFilter): FeedType {
@@ -884,6 +898,11 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
             R.id.action_open_in_admin -> openUserInAdmin()
             R.id.action_scroll_seen -> scrollToNextSeenAsync()
             R.id.action_scroll_unseen -> scrollToNextUnseenAsync()
+            R.id.action_hide_seen_posts -> {
+                Settings.hideSeenPosts = !Settings.hideSeenPosts
+                activity?.invalidateOptionsMenu()
+                updateAdapterState(feedStateModel.feedState.value, userStateModel.userState.value)
+            }
 
             else -> super.onOptionsItemSelected(item)
         }

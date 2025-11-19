@@ -601,6 +601,8 @@
     <string name="action_shrink">Shrink</string>
     <string name="action_scroll_unseen">Scroll next unseen</string>
     <string name="action_scroll_seen">Scroll next seen</string>
+    <string name="action_hide_seen_posts">Hide seen posts</string>
+    <string name="action_show_seen_posts">Show seen posts</string>
     <string name="error_max_scroll_reached">Max scroll distance reached. Please try again.</string>
     <string name="changelog">Changelog</string>
     <string name="user_is_not_verified">Your age was not verified. To be able to access adult content, you need to verify your age.</string>
