@@ -40,6 +40,7 @@ import com.pr0gramm.app.services.BookmarkService
 import com.pr0gramm.app.services.FollowService
 import com.pr0gramm.app.services.InMemoryCacheService
 import com.pr0gramm.app.services.RecentSearchesServices
+import com.pr0gramm.app.services.SeenService
 import com.pr0gramm.app.services.ShareService
 import com.pr0gramm.app.services.SingleShotService
 import com.pr0gramm.app.services.ThemeHelper
@@ -153,6 +154,7 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
     private val recentSearchesServices: RecentSearchesServices by instance()
     private val followService: FollowService by instance()
     private val shareService: ShareService by instance()
+    private val seenService: SeenService by instance()
 
     private val views by bindViews(FragmentFeedBinding::bind)
 
@@ -657,7 +659,18 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
 
     fun updateFeedItemTarget(feed: Feed, item: FeedItem) {
         logger.info { "Want to resume from $item" }
-        autoScrollRef = ScrollRef(CommentRef(item), feed, smoothScroll = true)
+
+        // filter feed if hideSeenPosts is enabled
+        val feedToPass = if (Settings.hideSeenPosts) {
+            val filteredItems = feed.filter { feedItem ->
+                !seenService.isSeen(feedItem.id)
+            }
+            feed.copy(items = filteredItems)
+        } else {
+            feed
+        }
+
+        autoScrollRef = ScrollRef(CommentRef(item), feedToPass, smoothScroll = true)
     }
 
     private fun checkForNewItems() {
@@ -1044,7 +1057,17 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
         // reset auto open.
         autoScrollRef = null
 
-        val idx = feed.indexById(item.id) ?: return
+        // filter feed if hideSeenPosts is enabled
+        val feedToPass = if (Settings.hideSeenPosts) {
+            val filteredItems = feed.filter { feedItem ->
+                !seenService.isSeen(feedItem.id)
+            }
+            feed.copy(items = filteredItems)
+        } else {
+            feed
+        }
+
+        val idx = feedToPass.indexById(item.id) ?: return
         trace { "onItemClicked(feedIndex=$idx, id=${item.id})" }
 
         try {
@@ -1058,7 +1081,7 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
                 else -> currentTitle?.title
             }
 
-            val fragment = PostPagerFragment.newInstance(feed, idx, commentRef, title)
+            val fragment = PostPagerFragment.newInstance(feedToPass, idx, commentRef, title)
             if (preview != null) {
                 // pass pixels info to target fragment.
                 val image = preview.drawable
