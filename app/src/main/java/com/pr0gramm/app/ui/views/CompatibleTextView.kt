@@ -1,6 +1,7 @@
 package com.pr0gramm.app.ui.views
 
 import android.content.Context
+import android.graphics.Rect
 import android.os.Build
 import android.text.PrecomputedText
 import android.text.SpannedString
@@ -48,6 +49,14 @@ class CompatibleTextView @JvmOverloads constructor(
         post {
             dispatchTouchEvent(eventCopy)
             eventCopy.recycle()
+        }
+    }
+
+    override fun requestRectangleOnScreen(rectangle: Rect?): Boolean {
+        return if (hasSelection()) {
+            false
+        } else {
+            super.requestRectangleOnScreen(rectangle)
         }
     }
 }
