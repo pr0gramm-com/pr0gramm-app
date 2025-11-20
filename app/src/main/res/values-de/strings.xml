@@ -576,6 +576,8 @@
     <string name="action_shrink">Verkleinern</string>
     <string name="action_scroll_unseen">Nächster ungesehener Hochlad</string>
     <string name="action_scroll_seen">Nächster gesehener Hochlad</string>
+    <string name="action_hide_seen_posts">Gesehener Hochlad ausblenden</string>
+    <string name="action_show_seen_posts">Gesehener Hochlad einblenden</string>
     <string name="error_max_scroll_reached">Maximale Scrollweite erreicht. Probiere es einfach nochmal.</string>
     <string name="changelog">Changelog</string>
     <string name="user_is_not_verified">Dein Altersnachweis ist noch nicht abgeschlossen. Um nicht jugendfreie Inhalte anzusehen, musst Du dein Alter bestätigen.</string>
