@@ -407,10 +407,8 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
                 }
 
             } else if (!userState.userInfoCommentsOpen) {
-                // check if we need to check if the posts are 'seen'
-                val markAsSeen = feedState.markItemsAsSeen && !run {
-                    userState.ownUsername != null && userState.ownUsername.equalsIgnoreCase(filter.username)
-                }
+                // check if we need to mark posts as 'seen' (respects filter exclusions)
+                val markAsSeen = feedState.markItemsAsSeen && shouldApplySeenFilter(filter)
 
                 // always show at least one ad banner - e.g. during load
                 if (feedState.adsVisible && feedState.feed.isEmpty()) {
@@ -425,8 +423,8 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
                     val repost = inMemoryCacheService.isRepost(id)
                     val preloaded = id in feedState.preloadedItemIds
 
-                    // skip seen items if hideSeenPosts is enabled, but not in collections
-                    if (Settings.hideSeenPosts && seen && filter.collection == null) {
+                    // skip seen items (exclusions like collections, profiles, search are handled in markAsSeen)
+                    if (seen) {
                         continue
                     }
 
@@ -483,7 +481,7 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
                 feedAdapter.stateRestorationPolicy = StateRestorationPolicy.ALLOW
 
                 // Proactive load if filtering resulted in very few visible items
-                if (Settings.hideSeenPosts && filter.collection == null && !feedState.isLoading && !feed.isAtEnd) {
+                if (shouldApplySeenFilter(filter) && !feedState.isLoading && !feed.isAtEnd) {
                     val visibleItemCount = entries.count { it is FeedAdapter.Entry.Item }
                     val threshold = 10
 
@@ -494,6 +492,29 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
                 }
             }
         }
+    }
+
+    private fun shouldApplySeenFilter(filter: FeedFilter): Boolean {
+        if (!Settings.hideSeenPosts) return false
+
+        // Don't filter in collections - user curated content
+        if (filter.collection != null) return false
+
+        // Don't filter in user profiles - browsing specific user's posts
+        if (filter.username != null) return false
+
+        // Don't filter in search results - intentional query for specific content
+        if (filter.tags != null) return false
+
+        // Don't filter in following feed - content from followed users
+        if (filter.feedType == FeedType.STALK) return false
+
+        // Don't filter when accessing a post directly (deep links, notifications, comment links)
+        // Check if fragment was created with a specific start item
+        val hasSpecificStartItem = arguments?.getParcelable<CommentRef?>(ARG_FEED_START) != null
+        if (hasSpecificStartItem) return false
+
+        return true
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -671,7 +692,7 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
     fun updateFeedItemTarget(feed: Feed, item: FeedItem) {
         logger.info { "Want to resume from $item" }
 
-        val feedToPass = if (Settings.hideSeenPosts && feed.filter.collection == null) {
+        val feedToPass = if (shouldApplySeenFilter(feed.filter)) {
             val filteredItems = feed.filter { feedItem ->
                 !seenService.isSeen(feedItem.id)
             }
@@ -1067,7 +1088,7 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
         // reset auto open.
         autoScrollRef = null
 
-        val feedToPass = if (Settings.hideSeenPosts && feed.filter.collection == null) {
+        val feedToPass = if (shouldApplySeenFilter(feed.filter)) {
             val filteredItems = feed.filter { feedItem ->
                 !seenService.isSeen(feedItem.id)
             }
