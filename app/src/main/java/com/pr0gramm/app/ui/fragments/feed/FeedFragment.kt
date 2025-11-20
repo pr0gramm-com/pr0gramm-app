@@ -425,8 +425,8 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
                     val repost = inMemoryCacheService.isRepost(id)
                     val preloaded = id in feedState.preloadedItemIds
 
-                    // skip seen items if hideSeenPosts is enabled
-                    if (Settings.hideSeenPosts && seen) {
+                    // skip seen items if hideSeenPosts is enabled, but not in collections
+                    if (Settings.hideSeenPosts && seen && filter.collection == null) {
                         continue
                     }
 
@@ -481,6 +481,17 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
 
             feedAdapter.submitList(entries) {
                 feedAdapter.stateRestorationPolicy = StateRestorationPolicy.ALLOW
+
+                // Proactive load if filtering resulted in very few visible items
+                if (Settings.hideSeenPosts && filter.collection == null && !feedState.isLoading && !feed.isAtEnd) {
+                    val visibleItemCount = entries.count { it is FeedAdapter.Entry.Item }
+                    val threshold = 10
+
+                    if (visibleItemCount < threshold) {
+                        logger.info { "Proactive load: only $visibleItemCount visible items (threshold: $threshold), loading more..." }
+                        feedStateModel.triggerLoadNext()
+                    }
+                }
             }
         }
     }
@@ -660,8 +671,7 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
     fun updateFeedItemTarget(feed: Feed, item: FeedItem) {
         logger.info { "Want to resume from $item" }
 
-        // filter feed if hideSeenPosts is enabled
-        val feedToPass = if (Settings.hideSeenPosts) {
+        val feedToPass = if (Settings.hideSeenPosts && feed.filter.collection == null) {
             val filteredItems = feed.filter { feedItem ->
                 !seenService.isSeen(feedItem.id)
             }
@@ -1057,8 +1067,7 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
         // reset auto open.
         autoScrollRef = null
 
-        // filter feed if hideSeenPosts is enabled
-        val feedToPass = if (Settings.hideSeenPosts) {
+        val feedToPass = if (Settings.hideSeenPosts && feed.filter.collection == null) {
             val filteredItems = feed.filter { feedItem ->
                 !seenService.isSeen(feedItem.id)
             }
@@ -1398,14 +1407,14 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
             val maxEdgeDistance = 48
 
             if (dy > 0 && !feed.isAtEnd) {
-                if (lastVisibleItem >= 0 && totalItemCount > maxEdgeDistance && lastVisibleItem >= totalItemCount - maxEdgeDistance) {
+                if (lastVisibleItem >= 0 && feed.size > maxEdgeDistance && lastVisibleItem >= totalItemCount - maxEdgeDistance) {
                     logger.info { "Request next page now (last visible is $lastVisibleItem of $totalItemCount. Last feed item is ${feed.oldestNonPlaceholderItem}" }
                     feedStateModel.triggerLoadNext()
                 }
             }
 
             if (dy < 0 && !feed.isAtStart) {
-                if (firstVisibleItem >= 0 && totalItemCount > maxEdgeDistance && firstVisibleItem < maxEdgeDistance) {
+                if (firstVisibleItem >= 0 && feed.size > maxEdgeDistance && firstVisibleItem < maxEdgeDistance) {
                     logger.info { "Request previous page now (first visible is $firstVisibleItem of $totalItemCount. Most recent feed item is ${feed.newestNonPlaceholderItem}" }
                     feedStateModel.triggerLoadPrev()
                 }
