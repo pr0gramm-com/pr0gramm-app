@@ -247,6 +247,7 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
         views.refresh.setOnRefreshListener {
             logger.debug { "onRefresh called for swipe view." }
             views.refresh.isRefreshing = false
+            feedStateModel.applyAccumulatedSeenFilter()
             refreshContent()
         }
 
@@ -408,6 +409,7 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
 
             } else if (!userState.userInfoCommentsOpen) {
                 // check if we need to mark posts as 'seen' (respects filter exclusions)
+                val sessionStartSeen = feedState.sessionStartSeenIds
                 val markAsSeen = feedState.markItemsAsSeen && shouldApplySeenFilter(filter)
 
                 // always show at least one ad banner - e.g. during load
@@ -419,12 +421,13 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
 
                 for (item in feedState.feed) {
                     val id = item.id
-                    val seen = markAsSeen && id in feedState.seen
+                    val seenBeforeSession = markAsSeen && (id in sessionStartSeen)
+                    val seen = markAsSeen && (id in feedState.seen)
                     val repost = inMemoryCacheService.isRepost(id)
                     val preloaded = id in feedState.preloadedItemIds
 
-                    // skip seen items (exclusions like collections, profiles, search are handled in markAsSeen)
-                    if (seen) {
+                    // skip seen items that were seen BEFORE current session (exclusions handled in markAsSeen)
+                    if (seenBeforeSession) {
                         continue
                     }
 
@@ -758,6 +761,9 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
             autoScrollRef = startAtItemId?.let { id -> ScrollRef(CommentRef(id)) }
         }
 
+        // Apply accumulated seen filter before replacing feed
+        feedStateModel.applyAccumulatedSeenFilter()
+
         // this clears the current feed immediately
         val filter = feedFilter ?: feed.filter
         feedStateModel.restart(
@@ -980,6 +986,7 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
     private fun switchFeedType() {
         var filter = currentFilter
         filter = filter.withFeedType(switchFeedTypeTarget(filter))
+        feedStateModel.applyAccumulatedSeenFilter()
         (activity as MainActionHandler).onFeedFilterSelected(filter, initialSearchViewState())
     }
 
@@ -1437,6 +1444,7 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
             if (dy < 0 && !feed.isAtStart) {
                 if (firstVisibleItem >= 0 && feed.size > maxEdgeDistance && firstVisibleItem < maxEdgeDistance) {
                     logger.info { "Request previous page now (first visible is $firstVisibleItem of $totalItemCount. Most recent feed item is ${feed.newestNonPlaceholderItem}" }
+                    feedStateModel.applyAccumulatedSeenFilter()
                     feedStateModel.triggerLoadPrev()
                 }
             }

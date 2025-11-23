@@ -114,6 +114,7 @@ class FeedViewModel(
             feedState.update { previousState ->
                 val seen = previousState.feed.map { it.id }
                     .filterTo(HashSet()) { id -> seenService.isSeen(id) }
+
                 previousState.copy(seen = seen)
             }
         }
@@ -176,10 +177,17 @@ class FeedViewModel(
                             else -> update.feed
                         }
 
+                        val seen = feed.filter { item -> seenService.isSeen(item.id) }
+                            .mapTo(HashSet()) { it.id }
+
+                        // Capture session snapshot: when new feed loads, save current seen state
+                        // This ensures posts seen BEFORE this feed load will be filtered
+                        val sessionStartSeenIds = seen.toSet()
+
                         previousState.copy(
                             feed = feed,
-                            seen = feed.filter { item -> seenService.isSeen(item.id) }
-                                .mapTo(HashSet()) { it.id },
+                            seen = seen,
+                            sessionStartSeenIds = sessionStartSeenIds,
                             empty = update.remote && feed.isEmpty(),
                             highlightedItemIds = highlightedItemIds,
                             autoScrollRef = autoScrollRef,
@@ -494,6 +502,7 @@ class FeedViewModel(
         val ready: Boolean,
         val feed: Feed,
         val seen: Set<Long> = setOf(),
+        val sessionStartSeenIds: Set<Long> = setOf(),
         val errorStr: String? = null,
         val error: Throwable? = null,
         val errorConsumable: ConsumableValue<Throwable>? = null,
@@ -511,6 +520,14 @@ class FeedViewModel(
         val empty: Boolean = false
     ) {
         val isLoading = loading != null
+    }
+
+    fun applyAccumulatedSeenFilter() {
+        feedState.update { previousState ->
+            previousState.copy(
+                sessionStartSeenIds = previousState.seen.toSet()
+            )
+        }
     }
 }
 
