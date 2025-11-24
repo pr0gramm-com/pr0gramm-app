@@ -696,8 +696,10 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
         logger.info { "Want to resume from $item" }
 
         val feedToPass = if (shouldApplySeenFilter(feed.filter)) {
+            // Use session-based filtering: only filter posts seen BEFORE this session
+            val sessionStartSeen = feedStateModel.feedState.value.sessionStartSeenIds
             val filteredItems = feed.filter { feedItem ->
-                !seenService.isSeen(feedItem.id)
+                feedItem.id !in sessionStartSeen
             }
             feed.copy(items = filteredItems)
         } else {
@@ -1096,8 +1098,10 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
         autoScrollRef = null
 
         val feedToPass = if (shouldApplySeenFilter(feed.filter)) {
+            // Use session-based filtering: only filter posts seen BEFORE this session
+            val sessionStartSeen = feedStateModel.feedState.value.sessionStartSeenIds
             val filteredItems = feed.filter { feedItem ->
-                !seenService.isSeen(feedItem.id)
+                feedItem.id !in sessionStartSeen
             }
             feed.copy(items = filteredItems)
         } else {
