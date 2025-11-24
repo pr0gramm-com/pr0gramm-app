@@ -84,6 +84,10 @@ object Settings : SharedPreferences.OnSharedPreferenceChangeListener {
         get() = preferences.getBoolean("pref_mark_items_as_seen", false)
         set(value) = edit { putBoolean("pref_mark_items_as_seen", value) }
 
+    var hideSeenPosts: Boolean
+        get() = preferences.getBoolean("pref_hide_seen_posts", false)
+        set(value) = edit { putBoolean("pref_hide_seen_posts", value) }
+
     val fancyScrollVertical: Boolean
         get() = preferences.getBoolean("pref_fancy_scroll_vertical", true)
 
