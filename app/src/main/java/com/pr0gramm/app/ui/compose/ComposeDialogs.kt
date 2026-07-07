@@ -100,20 +100,29 @@ fun BusyOverlay(
             dismissOnClickOutside = dismissible,
         ),
     ) {
-        Surface(
-            shape = MaterialTheme.shapes.large,
-            tonalElevation = 6.dp,
-        ) {
-            Row(
-                modifier = Modifier.padding(24.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-            ) {
-                CircularProgressIndicator(modifier = Modifier.size(36.dp))
+        BusyOverlayContent(text)
+    }
+}
 
-                if (!text.isNullOrBlank()) {
-                    Text(text, style = MaterialTheme.typography.bodyLarge)
-                }
+/**
+ * The bare busy surface (spinner + optional text) without a surrounding window, so it can be
+ * hosted either by [BusyOverlay] or directly inside a `ComposeView` in a legacy `Dialog`.
+ */
+@Composable
+fun BusyOverlayContent(text: String? = null) {
+    Surface(
+        shape = MaterialTheme.shapes.large,
+        tonalElevation = 6.dp,
+    ) {
+        Row(
+            modifier = Modifier.padding(24.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            CircularProgressIndicator(modifier = Modifier.size(36.dp))
+
+            if (!text.isNullOrBlank()) {
+                Text(text, style = MaterialTheme.typography.bodyLarge)
             }
         }
     }

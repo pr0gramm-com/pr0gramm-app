@@ -1,114 +1,110 @@
 package com.pr0gramm.app.ui
 
-import android.app.Dialog
 import android.content.Context
-import android.text.SpannableStringBuilder
-import android.view.View
-import androidx.core.text.bold
-import androidx.core.text.color
-import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withLink
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.dp
 import com.pr0gramm.app.MoshiInstance
 import com.pr0gramm.app.R
-import com.pr0gramm.app.databinding.ChangelogBinding
-import com.pr0gramm.app.databinding.ChangelogChangeBinding
-import com.pr0gramm.app.databinding.ChangelogVersionBinding
 import com.pr0gramm.app.model.update.Change
 import com.pr0gramm.app.model.update.ChangeGroup
-import com.pr0gramm.app.services.ThemeHelper
-import com.pr0gramm.app.ui.base.ViewBindingDialogFragment
+import com.pr0gramm.app.ui.compose.ComposeDialogFragment
 import com.pr0gramm.app.util.AndroidUtility
-import com.pr0gramm.app.util.NonCrashingLinkMovementMethod
-import com.pr0gramm.app.util.getColorCompat
-import com.pr0gramm.app.util.setTextFuture
 import com.squareup.moshi.adapter
 import okio.buffer
 import okio.source
 import java.io.IOException
-import java.util.regex.Pattern
 
+class ChangeLogDialog : ComposeDialogFragment("ChangeLogDialog") {
+    @Composable
+    override fun DialogContent() {
+        val context = LocalContext.current
+        val changeGroups = remember { loadChangelog(context) }
 
-/**
- */
-class ChangeLogDialog : ViewBindingDialogFragment<ChangelogBinding>("ChangeLogDialog", ChangelogBinding::inflate) {
-    override fun onCreateDialog(contentView: View): Dialog {
-        return dialog(requireContext()) {
-            contentView(contentView)
-            positive()
-        }
-    }
+        AlertDialog(
+            onDismissRequest = { dismiss() },
+            confirmButton = {
+                TextButton(onClick = { dismiss() }) {
+                    Text(stringResource(R.string.okay))
+                }
+            },
+            text = {
+                LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    changeGroups.forEach { group ->
+                        item {
+                            Text(
+                                "Version 1.${group.version}",
+                                style = MaterialTheme.typography.titleMedium,
+                            )
+                        }
 
-    override fun onDialogViewCreated() {
-        val changes = loadChangelog(requireContext())
-        views.recyclerView.adapter = changeAdapter(changes)
-        views.recyclerView.layoutManager = LinearLayoutManager(context)
-    }
-
-    private fun changeAdapter(changeGroups: List<ChangeGroup>): DelegateAdapter<Any> {
-        val versionAdapter = Adapters.ForViewBindings(ChangelogVersionBinding::inflate) { (views), item: Version ->
-            views.root.text = item.formatted
-        }
-
-        val githubIssue = Pattern.compile("#\\d+\\b")
-
-        val changeAdapter = Adapters.ForViewBindings(ChangelogChangeBinding::inflate) { (views), change: Change ->
-            val textView = views.root
-
-            val text = SpannableStringBuilder()
-                .bold {
-                    val color = when (change.type) {
-                        "Neu" -> ThemeHelper.accentColor
-                        else -> null
-                    }
-
-                    if (color != null) {
-                        color(textView.context.getColorCompat(color)) { append(change.type) }
-                    } else {
-                        append(change.type)
+                        items(group.changes.size) { idx ->
+                            ChangeRow(group.changes[idx])
+                        }
                     }
                 }
-                .append("  ")
-                .append(change.change)
+            },
+        )
+    }
 
+    @Composable
+    private fun ChangeRow(change: Change) {
+        val accent = MaterialTheme.colorScheme.primary
 
-            if ("#" in change.change) {
-                // add links to github issues
-                android.text.util.Linkify.addLinks(text, githubIssue, null, null) { match, _ ->
-                    val issue = match.group().substring(1)
-                    "https://github.com/pr0gramm-com/pr0gramm-app/issues/$issue"
-                }
+        val text = buildAnnotatedString {
+            withStyle(
+                SpanStyle(
+                    fontWeight = FontWeight.Bold,
+                    color = if (change.type == "Neu") accent else Color.Unspecified,
+                )
+            ) {
+                append(change.type)
             }
 
-            textView.movementMethod = NonCrashingLinkMovementMethod
-            textView.setTextFuture(text)
+            append("  ")
+            appendWithIssueLinks(change.change)
         }
 
-        val adapter = delegateAdapterOf(
-                Adapters.adapt(versionAdapter) { item: Any -> item as? Version },
-                Adapters.adapt(changeAdapter) { item: Any -> item as? Change },
-        )
-
-        adapter.submitList(
-                ArrayList<Any>().apply {
-                    changeGroups.forEachIndexed { idx, group ->
-                        val current = idx == 0
-                        add(Version.of(group.version, current))
-                        addAll(group.changes)
-                    }
-                }
-        )
-
-        return adapter
-    }
-
-    private class Version(val formatted: String, val current: Boolean) {
-        companion object {
-            fun of(number: Int, current: Boolean): Version {
-                return Version("Version 1.$number", current)
-            }
-        }
+        Text(text, style = MaterialTheme.typography.bodyMedium)
     }
 
     companion object {
+        private val githubIssue = Regex("#\\d+\\b")
+
+        private fun AnnotatedString.Builder.appendWithIssueLinks(text: String) {
+            var last = 0
+            for (match in githubIssue.findAll(text)) {
+                append(text.substring(last, match.range.first))
+
+                val issue = match.value.substring(1)
+                withLink(
+                    LinkAnnotation.Url("https://github.com/pr0gramm-com/pr0gramm-app/issues/$issue")
+                ) {
+                    append(match.value)
+                }
+
+                last = match.range.last + 1
+            }
+
+            append(text.substring(last))
+        }
+
         private fun loadChangelog(context: Context): List<ChangeGroup> {
             try {
                 context.resources.openRawResource(R.raw.changelog).use { input ->
