@@ -7,36 +7,25 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.ButtonDefaults.textButtonColors
-import androidx.compose.material.Card
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.ListItem
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.ProvideTextStyle
-import androidx.compose.material.RadioButton
-import androidx.compose.material.RadioButtonDefaults
-import androidx.compose.material.Text
-import androidx.compose.material.TextButton
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import androidx.core.os.LocaleListCompat
 import com.pr0gramm.app.R
 import com.pr0gramm.app.ui.base.BaseDialogFragment
+import com.pr0gramm.app.ui.compose.theme.Pr0grammTheme
 import org.xmlpull.v1.XmlPullParser
 import java.util.Locale
 
@@ -51,7 +40,9 @@ class LanguagePickerDialog : BaseDialogFragment("LanguagePickerDialog") {
 
         return ComposeView(requireContext()).apply {
             setContent {
-                DialogContent(supportedLocales, currentLocale)
+                Pr0grammTheme {
+                    DialogContent(supportedLocales, currentLocale)
+                }
             }
         }
     }
@@ -63,35 +54,12 @@ class LanguagePickerDialog : BaseDialogFragment("LanguagePickerDialog") {
     ) {
         val selectedLocale = remember { mutableStateOf(initialLocale) }
 
-        Dialog(
-            onDismissRequest = { dismiss() }
-        ) {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight()
-                    .padding(16.dp),
-                shape = RoundedCornerShape(16.dp),
-            ) {
-                val titleStyle = MaterialTheme.typography.subtitle1
-                val subtitleStyle = MaterialTheme.typography.body2
+        AlertDialog(
+            onDismissRequest = { dismiss() },
+            title = { Text(stringResource(R.string.language_picker_title)) },
+            text = {
                 Column {
-                    ProvideTextStyle(titleStyle) {
-                        Text(
-                            stringResource(R.string.language_picker_title),
-                            Modifier
-                                .padding(start = 16.dp, end = 16.dp, top = 16.dp)
-                                .align(Alignment.Start),
-                        )
-                    }
-                    ProvideTextStyle(subtitleStyle) {
-                        Text(
-                            stringResource(R.string.language_picker_subtitle),
-                            Modifier
-                                .padding(vertical = 4.dp, horizontal = 16.dp)
-                                .align(Alignment.Start),
-                        )
-                    }
+                    Text(stringResource(R.string.language_picker_subtitle))
                     supportedLocales.forEach {
                         LanguageItem(
                             it,
@@ -101,43 +69,28 @@ class LanguagePickerDialog : BaseDialogFragment("LanguagePickerDialog") {
                             },
                         )
                     }
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        horizontalArrangement = Arrangement.End,
-                    ) {
-                        TextButton(
-                            onClick = { dismiss() },
-                            modifier = Modifier.padding(8.dp),
-                            colors = textButtonColors(
-                                contentColor = colorResource(R.color.orange_primary)
-                            ),
-                        ) {
-                            Text(stringResource(R.string.language_picker_dismiss))
-                        }
-                        TextButton(
-                            onClick = {
-                                AppCompatDelegate.setApplicationLocales(
-                                    LocaleListCompat.create(
-                                        selectedLocale.value
-                                    )
-                                )
-                                dismiss()
-                            },
-                            modifier = Modifier.padding(8.dp),
-                            colors = textButtonColors(
-                                contentColor = colorResource(R.color.orange_primary)
-                            ),
-                        ) {
-                            Text(stringResource(R.string.language_picker_confirm))
-                        }
-                    }
                 }
-            }
-        }
+            },
+            dismissButton = {
+                TextButton(onClick = { dismiss() }) {
+                    Text(stringResource(R.string.language_picker_dismiss))
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        AppCompatDelegate.setApplicationLocales(
+                            LocaleListCompat.create(selectedLocale.value)
+                        )
+                        dismiss()
+                    },
+                ) {
+                    Text(stringResource(R.string.language_picker_confirm))
+                }
+            },
+        )
     }
 
-    @OptIn(ExperimentalMaterialApi::class)
     @Composable
     fun LanguageItem(
         locale: Locale,
@@ -145,19 +98,17 @@ class LanguagePickerDialog : BaseDialogFragment("LanguagePickerDialog") {
         onClick: (() -> Unit),
     ) {
         ListItem(
-            modifier = Modifier.clickable {
-                onClick()
-            },
-            text = { Text(locale.getDisplayLanguage(locale)) },
-            trailing = {
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onClick() },
+            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+            headlineContent = { Text(locale.getDisplayLanguage(locale)) },
+            trailingContent = {
                 RadioButton(
                     selected = selected,
                     onClick = onClick,
-                    colors = RadioButtonDefaults.colors(
-                        selectedColor = colorResource(R.color.orange_primary)
-                    )
                 )
-            }
+            },
         )
     }
 

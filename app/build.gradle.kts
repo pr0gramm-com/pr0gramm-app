@@ -182,8 +182,6 @@ dependencies {
 
     // Compose
     implementation(platform(libs.androidx.compose.bom))
-    // TODO(compose-migration): remove after task 10
-    implementation(libs.androidx.compose.material)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.androidx.activity.compose)
