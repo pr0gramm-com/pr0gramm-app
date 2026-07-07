@@ -1,34 +1,44 @@
 package com.pr0gramm.app.ui.dialogs
 
-import android.app.Dialog
-import android.view.View
-import android.view.ViewGroup
-import android.widget.BaseAdapter
-import android.widget.Button
-import android.widget.TextView
-import androidx.core.view.updatePadding
-import androidx.core.widget.addTextChangedListener
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import com.pr0gramm.app.R
-import com.pr0gramm.app.databinding.DialogCollectionCreateBinding
 import com.pr0gramm.app.services.CollectionItemsService
 import com.pr0gramm.app.services.CollectionsService
 import com.pr0gramm.app.services.PostCollection
 import com.pr0gramm.app.services.Result
 import com.pr0gramm.app.services.UserService
-import com.pr0gramm.app.ui.base.ViewBindingDialogFragment
 import com.pr0gramm.app.ui.base.launchUntilDestroy
-import com.pr0gramm.app.ui.dialog
-import com.pr0gramm.app.ui.showDialog
+import com.pr0gramm.app.ui.compose.ComposeDialogFragment
 import com.pr0gramm.app.util.arguments
 import com.pr0gramm.app.util.di.instance
-import com.pr0gramm.app.util.dp
-import com.pr0gramm.app.util.find
-import com.pr0gramm.app.util.inflateDetachedChild
 import com.pr0gramm.app.util.optionalFragmentArgument
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.withContext
 
-class CollectionDialog : ViewBindingDialogFragment<DialogCollectionCreateBinding>("CollectionDialog", DialogCollectionCreateBinding::inflate) {
+class CollectionDialog : ComposeDialogFragment("CollectionDialog") {
 
     private val collectionsService: CollectionsService by instance()
     private val collectionItemService: CollectionItemsService by instance()
@@ -36,69 +46,132 @@ class CollectionDialog : ViewBindingDialogFragment<DialogCollectionCreateBinding
 
     private val editCollectionId: Long? by optionalFragmentArgument(name = "editCollectionId")
 
-    override fun onCreateDialog(contentView: View): Dialog {
-        // lookup collection to edit if it exists.
-        val editCollection: PostCollection? = editCollectionId?.let { collectionsService.byId(it) }
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    override fun DialogContent() {
+        val editCollection: PostCollection? = remember { editCollectionId?.let { collectionsService.byId(it) } }
 
-        return dialog(requireContext()) {
-            title(if (editCollection != null) R.string.collection_edit else R.string.collection_new)
+        var name by remember { mutableStateOf(editCollection?.title ?: "") }
+        var isPublic by remember { mutableStateOf(editCollection?.isPublic == true) }
+        var isDefault by remember {
+            mutableStateOf(editCollection?.isDefault ?: (collectionsService.defaultCollection == null))
+        }
+        var showDeleteConfirm by remember { mutableStateOf(false) }
 
-            positive(R.string.action_save)
-            negative { dismissAllowingStateLoss() }
+        val nameValid = if (editCollection == null) {
+            collectionsService.isValidNameForNewCollection(name.trim())
+        } else {
+            name.trim().length >= 2
+        }
 
-            contentView(contentView)
+        AlertDialog(
+            onDismissRequest = { dismissAllowingStateLoss() },
+            title = {
+                Text(
+                    stringResource(
+                        if (editCollection != null) R.string.collection_edit else R.string.collection_new
+                    )
+                )
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedTextField(
+                        value = name,
+                        onValueChange = { name = it },
+                        singleLine = true,
+                        label = { Text(stringResource(R.string.collection_title)) },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
 
-            if (editCollection != null) {
-                neutral(R.string.action_delete) { askToDeleteCollection(editCollection.id) }
-            }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        Switch(
+                            checked = isDefault,
+                            enabled = userService.userIsPremium,
+                            onCheckedChange = { isDefault = it },
+                        )
+                        Text(stringResource(R.string.collection_default), modifier = Modifier.weight(1f))
+                    }
 
-            noAutoDismiss()
+                    PrivacyOption(
+                        selected = !isPublic,
+                        text = stringResource(R.string.collection_prive),
+                        icon = R.drawable.ic_collection_private,
+                        onClick = { isPublic = false },
+                    )
+                    PrivacyOption(
+                        selected = isPublic,
+                        text = stringResource(R.string.collection_public),
+                        icon = R.drawable.ic_collection_public,
+                        onClick = { isPublic = true },
+                    )
 
-            onShow { dialog -> configureDialog(dialog, editCollection) }
+                    if (editCollection != null) {
+                        TextButton(onClick = { showDeleteConfirm = true }) {
+                            Text(stringResource(R.string.action_delete))
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    enabled = nameValid,
+                    onClick = {
+                        val trimmed = name.trim()
+                        if (editCollection == null) {
+                            createCollection(trimmed, isPublic, isDefault)
+                        } else {
+                            updateCollection(editCollection.id, trimmed, isPublic, isDefault)
+                        }
+                    },
+                ) {
+                    Text(stringResource(R.string.action_save))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { dismissAllowingStateLoss() }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            },
+        )
+
+        if (showDeleteConfirm && editCollection != null) {
+            AlertDialog(
+                onDismissRequest = { showDeleteConfirm = false },
+                text = { Text(stringResource(R.string.collection_delete_confirm)) },
+                confirmButton = {
+                    TextButton(onClick = {
+                        showDeleteConfirm = false
+                        deleteCollection(editCollection.id)
+                    }) {
+                        Text(stringResource(R.string.action_delete))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDeleteConfirm = false }) {
+                        Text(stringResource(R.string.cancel))
+                    }
+                },
+            )
         }
     }
 
-    private fun configureDialog(dialog: Dialog, editCollection: PostCollection?) {
-        views.privacyOptions.adapter = PrivacySpinnerAdapter()
-        views.privacyOptions.setSelection(if (editCollection?.isPublic == true) 1 else 0)
-
-        val buttonView: Button = dialog.find(android.R.id.button1)
-        buttonView.isEnabled = editCollection != null
-
-        views.name.setText(editCollection?.title ?: "")
-
-        views.name.addTextChangedListener { changedText ->
-            val name = changedText.toString().trim()
-            val isValidName = collectionsService.isValidNameForNewCollection(name)
-            buttonView.isEnabled = isValidName
-        }
-
-
-        views.defaultCollection.isChecked = editCollection?.isDefault ?: collectionsService.defaultCollection == null
-        views.defaultCollection.isEnabled = userService.userIsPremium
-
-        buttonView.setOnClickListener {
-            val name = views.name.text.toString().trim()
-            val isPublic = views.privacyOptions.selectedItemId == 1L
-            val isDefault = views.defaultCollection.isChecked
-
-            if (editCollection == null) {
-                createCollection(name, isPublic, isDefault)
-            } else {
-                updateCollection(editCollection.id, name, isPublic, isDefault)
-            }
-        }
-    }
-
-    private fun askToDeleteCollection(id: Long) {
-        showDialog(this) {
-            content(R.string.collection_delete_confirm)
-
-            positive(R.string.action_delete) {
-                deleteCollection(id)
-            }
-
-            negative(R.string.cancel)
+    @Composable
+    private fun PrivacyOption(selected: Boolean, text: String, icon: Int, onClick: () -> Unit) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .selectable(selected = selected, onClick = onClick)
+                .padding(vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            RadioButton(selected = selected, onClick = onClick)
+            Icon(painterResource(icon), contentDescription = null)
+            Text(text)
         }
     }
 
@@ -145,39 +218,5 @@ class CollectionDialog : ViewBindingDialogFragment<DialogCollectionCreateBinding
                 }
             }
         }
-    }
-}
-
-private class PrivacySpinnerAdapter : BaseAdapter() {
-    override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-        val view: TextView = parent.inflateDetachedChild(R.layout.row_collection_privacy)
-
-        val (text, icon) = when (position) {
-            0 -> Pair(R.string.collection_prive, R.drawable.ic_collection_private)
-            else -> Pair(R.string.collection_public, R.drawable.ic_collection_public)
-        }
-
-        view.setText(text)
-        view.setCompoundDrawablesRelativeWithIntrinsicBounds(icon, 0, 0, 0)
-        return view
-    }
-
-    override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
-        return getView(position, convertView, parent).apply {
-            updatePadding(left = context.dp(16), right = context.dp(16))
-            minimumHeight = context.dp(48)
-        }
-    }
-
-    override fun getItem(position: Int): Any {
-        return position
-    }
-
-    override fun getItemId(position: Int): Long {
-        return position.toLong()
-    }
-
-    override fun getCount(): Int {
-        return 2
     }
 }
