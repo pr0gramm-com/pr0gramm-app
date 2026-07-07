@@ -1,50 +1,33 @@
 package com.pr0gramm.app.ui.upload
 
-import android.app.Dialog
-import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.widget.FrameLayout
-import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import com.pr0gramm.app.R
-import com.pr0gramm.app.ui.MenuSheetView
-import com.pr0gramm.app.util.catchAll
+import com.pr0gramm.app.ui.compose.ComposeDialogFragment
+import com.pr0gramm.app.ui.compose.Pr0grammActionSheet
+import com.pr0gramm.app.ui.compose.SheetAction
 
-class UploadTypeDialogFragment : BottomSheetDialogFragment() {
-    override fun getTheme(): Int = R.style.MyBottomSheetDialog
+class UploadTypeDialogFragment : ComposeDialogFragment("UploadTypeDialogFragment") {
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    override fun DialogContent() {
+        val context = LocalContext.current
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val context = requireContext()
-
-        val menuSheetView = MenuSheetView(context, R.string.hint_upload) { item ->
-            dialog?.dismiss()
-
-            if (item.itemId == R.id.action_upload_image) {
-                UploadActivity.openForType(context, UploadMediaType.IMAGE)
-            }
-
-            if (item.itemId == R.id.action_upload_video) {
-                UploadActivity.openForType(context, UploadMediaType.VIDEO)
-            }
-        }
-
-        menuSheetView.inflateMenu(R.menu.menu_upload)
-
-        return menuSheetView
-    }
-
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        return super.onCreateDialog(savedInstanceState).apply {
-            setOnShowListener {
-                val bottomSheet = requireDialog().findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
-                if (bottomSheet is FrameLayout) {
-                    catchAll {
-                        BottomSheetBehavior.from(bottomSheet).setState(BottomSheetBehavior.STATE_EXPANDED)
-                    }
-                }
-            }
-        }
+        Pr0grammActionSheet(
+            onDismissRequest = { dismiss() },
+            title = stringResource(R.string.hint_upload),
+            actions = listOf(
+                SheetAction(stringResource(R.string.media_type_image), R.drawable.ic_type_image) {
+                    UploadActivity.openForType(context, UploadMediaType.IMAGE)
+                    dismiss()
+                },
+                SheetAction(stringResource(R.string.media_type_video), R.drawable.ic_type_video) {
+                    UploadActivity.openForType(context, UploadMediaType.VIDEO)
+                    dismiss()
+                },
+            ),
+        )
     }
 }
