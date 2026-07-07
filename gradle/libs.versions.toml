@@ -5,7 +5,7 @@ ksp = "2.3.2"
 gradleVersions = "0.51.0"
 gms = "4.4.2"
 gradleCrashlytics = "3.0.3"
-sqldelight = "2.0.2"
+sqldelight = "2.3.2"
 coreKtx = "1.16.0"
 kotlinCoroutines = "1.10.1"
 viewMaterial = "1.12.0"
@@ -111,7 +111,6 @@ sqldelight-coroutinesextensions = { group = "app.cash.sqldelight", name = "corou
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 android-library = { id = "com.android.library", version.ref = "agp" }
-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 google-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 gradle-versions = { id = "com.github.ben-manes.versions", version.ref = "gradleVersions" }

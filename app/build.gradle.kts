@@ -2,7 +2,6 @@ import org.gradle.internal.os.OperatingSystem
 
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.services)
     alias(libs.plugins.firebase.crashlytics)
@@ -47,9 +46,7 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = "17"
-    }
+    // jvmTarget defaults to android.compileOptions.targetCompatibility (17) with built-in Kotlin
 
     buildFeatures {
         viewBinding = true
@@ -101,49 +98,52 @@ android {
     }
 }
 
-android.applicationVariants.configureEach {
-    val variant = name
+androidComponents {
+    onVariants { variant ->
+        val variantName = variant.name.replaceFirstChar { it.uppercase() }
 
-    tasks.named("merge${variant.capitalize()}JniLibFolders").configure {
-        doLast {
-            fileTree("build/") {
-                include("**/armeabi/libpl_droidsonroids_gif.so")
-                include("**/mips*/*.so")
-            }.forEach { it.delete() }
-        }
-    }
-
-
-    tasks.named("package${variant.capitalize()}").configure {
-        doLast {
-            println("Checking for important files in the apk...")
-
-            val pathsToApk = listOf(
-                "$buildDir/outputs/apk/$variant/app-$variant.apk",
-                "$buildDir/intermediates/apk/$variant/app-$variant.apk"
-            )
-
-            if (pathsToApk.none { file(it).exists() }) {
-                throw RuntimeException("No .apk file found.")
+        tasks.matching { it.name == "merge${variantName}JniLibFolders" }.configureEach {
+            doLast {
+                fileTree("build/") {
+                    include("**/armeabi/libpl_droidsonroids_gif.so")
+                    include("**/mips*/*.so")
+                }.forEach { it.delete() }
             }
+        }
 
-            pathsToApk.forEach { pathToApk ->
-                println(pathToApk)
-                if (file(pathToApk).exists()) {
-                    val output = providers.exec {
-                        if (OperatingSystem.current().isWindows) {
-                            commandLine("tar", "-tf", pathToApk)
-                        } else {
-                            commandLine("unzip", "-v", pathToApk)
+
+        tasks.matching { it.name == "package${variantName}" }.configureEach {
+            doLast {
+                println("Checking for important files in the apk...")
+
+                val buildDirFile = layout.buildDirectory.get().asFile
+                val pathsToApk = listOf(
+                    "$buildDirFile/outputs/apk/${variant.name}/app-${variant.name}.apk",
+                    "$buildDirFile/intermediates/apk/${variant.name}/app-${variant.name}.apk"
+                )
+
+                if (pathsToApk.none { file(it).exists() }) {
+                    throw RuntimeException("No .apk file found.")
+                }
+
+                pathsToApk.forEach { pathToApk ->
+                    println(pathToApk)
+                    if (file(pathToApk).exists()) {
+                        val output = providers.exec {
+                            if (OperatingSystem.current().isWindows) {
+                                commandLine("tar", "-tf", pathToApk)
+                            } else {
+                                commandLine("unzip", "-v", pathToApk)
+                            }
                         }
-                    }
 
-                    println(output.result.get())
+                        println(output.result.get())
 
-                    val outputStr = output.standardOutput.asText.get()
+                        val outputStr = output.standardOutput.asText.get()
 
-                    if (!outputStr.contains("okhttp3/internal/publicsuffix/publicsuffixes.gz")) {
-                        throw RuntimeException("publicsuffixes.gz not found in build")
+                        if (!outputStr.contains("okhttp3/internal/publicsuffix/publicsuffixes.gz")) {
+                            throw RuntimeException("publicsuffixes.gz not found in build")
+                        }
                     }
                 }
             }

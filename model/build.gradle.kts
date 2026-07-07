@@ -1,6 +1,5 @@
 plugins {
     alias(libs.plugins.android.library)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.google.ksp)
     alias(libs.plugins.sqldelight)
 }
@@ -24,9 +23,7 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = "17"
-    }
+    // jvmTarget defaults to android.compileOptions.targetCompatibility (17) with built-in Kotlin
 
     buildFeatures {
         buildConfig = true
