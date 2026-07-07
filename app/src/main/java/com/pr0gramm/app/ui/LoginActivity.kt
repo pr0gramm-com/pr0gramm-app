@@ -4,61 +4,91 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
-import android.view.View
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ImageView
-import androidx.annotation.DrawableRes
-import androidx.core.content.ContextCompat
-import androidx.core.content.res.ResourcesCompat
-import androidx.core.view.ViewCompat
-import androidx.core.view.isVisible
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.unit.dp
 import com.pr0gramm.app.R
 import com.pr0gramm.app.RequestCodes
 import com.pr0gramm.app.api.pr0gramm.Api
 import com.pr0gramm.app.decodeBase64
 import com.pr0gramm.app.services.ThemeHelper
-import com.pr0gramm.app.services.ThemeHelper.primaryColorDark
 import com.pr0gramm.app.services.Track
 import com.pr0gramm.app.services.UserService
 import com.pr0gramm.app.sync.SyncWorker
 import com.pr0gramm.app.ui.base.BaseAppCompatActivity
 import com.pr0gramm.app.ui.base.launchWhenCreated
 import com.pr0gramm.app.ui.base.launchWhenStarted
-import com.pr0gramm.app.ui.base.withViewDisabled
+import com.pr0gramm.app.ui.compose.setComposeContent
 import com.pr0gramm.app.ui.dialogs.ErrorDialogFragment.Companion.showErrorString
-import com.pr0gramm.app.ui.views.AspectLayout
-import com.pr0gramm.app.ui.views.BusyIndicator
 import com.pr0gramm.app.util.BrowserHelper
 import com.pr0gramm.app.util.DurationFormat
-import com.pr0gramm.app.util.addTextChangedListener
 import com.pr0gramm.app.util.di.injector
 import com.pr0gramm.app.util.di.instance
-import com.pr0gramm.app.util.find
-import com.pr0gramm.app.util.use
-import kotterknife.bindView
 
 typealias Callback = () -> Unit
 
 /**
+ * Compose login screen. Renders a captcha-backed login form on the themed radial background.
  */
 class LoginActivity : BaseAppCompatActivity("LoginActivity") {
     private val userService: UserService by instance()
     private val prefs: SharedPreferences by instance()
 
-    private val usernameView: EditText by bindView(R.id.username)
-    private val passwordView: EditText by bindView(R.id.password)
-    private val submitView: Button by bindView(R.id.login)
-
-    private val captchaBusy: BusyIndicator by bindView(R.id.captcha_busy)
-    private val captchaImageView: ImageView by bindView(R.id.captcha_image)
-    private val captchaAspect: AspectLayout by bindView(R.id.captcha_aspect)
-    private val captchaAnswerView: EditText by bindView(R.id.captcha_answer)
+    private var captchaState by mutableStateOf<CaptchaState>(CaptchaState.Loading)
+    private var submitting by mutableStateOf(false)
 
     private var captchaIsLoading: Boolean = false
     private var captchaToken: String? = null
@@ -67,28 +97,22 @@ class LoginActivity : BaseAppCompatActivity("LoginActivity") {
         setTheme(ThemeHelper.theme.whiteAccent)
         super.onCreate(savedInstanceState)
 
-        setContentView(R.layout.activity_login)
-
-        // restore last username
+        // restore last username (never restore an e-mail address)
         val defaultUsername = prefs.getString(PREF_USERNAME, "")
-        if (!defaultUsername.isNullOrEmpty() && "@" !in defaultUsername) {
-            usernameView.setText(defaultUsername)
+            ?.takeIf { it.isNotEmpty() && "@" !in it }
+            .orEmpty()
+
+        setComposeContent {
+            LoginScreen(
+                initialUsername = defaultUsername,
+                captcha = captchaState,
+                submitting = submitting,
+                onReloadCaptcha = ::updateUserCaptcha,
+                onSubmit = ::onLoginClicked,
+                onRegister = ::onRegisterClicked,
+                onPasswordRecovery = ::onPasswordRecoveryClicked,
+            )
         }
-
-        submitView.setOnClickListener { onLoginClicked() }
-
-        find<View>(R.id.register).setOnClickListener { onRegisterClicked() }
-        find<View>(R.id.password_recovery).setOnClickListener { onPasswordRecoveryClicked() }
-
-        updateActivityBackground()
-
-        usernameView.addTextChangedListener { updateSubmitViewEnabled() }
-        passwordView.addTextChangedListener { updateSubmitViewEnabled() }
-        captchaAnswerView.addTextChangedListener { updateSubmitViewEnabled() }
-
-        captchaAspect.setOnClickListener { updateUserCaptcha() }
-
-        updateSubmitViewEnabled()
 
         updateUserCaptcha()
     }
@@ -99,99 +123,29 @@ class LoginActivity : BaseAppCompatActivity("LoginActivity") {
         }
 
         captchaIsLoading = true
-
         captchaToken = null
-
-        // show busy indicator while loading image
-        captchaBusy.isVisible = true
-        captchaImageView.isVisible = false
-
-        // clear previous input value
-        captchaAnswerView.setText("")
-        captchaAnswerView.isEnabled = false
+        captchaState = CaptchaState.Loading
 
         launchWhenCreated {
             try {
                 val captcha = userService.userCaptcha()
 
-                // decode the image
-                val image = captcha.decodeImage(this@LoginActivity)
-                val aspect = image.intrinsicWidth.toFloat() / image.intrinsicHeight.toFloat()
+                val bitmap = captcha.decodeBitmap()
+                val aspect = bitmap.width.toFloat() / bitmap.height.toFloat()
 
-                // and set it on the view
-                captchaImageView.setImageDrawable(image)
-                captchaImageView.isVisible = true
-
-                // also correct the aspect ratio
-                captchaAspect.aspect = aspect
-
-                captchaAnswerView.isEnabled = true
-
+                captchaState = CaptchaState.Loaded(bitmap.asImageBitmap(), aspect)
                 captchaToken = captcha.token
+            } catch (err: Exception) {
+                captchaState = CaptchaState.Failed
+                throw err
             } finally {
                 captchaIsLoading = false
-                captchaBusy.isVisible = false
             }
         }
     }
 
-    private fun updateSubmitViewEnabled() {
-        val usernameSet = usernameView.text.isNotBlank()
-        val passwordSet = passwordView.text.isNotBlank()
-        val captchaSet = captchaAnswerView.text.isNotBlank()
-
-        // only accept usernames
-        val isMailAddress = "@" in usernameView.text
-
-        if (isMailAddress) {
-            usernameView.error = getString(R.string.hint_no_email)
-        }
-
-        submitView.isEnabled = usernameSet && passwordSet && captchaSet && !isMailAddress
-    }
-
-    private fun updateActivityBackground() {
-        val style = ThemeHelper.theme.whiteAccent
-
-        @DrawableRes
-        val drawableId = theme.obtainStyledAttributes(style, R.styleable.AppTheme).use {
-            it.getResourceId(R.styleable.AppTheme_loginBackground, 0)
-        }
-
-        if (drawableId == 0)
-            return
-
-        val fallbackColor = ContextCompat.getColor(this, primaryColorDark)
-        val background = createBackgroundDrawable(drawableId, fallbackColor)
-        ViewCompat.setBackground(findViewById(R.id.content), background)
-    }
-
-    private fun createBackgroundDrawable(drawableId: Int, fallbackColor: Int): Drawable {
-        val drawable = ResourcesCompat.getDrawable(resources, drawableId, theme)!!
-        return WrapCrashingDrawable(fallbackColor, drawable)
-    }
-
-    private fun onLoginClicked() {
+    private fun onLoginClicked(username: String, password: String, captchaAnswer: String) {
         val token = captchaToken ?: return
-
-        val username = usernameView.text.toString()
-        val password = passwordView.text.toString()
-        val captchaAnswer = captchaAnswerView.text.toString()
-
-        if (username.isEmpty()) {
-            usernameView.error = getString(R.string.must_not_be_empty)
-            return
-        }
-
-        if (password.isEmpty()) {
-            passwordView.error = getString(R.string.must_not_be_empty)
-            return
-        }
-
-        if (captchaAnswer.isEmpty()) {
-            captchaAnswerView.error = getString(R.string.must_not_be_empty)
-            return
-        }
 
         // store last username
         prefs.edit().putString(PREF_USERNAME, username).apply()
@@ -199,8 +153,11 @@ class LoginActivity : BaseAppCompatActivity("LoginActivity") {
         Track.loginStarted()
 
         launchWhenStarted(busyIndicator = true) {
-            withViewDisabled(usernameView, passwordView, submitView) {
+            submitting = true
+            try {
                 handleLoginResult(userService.login(username, password, token, captchaAnswer))
+            } finally {
+                submitting = false
             }
         }
     }
@@ -349,11 +306,230 @@ class LoginActivity : BaseAppCompatActivity("LoginActivity") {
     }
 }
 
-fun Api.UserCaptcha.decodeImage(context: Context): Drawable {
+private sealed interface CaptchaState {
+    data object Loading : CaptchaState
+    data object Failed : CaptchaState
+    data class Loaded(val image: ImageBitmap, val aspect: Float) : CaptchaState
+}
+
+@Composable
+private fun LoginScreen(
+    initialUsername: String,
+    captcha: CaptchaState,
+    submitting: Boolean,
+    onReloadCaptcha: () -> Unit,
+    onSubmit: (username: String, password: String, captchaAnswer: String) -> Unit,
+    onRegister: () -> Unit,
+    onPasswordRecovery: () -> Unit,
+) {
+    val background = Brush.radialGradient(
+        colors = listOf(
+            MaterialTheme.colorScheme.primary,
+            MaterialTheme.colorScheme.primaryContainer,
+        ),
+    )
+
+    var username by rememberSaveable { mutableStateOf(initialUsername) }
+    var password by rememberSaveable { mutableStateOf("") }
+    var captchaAnswer by rememberSaveable { mutableStateOf("") }
+    var passwordVisible by rememberSaveable { mutableStateOf(false) }
+
+    val isMailAddress = "@" in username
+    val captchaLoaded = captcha is CaptchaState.Loaded
+
+    val canSubmit = !submitting && captchaLoaded &&
+            username.isNotBlank() && !isMailAddress &&
+            password.isNotBlank() && captchaAnswer.isNotBlank()
+
+    fun submit() {
+        if (canSubmit) onSubmit(username, password, captchaAnswer)
+    }
+
+    val fieldColors = OutlinedTextFieldDefaults.colors(
+        focusedTextColor = Color.White,
+        unfocusedTextColor = Color.White,
+        disabledTextColor = Color.White.copy(alpha = 0.6f),
+        cursorColor = Color.White,
+        focusedBorderColor = Color.White,
+        unfocusedBorderColor = Color.White.copy(alpha = 0.7f),
+        disabledBorderColor = Color.White.copy(alpha = 0.3f),
+        focusedLabelColor = Color.White,
+        unfocusedLabelColor = Color.White.copy(alpha = 0.7f),
+        focusedTrailingIconColor = Color.White,
+        unfocusedTrailingIconColor = Color.White,
+    )
+
+    Box(
+        Modifier
+            .fillMaxSize()
+            .background(background),
+    ) {
+        Column(
+            Modifier
+                .fillMaxSize()
+                .systemBarsPadding()
+                .imePadding()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 32.dp, vertical = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Spacer(Modifier.height(24.dp))
+
+            Image(
+                painter = painterResource(R.drawable.ic_arrow),
+                contentDescription = null,
+                modifier = Modifier
+                    .padding(horizontal = 48.dp)
+                    .height(112.dp),
+                contentScale = ContentScale.Fit,
+            )
+
+            Spacer(Modifier.height(32.dp))
+
+            OutlinedTextField(
+                value = username,
+                onValueChange = { username = it },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !submitting,
+                singleLine = true,
+                label = { Text(stringResource(R.string.hint_username)) },
+                isError = isMailAddress,
+                supportingText = if (isMailAddress) {
+                    { Text(stringResource(R.string.hint_no_email)) }
+                } else null,
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                colors = fieldColors,
+            )
+
+            Spacer(Modifier.height(8.dp))
+
+            OutlinedTextField(
+                value = password,
+                onValueChange = { password = it },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !submitting,
+                singleLine = true,
+                label = { Text(stringResource(R.string.hint_password)) },
+                visualTransformation = if (passwordVisible) {
+                    VisualTransformation.None
+                } else {
+                    PasswordVisualTransformation()
+                },
+                trailingIcon = {
+                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                        Icon(
+                            imageVector = if (passwordVisible) {
+                                Icons.Filled.Visibility
+                            } else {
+                                Icons.Filled.VisibilityOff
+                            },
+                            contentDescription = null,
+                        )
+                    }
+                },
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Password,
+                    imeAction = ImeAction.Next,
+                ),
+                colors = fieldColors,
+            )
+
+            Spacer(Modifier.height(16.dp))
+
+            CaptchaBox(
+                captcha = captcha,
+                onReload = onReloadCaptcha,
+            )
+
+            Spacer(Modifier.height(8.dp))
+
+            OutlinedTextField(
+                value = captchaAnswer,
+                onValueChange = { captchaAnswer = it },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !submitting && captchaLoaded,
+                singleLine = true,
+                label = { Text(stringResource(R.string.hint_captcha)) },
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(onDone = { submit() }),
+                colors = fieldColors,
+            )
+
+            Spacer(Modifier.height(16.dp))
+
+            Button(
+                onClick = ::submit,
+                modifier = Modifier.fillMaxWidth(),
+                enabled = canSubmit,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.White,
+                    contentColor = MaterialTheme.colorScheme.primary,
+                ),
+            ) {
+                Text(stringResource(R.string.login))
+            }
+
+            Spacer(Modifier.height(8.dp))
+
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                TextButton(
+                    onClick = onRegister,
+                    colors = ButtonDefaults.textButtonColors(contentColor = Color.White),
+                ) {
+                    Text(stringResource(R.string.login_register))
+                }
+
+                TextButton(
+                    onClick = onPasswordRecovery,
+                    colors = ButtonDefaults.textButtonColors(contentColor = Color.White),
+                ) {
+                    Text(stringResource(R.string.login_password_recovery))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun CaptchaBox(
+    captcha: CaptchaState,
+    onReload: () -> Unit,
+) {
+    val aspect = (captcha as? CaptchaState.Loaded)?.aspect ?: 4f
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .aspectRatio(aspect)
+            .background(Color.Black.copy(alpha = 0.12f))
+            .clickable(onClick = onReload),
+        contentAlignment = Alignment.Center,
+    ) {
+        when (captcha) {
+            is CaptchaState.Loaded -> Image(
+                bitmap = captcha.image,
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Fit,
+            )
+
+            CaptchaState.Loading -> CircularProgressIndicator(color = Color.White)
+
+            CaptchaState.Failed -> Text(
+                text = stringResource(R.string.could_not_load_image),
+                color = Color.White,
+            )
+        }
+    }
+}
+
+private fun Api.UserCaptcha.decodeBitmap(): Bitmap {
     val index = image.indexOf(',')
     val offset = if (index < 0) 0 else index + 1
 
     val bytes = image.substring(offset).decodeBase64(urlSafe = false)
-    val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-    return BitmapDrawable(context.resources, bitmap)
+    return BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
 }
