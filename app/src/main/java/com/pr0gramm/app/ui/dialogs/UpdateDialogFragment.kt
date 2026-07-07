@@ -1,11 +1,16 @@
 package com.pr0gramm.app.ui.dialogs
 
-import android.app.Dialog
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.res.stringResource
 import androidx.core.content.edit
 import androidx.fragment.app.FragmentManager
 import com.pr0gramm.app.BuildConfig
@@ -17,10 +22,8 @@ import com.pr0gramm.app.services.SingleShotService
 import com.pr0gramm.app.services.Update
 import com.pr0gramm.app.services.UpdateChecker
 import com.pr0gramm.app.ui.base.BaseAppCompatActivity
-import com.pr0gramm.app.ui.base.BaseDialogFragment
 import com.pr0gramm.app.ui.base.launchWhenStarted
-import com.pr0gramm.app.ui.dialog
-import com.pr0gramm.app.util.Linkify
+import com.pr0gramm.app.ui.compose.ComposeDialogFragment
 import com.pr0gramm.app.util.arguments
 import com.pr0gramm.app.util.di.injector
 import com.pr0gramm.app.util.di.instance
@@ -32,40 +35,62 @@ import kotlin.coroutines.coroutineContext
 
 /**
  */
-class UpdateDialogFragment : BaseDialogFragment("UpdateDialogFragment") {
+class UpdateDialogFragment : ComposeDialogFragment("UpdateDialogFragment") {
     private val singleShotService: SingleShotService by instance()
 
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val update = arguments?.getParcelable<Update?>("update")
-        return update?.let { updateAvailableDialog(it) } ?: noNewUpdateDialog()
+    @Composable
+    override fun DialogContent() {
+        val update = remember { arguments?.getParcelable<Update?>("update") }
+        if (update != null) {
+            UpdateAvailableDialog(update)
+        } else {
+            NoNewUpdateDialog()
+        }
     }
 
-    private fun updateAvailableDialog(update: Update): Dialog {
-        var content = getString(R.string.new_update_available, update.changelog)
+    @Composable
+    private fun UpdateAvailableDialog(update: Update) {
+        // if a previous update attempt failed we offer a manual download and add a hint.
+        val failedBefore = remember { !singleShotService.isFirstTime("update:${update.version}") }
 
-        return dialog(this) {
-            positive(R.string.install_update) {
-                singleShotService.markAsDoneOnce("update:${update.version}")
-                UpdateChecker.download(requireActivity(), update)
+        val content = buildString {
+            append(getString(R.string.new_update_available, update.changelog))
+            if (failedBefore) {
+                append("\n\n")
+                append(getString(R.string.new_update_download))
             }
+        }
 
-            if (!singleShotService.isFirstTime("update:${update.version}")) {
-                neutral(R.string.download_manually) {
-                    startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(update.apk)))
+        AlertDialog(
+            onDismissRequest = { dismiss() },
+            text = { Text(content) },
+            confirmButton = {
+                TextButton(onClick = {
+                    singleShotService.markAsDoneOnce("update:${update.version}")
+                    UpdateChecker.download(requireActivity(), update)
+                    dismiss()
+                }) { Text(stringResource(R.string.install_update)) }
+            },
+            dismissButton = if (failedBefore) {
+                {
+                    TextButton(onClick = {
+                        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(update.apk)))
+                        dismiss()
+                    }) { Text(stringResource(R.string.download_manually)) }
                 }
-
-                content += "\n\n" + getString(R.string.new_update_download)
-            }
-
-            content(Linkify.linkify(requireContext(), content))
-        }
+            } else null,
+        )
     }
 
-    private fun noNewUpdateDialog(): Dialog {
-        return dialog(this) {
-            content(R.string.no_new_update)
-            positive()
-        }
+    @Composable
+    private fun NoNewUpdateDialog() {
+        AlertDialog(
+            onDismissRequest = { dismiss() },
+            text = { Text(stringResource(R.string.no_new_update)) },
+            confirmButton = {
+                TextButton(onClick = { dismiss() }) { Text(stringResource(R.string.okay)) }
+            },
+        )
     }
 
     companion object {
