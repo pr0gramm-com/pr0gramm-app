@@ -57,6 +57,7 @@ import com.pr0gramm.app.sync.SyncService
 import com.pr0gramm.app.ui.AdService
 import com.pr0gramm.app.ui.FancyExifThumbnailGenerator
 import com.pr0gramm.app.ui.TagSuggestionService
+import com.pr0gramm.app.ui.compose.image.buildImageLoader
 import com.pr0gramm.app.util.*
 import com.pr0gramm.app.util.AndroidUtility.buildVersionCode
 import com.pr0gramm.app.util.di.Module
@@ -152,6 +153,10 @@ fun appInjector(app: Application) = Module.build {
             .memoryCache(LruPicassoCache.defaultSizedCache())
             .downloader(instance<Downloader>())
             .build()
+    }
+
+    bind<coil3.ImageLoader>() with singleton {
+        buildImageLoader(app, httpClient = instance())
     }
 
     bind<Api>() with singleton {

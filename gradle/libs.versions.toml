@@ -31,6 +31,7 @@ firebaseBom = "33.14.0"
 okhttpBom = "4.12.0"
 retrofit = "2.11.0"
 picasso = "2.8"
+coil = "3.3.0"
 moshi = "1.15.1"
 gifDrawable = "1.2.28"
 namedregex = "1.0.0"
@@ -87,6 +88,9 @@ okhttp-brotli = { group = "com.squareup.okhttp3", name = "okhttp-brotli" }
 retrofit-core = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
 retrofit-converter-moshi = { group = "com.squareup.retrofit2", name = "converter-moshi", version.ref = "retrofit" }
 picasso = { group = "com.squareup.picasso", name = "picasso", version.ref = "picasso" }
+coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coil" }
+coil-network-okhttp = { group = "io.coil-kt.coil3", name = "coil-network-okhttp", version.ref = "coil" }
+coil-gif = { group = "io.coil-kt.coil3", name = "coil-gif", version.ref = "coil" }
 moshi = { group = "com.squareup.moshi", name = "moshi", version.ref = "moshi" }
 moshi-codegen = { group = "com.squareup.moshi", name = "moshi-kotlin-codegen", version.ref = "moshi" }
 droidsonroids-gifdrawable = { group = "pl.droidsonroids.gif", name = "android-gif-drawable", version.ref = "gifDrawable" }

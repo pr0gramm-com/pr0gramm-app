@@ -1,5 +1,4 @@
 import org.gradle.internal.os.OperatingSystem
-import java.io.ByteArrayOutputStream
 
 plugins {
     alias(libs.plugins.android.application)
@@ -210,6 +209,11 @@ dependencies {
     implementation(libs.okhttp.brotli)
 
     implementation(libs.picasso)
+
+    // Coil 3 for Compose image loading (additive; Picasso stays for View code)
+    implementation(libs.coil.compose)
+    implementation(libs.coil.network.okhttp)
+    implementation(libs.coil.gif)
 
     implementation(libs.moshi)
 

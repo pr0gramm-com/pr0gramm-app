@@ -8,6 +8,9 @@ import android.os.StrictMode
 import android.util.Log
 import androidx.work.Configuration
 import androidx.work.WorkManager
+import coil3.ImageLoader
+import coil3.PlatformContext
+import coil3.SingletonImageLoader
 import com.google.firebase.FirebaseApp
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.firebase.crashlytics.internal.common.CrashlyticsCore
@@ -32,7 +35,7 @@ import java.util.logging.LogManager
 /**
  * Global application class for pr0gramm app.
  */
-open class ApplicationClass : Application(), InjectorAware {
+open class ApplicationClass : Application(), InjectorAware, SingletonImageLoader.Factory {
     private val bootupWatch = Stopwatch()
 
     private val logger = Logger("Pr0grammApp")
@@ -168,6 +171,12 @@ open class ApplicationClass : Application(), InjectorAware {
     }
 
     override val injector by lazy { appInjector(this) }
+
+    /**
+     * Makes Coil's Compose helpers (`AsyncImage`, `rememberAsyncImagePainter`, ...) use the
+     * single, OkHttp-backed [ImageLoader] from our DI graph instead of a default one.
+     */
+    override fun newImageLoader(context: PlatformContext): ImageLoader = injector.instance()
 }
 
 
