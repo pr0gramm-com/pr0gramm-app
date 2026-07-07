@@ -1,10 +1,6 @@
 package com.pr0gramm.app.ui.dialogs
 
 import android.os.Build
-import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -20,39 +16,18 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.stringResource
 import androidx.core.os.LocaleListCompat
 import com.pr0gramm.app.R
-import com.pr0gramm.app.ui.base.BaseDialogFragment
-import com.pr0gramm.app.ui.compose.theme.Pr0grammTheme
+import com.pr0gramm.app.ui.compose.ComposeDialogFragment
 import org.xmlpull.v1.XmlPullParser
 import java.util.Locale
 
-class LanguagePickerDialog : BaseDialogFragment("LanguagePickerDialog") {
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        val supportedLocales = getSupportedLocales()
-        val currentLocale = getCurrentLocale(supportedLocales)
-
-        return ComposeView(requireContext()).apply {
-            setContent {
-                Pr0grammTheme {
-                    DialogContent(supportedLocales, currentLocale)
-                }
-            }
-        }
-    }
-
+class LanguagePickerDialog : ComposeDialogFragment("LanguagePickerDialog") {
     @Composable
-    fun DialogContent(
-        supportedLocales: List<Locale>,
-        initialLocale: Locale
-    ) {
-        val selectedLocale = remember { mutableStateOf(initialLocale) }
+    override fun DialogContent() {
+        val supportedLocales = remember { getSupportedLocales() }
+        val selectedLocale = remember { mutableStateOf(getCurrentLocale(supportedLocales)) }
 
         AlertDialog(
             onDismissRequest = { dismiss() },
