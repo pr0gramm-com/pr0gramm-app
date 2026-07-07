@@ -19,14 +19,13 @@ appcompat = "1.7.0"
 swiperefreshlayout = "1.1.0"
 drawerlayout = "1.2.0"
 documentfile = "1.1.0"
-pagingRuntime = "3.3.6"
+pagingRuntime = "3.5.0"
 constraintlayout = "2.2.1"
 userMessagingPlatform = "3.2.0"
-activity = "1.10.1"
-androidxLifecycle = "2.9.0"
+activity = "1.13.0"
+androidxLifecycle = "2.11.0"
 fragmentKtx = "1.8.7"
-composeBom = "2025.05.01"
-# 23.0.0 to 23.2.0 breaks the apk for some reason (too small, fails to read android-manifest)
+composeBom = "2026.06.01"
 playServicesAds = "24.3.0"
 firebaseBom = "33.14.0"
 okhttpBom = "4.12.0"
@@ -69,6 +68,12 @@ androidx-lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecy
 androidx-fragment-ktx = { group = "androidx.fragment", name = "fragment-ktx", version.ref = "fragmentKtx" }
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
 androidx-compose-material = { group = "androidx.compose.material", name = "material" }
+androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
+androidx-compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
+androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activity" }
+androidx-lifecycle-viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "androidxLifecycle" }
+androidx-lifecycle-runtime-compose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "androidxLifecycle" }
+androidx-paging-compose = { group = "androidx.paging", name = "paging-compose", version.ref = "pagingRuntime" }
 androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
 play-services-ads = { group = "com.google.android.gms", name = "play-services-ads", version.ref = "playServicesAds" }

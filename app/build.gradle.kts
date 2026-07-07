@@ -14,12 +14,12 @@ val appVersion: Int by extra
 
 android {
     namespace = "com.pr0gramm.app"
-    compileSdk = 35
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.pr0gramm.app"
         minSdk = 23
-        targetSdk = 33
+        targetSdk = 37
         versionCode = appVersion
         versionName = "1.${(appVersion / 10)}.${(appVersion % 10)}"
 
@@ -58,9 +58,6 @@ android {
         compose = true
     }
 
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.13"
-    }
 
     buildTypes {
         getByName("debug") {
@@ -186,7 +183,14 @@ dependencies {
 
     // Compose
     implementation(platform(libs.androidx.compose.bom))
+    // TODO(compose-migration): remove after task 10
     implementation(libs.androidx.compose.material)
+    implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.material.icons.extended)
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.paging.compose)
     // Preview support
     implementation(libs.androidx.ui.tooling.preview)
     debugImplementation(libs.androidx.ui.tooling)
