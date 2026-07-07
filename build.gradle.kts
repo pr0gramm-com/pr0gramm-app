@@ -15,6 +15,7 @@ plugins {
     alias(libs.plugins.gradle.versions)
 }
 
+/*
 tasks.named<DependencyUpdatesTask>("dependencyUpdates").configure {
     resolutionStrategy {
         componentSelection {
@@ -30,6 +31,7 @@ tasks.named<DependencyUpdatesTask>("dependencyUpdates").configure {
         }
     }
 }
+*/
 
 allprojects {
     tasks.withType<KotlinCompile>().configureEach {
