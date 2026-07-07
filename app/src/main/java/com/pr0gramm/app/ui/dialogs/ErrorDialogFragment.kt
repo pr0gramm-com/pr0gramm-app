@@ -1,10 +1,12 @@
 package com.pr0gramm.app.ui.dialogs
 
-import android.app.Dialog
-import android.os.Bundle
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
 import androidx.fragment.app.FragmentManager
 import com.pr0gramm.app.Logger
-import com.pr0gramm.app.ui.dialog
+import com.pr0gramm.app.R
+import com.pr0gramm.app.ui.compose.ComposeDialogFragment
+import com.pr0gramm.app.ui.compose.Pr0grammAlertDialog
 import com.pr0gramm.app.util.AndroidUtility.logToCrashlytics
 import com.pr0gramm.app.util.ErrorFormatting
 import com.pr0gramm.app.util.bundle
@@ -14,16 +16,21 @@ import java.util.concurrent.CancellationException
 /**
  * This dialog fragment shows and error to the user.
  */
-class ErrorDialogFragment : androidx.fragment.app.DialogFragment() {
+class ErrorDialogFragment : ComposeDialogFragment("ErrorDialogFragment") {
     interface OnErrorDialogHandler {
         fun showErrorDialog(error: Throwable, formatter: ErrorFormatting.Formatter)
     }
 
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        return dialog(this) {
-            content(arguments?.getString("content") ?: "no content :(")
-            positive()
-        }
+    @Composable
+    override fun DialogContent() {
+        val content = arguments?.getString("content") ?: "no content :("
+
+        Pr0grammAlertDialog(
+            onDismissRequest = { dismiss() },
+            text = content,
+            confirmText = stringResource(R.string.okay),
+            onConfirm = { dismiss() },
+        )
     }
 
     companion object {
