@@ -42,4 +42,21 @@ object TextViewCache {
             cache.put(key, s)
         }
     }
+
+    /**
+     * Plain string variants for Compose screens that don't have a backing [TextView].
+     */
+    fun getDraft(key: String): String? = cache[key]?.toString()
+
+    fun putDraft(key: String, text: String) {
+        if (text.isEmpty()) {
+            cache.remove(key)
+        } else {
+            cache.put(key, text)
+        }
+    }
+
+    fun invalidateDraft(key: String) {
+        cache.remove(key)
+    }
 }
