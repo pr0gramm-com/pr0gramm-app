@@ -71,7 +71,7 @@ class InviteActivity : BaseAppCompatActivity("InviteActivity") {
     private var successEvent by mutableStateOf(0)
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        setTheme(ThemeHelper.theme.basic)
+        setTheme(ThemeHelper.theme.noActionBar)
         super.onCreate(savedInstanceState)
 
         setComposeContent {

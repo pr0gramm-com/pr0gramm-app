@@ -65,7 +65,7 @@ class ContactActivity : BaseAppCompatActivity("ContactActivity") {
     private var submitting by mutableStateOf(false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        setTheme(ThemeHelper.theme.basic)
+        setTheme(ThemeHelper.theme.noActionBar)
         super.onCreate(savedInstanceState)
 
         val loggedIn = userService.isAuthorized

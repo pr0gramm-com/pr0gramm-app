@@ -1,111 +1,203 @@
 package com.pr0gramm.app.ui.dialogs
 
-import android.app.Dialog
-import android.content.Context
-import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.widget.CheckBox
-import android.widget.ImageView
-import android.widget.TextView
-import androidx.appcompat.view.ContextThemeWrapper
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.asFlow
+import androidx.fragment.app.Fragment
+import com.google.android.material.snackbar.Snackbar
 import androidx.core.text.buildSpannedString
 import androidx.core.text.italic
-import androidx.core.view.isInvisible
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetDialog
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.google.android.material.snackbar.Snackbar
-import com.pr0gramm.app.Logger
+import androidx.compose.runtime.collectAsState
 import com.pr0gramm.app.R
 import com.pr0gramm.app.services.CollectionItemsService
 import com.pr0gramm.app.services.CollectionsService
 import com.pr0gramm.app.services.PostCollection
 import com.pr0gramm.app.services.UserService
-import com.pr0gramm.app.ui.AsyncListAdapter
-import com.pr0gramm.app.ui.ListItemTypeAdapterDelegate
 import com.pr0gramm.app.ui.base.launchUntilDestroy
 import com.pr0gramm.app.ui.base.launchWhenCreated
+import com.pr0gramm.app.ui.compose.ComposeDialogFragment
+import com.pr0gramm.app.ui.compose.Pr0grammModalBottomSheet
+import com.pr0gramm.app.ui.compose.components.Username
 import com.pr0gramm.app.ui.configureNewStyle
-import com.pr0gramm.app.ui.delegateAdapterOf
-import com.pr0gramm.app.ui.resolveDialogTheme
-import com.pr0gramm.app.ui.views.appendUsernameAndMark
 import com.pr0gramm.app.util.arguments
-import com.pr0gramm.app.util.catchAll
-import com.pr0gramm.app.util.di.LazyInjectorAware
-import com.pr0gramm.app.util.di.PropertyInjector
 import com.pr0gramm.app.util.di.injector
 import com.pr0gramm.app.util.di.instance
-import com.pr0gramm.app.util.find
 import com.pr0gramm.app.util.fragmentArgument
-import com.pr0gramm.app.util.inflateDetachedChild
-import com.pr0gramm.app.util.setOnCheckedChangeListenerWithInitial
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.withContext
 
-
-class CollectionsSelectionDialog : BottomSheetDialogFragment(), LazyInjectorAware {
-    private val logger = Logger("CollectionsSelectionDialog")
-
-    override val injector: PropertyInjector = PropertyInjector()
-
+class CollectionsSelectionDialog : ComposeDialogFragment("CollectionsSelectionDialog") {
     private val itemId: Long by fragmentArgument("itemId")
     private val collectionsService: CollectionsService by instance()
     private val collectionItemsService: CollectionItemsService by instance()
     private val userService: UserService by instance()
 
-    override fun getTheme(): Int = R.style.MyBottomSheetDialog
-
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        val themedInflater = requireContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
-        val view: View = themedInflater.inflate(R.layout.dialog_collections, container, false)
-
-        val adapter = delegateAdapterOf(
-                CollectionAdapterDelegate(this::onCollectionClicked),
-                detectMoves = true,
-                diffCallback = AsyncListAdapter.KeyDiffCallback { it.collection.id },
-        )
-
-        // gets the collections containing the itemId
-        val selectedCollections = collectionItemsService.collectionsContaining(itemId)
-
-        launchUntilDestroy {
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    override fun DialogContent() {
+        LaunchedEffect(Unit) {
             // always refresh once in background when we show this
             collectionsService.refresh()
         }
 
-        val actionNew = view.find<View>(R.id.action_new)
-        actionNew.setOnClickListener {
-            CollectionDialog().show(parentFragmentManager, null)
+        val collections by collectionsService.collections.asFlow().collectAsState(initial = emptyList())
+        var selection by rememberSaveable {
+            mutableStateOf(collectionItemsService.collectionsContaining(itemId).toSet())
         }
 
-        // observe changes to collections
-        collectionsService.collections.observe(this) { collections ->
-            val userIsPremium = userService.userIsPremium
+        val userIsPremium = userService.userIsPremium
 
-            adapter.submitList(collections.map { c ->
-                val isSelected = c.id in selectedCollections
-                val isEnabled = c.isDefault || userIsPremium
-                CollectionAdapterDelegate.Item(c, isSelected, isEnabled)
-            })
+        Pr0grammModalBottomSheet(
+            onDismissRequest = { dismissAllowingStateLoss() },
+            sheetState = androidx.compose.material3.rememberModalBottomSheetState(skipPartiallyExpanded = true),
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, end = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Text(
+                    stringResource(R.string.collections_save_to),
+                    style = MaterialTheme.typography.bodyLarge,
+                )
 
-            actionNew.isEnabled = userIsPremium || collections.isEmpty()
+                TextButton(
+                    enabled = userIsPremium || collections.isEmpty(),
+                    onClick = { CollectionDialog().show(parentFragmentManager, null) },
+                ) {
+                    Text(stringResource(R.string.collections_new))
+                }
+            }
+
+            HorizontalDivider()
+
+            for (collection in collections) {
+                val isSelected = collection.id in selection
+                val isEnabled = collection.isDefault || userIsPremium
+
+                CollectionRow(
+                    collection = collection,
+                    selected = isSelected,
+                    enabled = isEnabled || isSelected,
+                    onToggle = {
+                        val newSelected = !isSelected
+                        selection = if (newSelected) selection + collection.id else selection - collection.id
+                        onCollectionClicked(collection, newSelected)
+                    },
+                    onEdit = {
+                        CollectionDialog.newInstance(collection).show(parentFragmentManager, null)
+                    },
+                )
+            }
+
+            HorizontalDivider()
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { dismissAllowingStateLoss() }
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(32.dp),
+            ) {
+                Icon(
+                    painterResource(R.drawable.ic_check),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Text(stringResource(R.string.collections_done), style = MaterialTheme.typography.bodyLarge)
+            }
         }
+    }
 
-        val recyclerView: RecyclerView = view.find(R.id.collections)
-        recyclerView.adapter = adapter
-        recyclerView.layoutManager = LinearLayoutManager(requireContext())
+    @Composable
+    private fun CollectionRow(
+        collection: PostCollection,
+        selected: Boolean,
+        enabled: Boolean,
+        onToggle: () -> Unit,
+        onEdit: () -> Unit,
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(enabled = enabled) { onToggle() }
+                .padding(horizontal = 8.dp, vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Checkbox(checked = selected, enabled = enabled, onCheckedChange = { onToggle() })
 
-        view.find<View>(R.id.done).setOnClickListener {
-            dismiss()
+            Row(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(collection.title, maxLines = 1)
+
+                val owner = collection.owner
+                if (owner != null) {
+                    Text(" (")
+                    Username(name = owner.name, mark = owner.mark)
+                    Text(")")
+                }
+            }
+
+            val iconRes = if (collection.isPublic) R.drawable.ic_collection_public else R.drawable.ic_collection_private
+            Icon(
+                painterResource(iconRes),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(28.dp),
+            )
+
+            if (!collection.isCuratorCollection) {
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clickable(onClick = onEdit),
+                ) {
+                    Icon(
+                        painterResource(R.drawable.ic_collection_edit),
+                        contentDescription = stringResource(R.string.collection_edit),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier
+                            .padding(6.dp)
+                            .fillMaxWidth(),
+                    )
+                }
+            } else {
+                Box(modifier = Modifier.size(36.dp))
+            }
         }
-
-        return view
     }
 
     private fun onCollectionClicked(collection: PostCollection, isSelected: Boolean) {
@@ -118,24 +210,6 @@ class CollectionsSelectionDialog : BottomSheetDialogFragment(), LazyInjectorAwar
                     collectionItemsService.addToCollection(itemId, collection.id)
                 } else {
                     collectionItemsService.removeFromCollection(collection.id, itemId)
-                }
-            }
-        }
-    }
-
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        injector.inject(requireContext())
-
-        val theme = resolveDialogTheme(requireContext(), R.style.MyBottomSheetDialog)
-        val ctx = ContextThemeWrapper(requireContext(), theme)
-
-        return BottomSheetDialog(ctx, theme).apply {
-            setOnShowListener {
-                val bottomSheet = requireDialog().findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
-                if (bottomSheet is ViewGroup) {
-                    catchAll {
-                        BottomSheetBehavior.from(bottomSheet).setState(BottomSheetBehavior.STATE_EXPANDED)
-                    }
                 }
             }
         }
@@ -163,8 +237,8 @@ class CollectionsSelectionDialog : BottomSheetDialogFragment(), LazyInjectorAwar
 
             parent.launchWhenCreated {
                 val snackbar = Snackbar
-                        .make(fragmentView, R.string.collecton_adding, Snackbar.LENGTH_LONG)
-                        .configureNewStyle()
+                    .make(fragmentView, R.string.collecton_adding, Snackbar.LENGTH_LONG)
+                    .configureNewStyle()
 
                 // show info that we are currently doing the request
                 snackbar.show()
@@ -201,68 +275,3 @@ class CollectionsSelectionDialog : BottomSheetDialogFragment(), LazyInjectorAwar
         }
     }
 }
-
-private class CollectionAdapterDelegate(private val collectionClicked: (collection: PostCollection, isSelected: Boolean) -> Unit)
-    : ListItemTypeAdapterDelegate<CollectionAdapterDelegate.Item, CollectionAdapterDelegate.Item, CollectionAdapterDelegate.CollectionViewHolder>(
-    Item::class) {
-
-    override fun onCreateViewHolder(parent: ViewGroup): CollectionViewHolder {
-        return CollectionViewHolder(parent)
-    }
-
-    override fun onBindViewHolder(holder: CollectionViewHolder, value: Item) {
-        val imageId = when (value.collection.isPublic) {
-            true -> R.drawable.ic_collection_public
-            false -> R.drawable.ic_collection_private
-        }
-
-        holder.name.text = buildSpannedString {
-            append(value.collection.uniqueTitle)
-
-            value.collection.owner?.let { owner ->
-                append(" (")
-                appendUsernameAndMark(holder.name, owner.name, owner.mark)
-                append(")")
-            }
-        }
-
-        holder.icon.setImageResource(imageId)
-
-        for (view in listOf(holder.itemView, holder.checkbox, holder.edit)) {
-            view.isEnabled = value.enabled || value.selected
-        }
-
-        holder.checkbox.setOnCheckedChangeListenerWithInitial(value.selected) { isChecked ->
-            collectionClicked(value.collection, isChecked)
-
-            // update state
-            for (view in listOf(holder.itemView, holder.checkbox, holder.edit)) {
-                view.isEnabled = value.enabled
-            }
-        }
-
-        holder.itemView.setOnClickListener {
-            holder.checkbox.toggle()
-        }
-
-        holder.edit.isInvisible = value.collection.isCuratorCollection
-
-        holder.edit.setOnClickListener { view ->
-            val fragment: Fragment = FragmentManager.findFragment(view)
-            val dialog = CollectionDialog.newInstance(value.collection)
-            dialog.show(fragment.childFragmentManager, null)
-        }
-    }
-
-    class CollectionViewHolder(parent: ViewGroup) :
-        RecyclerView.ViewHolder(parent.inflateDetachedChild(R.layout.row_collection)) {
-
-        val name: TextView = find(R.id.name)
-        val icon: ImageView = find(R.id.icon)
-        val checkbox: CheckBox = find(R.id.checkbox)
-        val edit: View = find(R.id.action_edit)
-    }
-
-    data class Item(val collection: PostCollection, val selected: Boolean, val enabled: Boolean)
-}
-
