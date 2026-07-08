@@ -50,7 +50,6 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.PopupProperties
 import com.pr0gramm.app.R
 import com.pr0gramm.app.api.pr0gramm.Api
@@ -58,6 +57,7 @@ import com.pr0gramm.app.api.pr0gramm.Message
 import com.pr0gramm.app.api.pr0gramm.MessageConverter
 import com.pr0gramm.app.feed.FeedItem
 import com.pr0gramm.app.parcel.DefaultParcelable
+import com.pr0gramm.app.ui.compose.components.MessageRow
 import com.pr0gramm.app.parcel.MessageSerializer
 import com.pr0gramm.app.parcel.NewCommentParceler
 import com.pr0gramm.app.parcel.SimpleCreator
@@ -132,6 +132,7 @@ class WriteMessageActivity : BaseAppCompatActivity("WriteMessageActivity") {
                 isCommentAnswer = isCommentAnswer,
                 quotedMessage = quotedMessage,
                 currentUsername = userService.name,
+                admin = userService.userIsAdmin,
                 parentComments = relevantParentComments,
                 receiverName = receiverName,
                 loggedInName = loggedInName,
@@ -341,6 +342,7 @@ private fun WriteMessageScreen(
     isCommentAnswer: Boolean,
     quotedMessage: Message?,
     currentUsername: String?,
+    admin: Boolean,
     parentComments: List<WriteMessageActivity.ParentComment>,
     receiverName: String,
     loggedInName: String?,
@@ -424,13 +426,12 @@ private fun WriteMessageScreen(
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             if (quotedMessage != null) {
-                AndroidView(
+                MessageRow(
+                    message = quotedMessage,
+                    currentUsername = currentUsername,
+                    admin = admin,
+                    showTypeLabel = false,
                     modifier = Modifier.fillMaxWidth(),
-                    factory = { context ->
-                        MessageView(context).apply {
-                            update(quotedMessage, currentUsername)
-                        }
-                    },
                 )
             }
 
@@ -504,7 +505,7 @@ private fun WriteMessageScreen(
                             verticalAlignment = Alignment.Top,
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
-                            Checkbox(checked = selected, onCheckedChange = null, enabled = enabled,)
+                            Checkbox(checked = selected, onCheckedChange = null, enabled = enabled)
 
                             Text(
                                 buildAnnotatedString {
