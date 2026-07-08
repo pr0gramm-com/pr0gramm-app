@@ -1,6 +1,8 @@
 package com.pr0gramm.app.ui
 
 import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.viewModels as activityViewModels
 import androidx.annotation.MainThread
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.createViewModelLazy
@@ -14,7 +16,11 @@ import com.pr0gramm.app.util.di.injector
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
-fun <VM : ViewModel> singleViewModelFactory(fragment: Fragment, expectedModelClass: Class<VM>, create: Injector.(SavedStateHandle) -> VM): ViewModelProvider.Factory {
+fun <VM : ViewModel> singleViewModelFactory(
+    fragment: Fragment,
+    expectedModelClass: Class<VM>,
+    create: Injector.(SavedStateHandle) -> VM
+): ViewModelProvider.Factory {
     return object : AbstractSavedStateViewModelFactory(fragment, Bundle.EMPTY) {
         override fun <T : ViewModel> create(key: String, modelClass: Class<T>, handle: SavedStateHandle): T {
             require(modelClass.isAssignableFrom(expectedModelClass)) {
@@ -30,12 +36,43 @@ fun <VM : ViewModel> singleViewModelFactory(fragment: Fragment, expectedModelCla
 
 @MainThread
 inline fun <reified VM : ViewModel> Fragment.viewModels(
-        noinline ownerProducer: () -> ViewModelStoreOwner = { this },
-        noinline create: Injector.(SavedStateHandle) -> VM): Lazy<VM> {
+    noinline ownerProducer: () -> ViewModelStoreOwner = { this },
+    noinline create: Injector.(SavedStateHandle) -> VM
+): Lazy<VM> {
 
     return createViewModelLazy(VM::class, { ownerProducer().viewModelStore }) {
         singleViewModelFactory(this, VM::class.java, create)
     }
+}
+
+fun <VM : ViewModel> singleViewModelFactory(
+    activity: ComponentActivity,
+    expectedModelClass: Class<VM>,
+    create: Injector.(SavedStateHandle) -> VM
+): ViewModelProvider.Factory {
+    return object : AbstractSavedStateViewModelFactory(activity, Bundle.EMPTY) {
+        override fun <T : ViewModel> create(key: String, modelClass: Class<T>, handle: SavedStateHandle): T {
+            require(modelClass.isAssignableFrom(expectedModelClass)) {
+                "Cannot create instance of $modelClass, this factory only creates $expectedModelClass"
+            }
+
+            val injector = activity.injector
+            val model = injector.create(handle)
+            return modelClass.cast(model) as T
+        }
+    }
+}
+
+/**
+ * Same as the [Fragment] variant above, for `ComponentActivity`s that need a DI-created
+ * [ViewModel] (e.g. one taking constructor arguments known only at the call site).
+ */
+@MainThread
+inline fun <reified VM : ViewModel> ComponentActivity.viewModels(
+    noinline create: Injector.(SavedStateHandle) -> VM
+): Lazy<VM> {
+
+    return activityViewModels { singleViewModelFactory(this, VM::class.java, create) }
 }
 
 

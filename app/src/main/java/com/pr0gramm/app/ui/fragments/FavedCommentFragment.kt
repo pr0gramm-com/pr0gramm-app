@@ -9,6 +9,7 @@ import com.pr0gramm.app.services.UserService
 import com.pr0gramm.app.ui.MessageAdapter
 import com.pr0gramm.app.ui.Pagination
 import com.pr0gramm.app.ui.PaginationController
+import com.pr0gramm.app.ui.apiMessageLoader
 import com.pr0gramm.app.util.di.instance
 
 /**
@@ -33,8 +34,9 @@ class FavedCommentFragment : InboxFragment("FavedCommentFragment") {
         val pagination = Pagination(lifecycleScope, loader)
 
         val adapter = MessageAdapter(
-                R.layout.row_inbox_message, actionListener, null,
-                PaginationController(pagination))
+            R.layout.row_inbox_message, actionListener, null,
+            PaginationController(pagination)
+        )
 
         return Pair(adapter, pagination)
     }
