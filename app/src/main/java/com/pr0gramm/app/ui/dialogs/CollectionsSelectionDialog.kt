@@ -132,6 +132,7 @@ class CollectionsSelectionDialog : ComposeDialogFragment("CollectionsSelectionDi
                     painterResource(R.drawable.ic_check),
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(24.dp),
                 )
                 Text(stringResource(R.string.collections_done), style = MaterialTheme.typography.bodyLarge)
             }
