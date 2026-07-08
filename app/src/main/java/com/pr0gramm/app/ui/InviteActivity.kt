@@ -3,79 +3,88 @@ package com.pr0gramm.app.ui
 import android.content.Intent
 import android.os.Bundle
 import android.util.Patterns
-import android.view.View
-import androidx.core.view.isVisible
-import com.google.android.material.snackbar.Snackbar
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import com.pr0gramm.app.R
 import com.pr0gramm.app.api.pr0gramm.Api
-import com.pr0gramm.app.databinding.ActivityInviteBinding
-import com.pr0gramm.app.databinding.RowInviteBinding
 import com.pr0gramm.app.services.InviteService
 import com.pr0gramm.app.services.ThemeHelper
 import com.pr0gramm.app.services.Track
 import com.pr0gramm.app.services.UriHelper
 import com.pr0gramm.app.ui.base.BaseAppCompatActivity
-import com.pr0gramm.app.ui.base.bindViews
 import com.pr0gramm.app.ui.base.launchWhenStarted
+import com.pr0gramm.app.ui.compose.Pr0grammAlertDialog
+import com.pr0gramm.app.ui.compose.components.Username
+import com.pr0gramm.app.ui.compose.setComposeContent
 import com.pr0gramm.app.ui.dialogs.ErrorDialogFragment.Companion.handleOnError
-import com.pr0gramm.app.ui.views.SingleTypeViewBindingAdapter
 import com.pr0gramm.app.util.DurationFormat
 import com.pr0gramm.app.util.di.instance
 import com.pr0gramm.app.util.rootCause
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
+ * Compose invite screen. Lets the user send invites and shows the list of already-sent invites.
  */
 class InviteActivity : BaseAppCompatActivity("InviteActivity") {
     private val inviteService: InviteService by instance()
 
-    private val views by bindViews(ActivityInviteBinding::inflate)
-
-    private val formFields: List<View>
-        get() = listOf(views.mail, views.sendInvite)
-
+    private var invites by mutableStateOf<InviteService.Invites?>(null)
+    private var sending by mutableStateOf(false)
+    private var errorMessage by mutableStateOf<String?>(null)
+    private var successEvent by mutableStateOf(0)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(ThemeHelper.theme.basic)
         super.onCreate(savedInstanceState)
 
-        setContentView(views)
-
-        disableInputViews()
-
-        views.invites.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this)
-
-        views.sendInvite.setOnClickListener { onInviteClicked() }
-    }
-
-    private fun onInviteClicked() {
-        val email = views.mail.text.toString()
-        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            views.mail.error = getString(R.string.error_email)
-            return
-        }
-
-        // disable all views
-        disableInputViews()
-
-        launchWhenStarted(busyIndicator = true) {
-            try {
-                withContext(NonCancellable + Dispatchers.Default) {
-                    inviteService.send(email)
-                }
-
-                onInviteSent()
-
-                // re-query invites
-                handleInvites(inviteService.invites())
-            } catch (err: Throwable) {
-                if (err !is CancellationException) {
-                    onInviteError(err)
-                }
-            }
+        setComposeContent {
+            InviteScreen(
+                invites = invites,
+                sending = sending,
+                errorMessage = errorMessage,
+                successEvent = successEvent,
+                onBack = { finish() },
+                onDismissError = { errorMessage = null },
+                onSend = ::onInviteClicked,
+                onUserClick = ::openUserProfile,
+            )
         }
     }
 
@@ -83,63 +92,41 @@ class InviteActivity : BaseAppCompatActivity("InviteActivity") {
         super.onResume()
 
         launchWhenStarted {
-            handleInvites(inviteService.invites())
+            invites = inviteService.invites()
         }
     }
 
-    private fun handleInvites(invites: InviteService.Invites) {
-        views.invites.adapter = inviteAdapter(invites.invited)
-        views.invitesEmpty.visibility = if (invites.invited.isNotEmpty()) View.GONE else View.VISIBLE
+    private fun onInviteClicked(email: String) {
+        sending = true
 
-        val text = getString(R.string.invite_remaining, invites.inviteCount)
-        views.remaining.text = text
+        launchWhenStarted(busyIndicator = true) {
+            try {
+                withContext(NonCancellable + Dispatchers.Default) {
+                    inviteService.send(email)
+                }
 
-        if (invites.inviteCount > 0) {
-            enableInputViews()
+                Track.inviteSent()
+                successEvent += 1
+
+                // re-query invites
+                invites = inviteService.invites()
+            } catch (err: Throwable) {
+                if (err !is CancellationException) {
+                    onInviteError(err)
+                }
+            } finally {
+                sending = false
+            }
         }
-    }
-
-    private fun enableInputViews() {
-        formFields.forEach {
-            it.isVisible = true
-            it.isEnabled = true
-        }
-    }
-
-    private fun disableInputViews() {
-        formFields.forEach {
-            it.isEnabled = false
-        }
-    }
-
-    private fun onInviteSent() {
-        Track.inviteSent()
-
-        Snackbar.make(views.mail, R.string.invite_hint_success, Snackbar.LENGTH_SHORT)
-                .configureNewStyle()
-                .setAction(R.string.okay, {})
-                .show()
     }
 
     private fun onInviteError(error: Throwable) {
         val cause = error.rootCause
         if (cause is InviteService.InviteException) {
             when {
-                cause.noMoreInvites() -> showDialog(this) {
-                    content(R.string.invite_no_more_invites)
-                    positive()
-                }
-
-                cause.emailFormat() -> showDialog(this) {
-                    content(R.string.error_email)
-                    positive()
-                }
-
-                cause.emailInUse() -> showDialog(this) {
-                    content(R.string.invite_email_in_use)
-                    positive()
-                }
-
+                cause.noMoreInvites() -> errorMessage = getString(R.string.invite_no_more_invites)
+                cause.emailFormat() -> errorMessage = getString(R.string.error_email)
+                cause.emailInUse() -> errorMessage = getString(R.string.invite_email_in_use)
                 else -> handleOnError(error)
             }
         } else {
@@ -147,33 +134,173 @@ class InviteActivity : BaseAppCompatActivity("InviteActivity") {
         }
     }
 
-    private fun inviteAdapter(invites: List<Api.AccountInfo.Invite>): SingleTypeViewBindingAdapter<Api.AccountInfo.Invite, RowInviteBinding> {
-        return SingleTypeViewBindingAdapter(RowInviteBinding::inflate, invites) { (views), invite ->
-            val context = views.root.context
+    private fun openUserProfile(name: String) {
+        val url = UriHelper.of(this).uploads(name)
+        startActivity(Intent(Intent.ACTION_VIEW, url, this, MainActivity::class.java))
+    }
+}
 
-            val date = DurationFormat.timeToPointInTime(context, invite.created, short = false)
-            val name = invite.name
-            if (name != null) {
-                views.email.visibility = View.GONE
-                views.username.visibility = View.VISIBLE
-                views.username.setUsername(name, invite.mark ?: 0)
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun InviteScreen(
+    invites: InviteService.Invites?,
+    sending: Boolean,
+    errorMessage: String?,
+    successEvent: Int,
+    onBack: () -> Unit,
+    onDismissError: () -> Unit,
+    onSend: (email: String) -> Unit,
+    onUserClick: (name: String) -> Unit,
+) {
+    var email by rememberSaveable { mutableStateOf("") }
+    var emailError by rememberSaveable { mutableStateOf(false) }
 
-                views.info.text = context.getString(R.string.invite_redeemed, invite.email, date)
-                views.root.setOnClickListener { openUserProfile(name) }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val successText = stringResource(R.string.invite_hint_success)
+    val okayText = stringResource(R.string.okay)
 
+    LaunchedEffect(successEvent) {
+        if (successEvent > 0) {
+            snackbarHostState.showSnackbar(successText, actionLabel = okayText)
+        }
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.invites_title)) },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+                    }
+                },
+            )
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+    ) { padding ->
+        Column(
+            Modifier
+                .padding(padding)
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text(
+                stringResource(R.string.invite_description),
+                style = MaterialTheme.typography.bodyLarge,
+            )
+
+            Text(
+                stringResource(R.string.invite_description_warning),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.secondary,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .padding(8.dp),
+            )
+
+            Text(
+                text = if (invites != null) {
+                    stringResource(R.string.invite_remaining, invites.inviteCount)
+                } else {
+                    stringResource(R.string.hint_loading)
+                },
+                style = MaterialTheme.typography.bodyLarge,
+            )
+
+            if (invites != null && invites.inviteCount > 0) {
+                OutlinedTextField(
+                    value = email,
+                    onValueChange = {
+                        email = it
+                        emailError = false
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = !sending,
+                    singleLine = true,
+                    isError = emailError,
+                    label = { Text(stringResource(R.string.invite_email_hint)) },
+                    supportingText = {
+                        if (emailError) {
+                            Text(stringResource(R.string.error_email))
+                        }
+                    },
+                )
+
+                Button(
+                    onClick = {
+                        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                            emailError = true
+                        } else {
+                            onSend(email)
+                        }
+                    },
+                    enabled = !sending,
+                    modifier = Modifier.align(Alignment.End),
+                ) {
+                    Text(stringResource(R.string.invite_send))
+                }
+            }
+
+            Text(
+                stringResource(R.string.invites_sent),
+                style = MaterialTheme.typography.headlineSmall,
+                modifier = Modifier.padding(top = 16.dp),
+            )
+
+            val invited = invites?.invited.orEmpty()
+            if (invited.isEmpty()) {
+                Text(stringResource(R.string.invites_no_invites_sent))
             } else {
-                views.username.visibility = View.GONE
-                views.email.visibility = View.VISIBLE
-                views.email.text = invite.email
-
-                views.info.text = context.getString(R.string.invite_unredeemed, date)
-                views.root.setOnClickListener(null)
+                invited.forEach { invite ->
+                    InviteRow(invite = invite, onUserClick = onUserClick)
+                }
             }
         }
     }
 
-    private fun openUserProfile(name: String) {
-        val url = UriHelper.of(this).uploads(name)
-        startActivity(Intent(Intent.ACTION_VIEW, url, this, MainActivity::class.java))
+    if (errorMessage != null) {
+        Pr0grammAlertDialog(
+            onDismissRequest = onDismissError,
+            text = errorMessage,
+            confirmText = stringResource(R.string.okay),
+            onConfirm = onDismissError,
+        )
+    }
+}
+
+@Composable
+private fun InviteRow(
+    invite: Api.AccountInfo.Invite,
+    onUserClick: (name: String) -> Unit,
+) {
+    val context = LocalContext.current
+    val date = remember(invite.created) {
+        DurationFormat.timeToPointInTime(context, invite.created, short = false)
+    }
+
+    val name = invite.name
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(enabled = name != null) { name?.let(onUserClick) }
+            .padding(vertical = 10.dp),
+    ) {
+        if (name != null) {
+            Username(name = name, mark = invite.mark ?: 0)
+            Text(
+                stringResource(R.string.invite_redeemed, invite.email, date),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        } else {
+            Text(invite.email, style = MaterialTheme.typography.titleMedium)
+            Text(
+                stringResource(R.string.invite_unredeemed, date),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        }
     }
 }
