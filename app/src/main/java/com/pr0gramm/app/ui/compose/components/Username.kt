@@ -1,5 +1,6 @@
 package com.pr0gramm.app.ui.compose.components
 
+import android.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
@@ -8,7 +9,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
@@ -39,13 +40,15 @@ fun Username(
     mark: Int,
     modifier: Modifier = Modifier,
     op: Boolean = false,
+    style: TextStyle = MaterialTheme.typography.bodyMedium,
 ) {
     val context = LocalContext.current
     val service = remember(context) { context.injector.instance<UserClassesService>() }
 
     // Recompose when the user-class configuration changes.
-    val version by service.onChange.collectAsState(initial = Unit)
-    val userClass = remember(mark, version) { service.get(mark) }
+    service.onChange.collectAsState(initial = Unit)
+    
+    val userClass = service.get(mark)
 
     Username(
         name = name,
@@ -53,6 +56,7 @@ fun Username(
         symbolColor = Color(userClass.color),
         modifier = modifier,
         op = op,
+        style = style,
     )
 }
 
@@ -66,6 +70,7 @@ fun Username(
     symbolColor: Color,
     modifier: Modifier = Modifier,
     op: Boolean = false,
+    style: TextStyle = MaterialTheme.typography.bodyMedium,
 ) {
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
         if (op) {
@@ -75,6 +80,7 @@ fun Username(
         Text(
             text = usernameText(name, symbol, symbolColor),
             maxLines = 1,
+            style = style,
         )
     }
 }

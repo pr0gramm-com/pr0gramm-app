@@ -13,7 +13,6 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -28,10 +27,11 @@ private fun ThemeShowcase(theme: Themes) {
             Column {
                 TopAppBar(
                     title = { Text(theme.name) },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                    ),
+                    navigationIcon = {},
+                    // colors = TopAppBarDefaults.topAppBarColors(
+                    //     containerColor = MaterialTheme.colorScheme.primary,
+                    //     titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                    // ),
                 )
                 Column(
                     modifier = Modifier
@@ -42,6 +42,7 @@ private fun ThemeShowcase(theme: Themes) {
                     Text("Body large", style = MaterialTheme.typography.bodyLarge)
                     Text("Body medium", style = MaterialTheme.typography.bodyMedium)
                     Text("Body small", style = MaterialTheme.typography.bodySmall)
+                    Text("Body tiny", style = MaterialTheme.typography.bodyTiny)
 
                     Button(onClick = {}) { Text("Button") }
 

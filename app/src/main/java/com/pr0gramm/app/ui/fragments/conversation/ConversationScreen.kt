@@ -4,12 +4,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -28,7 +30,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -45,18 +46,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.paging.LoadState
-import androidx.paging.PagingData
+import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
-import androidx.paging.compose.itemContentType
-import androidx.paging.compose.itemKey
-import androidx.paging.insertSeparators
-import androidx.paging.map
 import com.pr0gramm.app.Instant
 import com.pr0gramm.app.R
 import com.pr0gramm.app.api.pr0gramm.Api
@@ -66,17 +65,17 @@ import com.pr0gramm.app.ui.compose.components.LoadingHint
 import com.pr0gramm.app.util.ErrorFormatting
 import com.pr0gramm.app.util.TextViewCache
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Locale
 import kotlin.time.Duration.Companion.seconds
 
-sealed class ConversationItem {
-    class Message(val message: Api.ConversationMessage) : ConversationItem()
-    class Divider(val text: String) : ConversationItem()
-}
+data class ConversationItem(
+    val message: Api.ConversationMessage,
+    val showTime: Boolean = true,
+    val divider: String? = null,
+)
 
 /**
  * The chat-style thread of messages with a single conversation partner, replacing
@@ -96,21 +95,8 @@ fun ConversationScreen(
 ) {
     val draftKey = remember(conversationName) { "conversation:$conversationName" }
 
-    val pagingFlow = remember(model) {
-        model.paging.map { pagingData: PagingData<Api.ConversationMessage> ->
-            val fmt = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
+    val pagingItems = model.paging.collectAsLazyPagingItems()
 
-            val messages = pagingData.map { ConversationItem.Message(it) }
-
-            messages.insertSeparators<ConversationItem.Message, ConversationItem> { prev, next ->
-                val prevStr = prev?.message?.creationTime?.toString(fmt)
-                val nextStr = next?.message?.creationTime?.toString(fmt)
-                if (nextStr != null && prevStr != nextStr) ConversationItem.Divider(nextStr) else null
-            }
-        }
-    }
-
-    val lazyPagingItems = pagingFlow.collectAsLazyPagingItems()
     val pendingMessages by model.pendingMessages.collectAsState()
     val partner by model.partner.collectAsState(initial = null)
 
@@ -120,35 +106,14 @@ fun ConversationScreen(
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
 
-    var lastKnownNewestId by remember { mutableStateOf(0L) }
-
-    LaunchedEffect(lazyPagingItems.itemCount, pendingMessages.size) {
-        val newestItem = (0 until lazyPagingItems.itemCount).asSequence()
-            .mapNotNull { index -> lazyPagingItems[index] as? ConversationItem.Message }
-            .lastOrNull()
-
-        val totalRows = lazyPagingItems.itemCount + pendingMessages.size
-
-        val shouldScroll = (newestItem != null && newestItem.message.id > lastKnownNewestId) ||
-                pendingMessages.isNotEmpty()
-
-        if (newestItem != null) {
-            lastKnownNewestId = newestItem.message.id
-        }
-
-        if (shouldScroll && totalRows > 0) {
-            listState.animateScrollToItem(totalRows - 1)
-        }
-    }
-
-    // periodically refresh while the screen is shown, same cadence as the original fragment
+    // periodically refresh while the screen is shown
     LaunchedEffect(Unit) {
         while (isActive) {
             delay(15.seconds)
 
             val lastVisible = listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index
-            if (lastVisible != null && lastVisible >= lazyPagingItems.itemCount - 1) {
-                lazyPagingItems.refresh()
+            if (lastVisible != null && lastVisible >= pagingItems.itemCount - 1) {
+                pagingItems.refresh()
             }
         }
     }
@@ -170,10 +135,10 @@ fun ConversationScreen(
                 actions = {
                     IconButton(onClick = {
                         scope.launch {
-                            val totalRows = lazyPagingItems.itemCount + pendingMessages.size
-                            if (totalRows > 0) listState.animateScrollToItem(totalRows - 1)
+                            val totalRows = pagingItems.itemCount + pendingMessages.size
+                            if (totalRows > 0) listState.animateScrollToItem(0)
                         }
-                        lazyPagingItems.refresh()
+                        pagingItems.refresh()
                     }) {
                         Icon(Icons.Filled.Refresh, contentDescription = null)
                     }
@@ -182,25 +147,11 @@ fun ConversationScreen(
                         Icon(Icons.Filled.MoreVert, contentDescription = null)
                     }
 
-                    DropdownMenu(expanded = menuExpanded, onDismissRequest = { menuExpanded = false }) {
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.action_profile)) },
-                            leadingIcon = { Icon(Icons.Filled.Person, contentDescription = null) },
-                            onClick = {
-                                menuExpanded = false
-                                onOpenProfile()
-                            },
-                        )
-
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.action_delete)) },
-                            leadingIcon = { Icon(Icons.Filled.Delete, contentDescription = null) },
-                            onClick = {
-                                menuExpanded = false
-                                onDeleteConversation()
-                            },
-                        )
-                    }
+                    menuExpanded = showConversationMenu(
+                        menuExpanded = menuExpanded,
+                        onOpenProfile = onOpenProfile,
+                        onDeleteConversation = onDeleteConversation
+                    )
                 },
             )
         },
@@ -210,69 +161,20 @@ fun ConversationScreen(
                 .padding(padding)
                 .fillMaxSize(),
         ) {
-            LazyColumn(
-                state = listState,
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth(),
-            ) {
-                if (lazyPagingItems.loadState.prepend is LoadState.Loading) {
-                    item(key = "prepend-loading") { LoadingHint() }
-                }
-
-                items(
-                    count = lazyPagingItems.itemCount,
-                    key = lazyPagingItems.itemKey { item ->
-                        when (item) {
-                            is ConversationItem.Message -> item.message.id
-                            is ConversationItem.Divider -> item.text
-                        }
-                    },
-                    contentType = lazyPagingItems.itemContentType { item -> item::class },
-                ) { index ->
-                    when (val item = lazyPagingItems[index]) {
-                        is ConversationItem.Message -> ConversationBubble(
-                            text = item.message.messageText,
-                            time = item.message.creationTime,
-                            sent = item.message.sent,
-                        )
-
-                        is ConversationItem.Divider -> ConversationDateDivider(item.text)
-                        null -> Unit
-                    }
-                }
-
-                items(pendingMessages, key = { "pending-$it" }) { pending ->
-                    ConversationBubble(text = pending, time = null, sent = true, pending = true)
-                }
-
-                if (lazyPagingItems.itemCount == 0 && lazyPagingItems.loadState.refresh is LoadState.Loading) {
-                    item(key = "initial-loading") { LoadingHint() }
-                }
-
-                val refreshError = lazyPagingItems.loadState.refresh as? LoadState.Error
-                if (refreshError != null) {
-                    item(key = "error") {
-                        Text(
-                            text = ErrorFormatting.format(LocalContext.current, refreshError.error),
-                            color = MaterialTheme.colorScheme.error,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
-                            textAlign = TextAlign.Center,
-                        )
-                    }
-                }
-            }
+            Conversation(
+                listState = listState,
+                pagingItems = pagingItems,
+                pendingMessages = pendingMessages,
+            )
 
             MessageInputBar(
                 value = messageValue,
-                onValueChange = {
-                    messageValue = it
-                    TextViewCache.putDraft(draftKey, it)
+                onValueChange = { newValue ->
+                    messageValue = newValue
+                    TextViewCache.putDraft(draftKey, newValue)
                 },
                 enabled = partner?.canReceiveMessages != false,
-                hint = partner?.takeIf { !it.canReceiveMessages }?.let {
+                hint = partner?.takeIf { partner -> !partner.canReceiveMessages }?.let {
                     stringResource(R.string.write_message_cannot_receive_messages, it.name)
                 },
                 onSend = {
@@ -289,6 +191,124 @@ fun ConversationScreen(
 }
 
 @Composable
+private fun showConversationMenu(
+    menuExpanded: Boolean,
+    onOpenProfile: () -> Unit,
+    onDeleteConversation: () -> Unit
+): Boolean {
+    var isMenuExpanded = menuExpanded
+
+    DropdownMenu(
+        expanded = isMenuExpanded,
+        onDismissRequest = { isMenuExpanded = false }) {
+        DropdownMenuItem(
+            text = { Text(stringResource(R.string.action_profile)) },
+            leadingIcon = { Icon(Icons.Filled.Person, contentDescription = null) },
+            onClick = {
+                isMenuExpanded = false
+                onOpenProfile()
+            },
+        )
+
+        DropdownMenuItem(
+            text = { Text(stringResource(R.string.action_delete)) },
+            leadingIcon = { Icon(Icons.Filled.Delete, contentDescription = null) },
+            onClick = {
+                isMenuExpanded = false
+                onDeleteConversation()
+            },
+        )
+    }
+
+    return isMenuExpanded
+}
+
+@Composable
+private fun ColumnScope.Conversation(
+    listState: LazyListState,
+    pagingItems: LazyPagingItems<Api.ConversationMessage>,
+    pendingMessages: List<String>,
+) {
+    val fmt = SimpleDateFormat("dd.MM.yyyy", LocalLocale.current.platformLocale)
+
+    LazyColumn(
+        state = listState,
+        reverseLayout = true,
+        verticalArrangement = Arrangement.Bottom,
+        modifier = Modifier
+            .weight(1f)
+            .fillMaxWidth(),
+    ) {
+
+        val refreshError = pagingItems.loadState.refresh as? LoadState.Error
+        if (refreshError != null) {
+            item {
+                Text(
+                    text = ErrorFormatting.format(LocalContext.current, refreshError.error),
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    textAlign = TextAlign.Center,
+                )
+            }
+        }
+
+        items(
+            count = pagingItems.itemCount,
+            key = { index -> pagingItems.peek(pagingItems.itemCount - 1 - index)?.id ?: index },
+        ) { itemIndex ->
+            val index = pagingItems.itemCount - 1 - itemIndex
+
+            val curr = pagingItems[index] ?: return@items
+
+            // pagingItems are sorted by time ascending
+            val latest = index == pagingItems.itemCount - 1
+
+            // get the next item (in the future)
+            val next = if (index + 1 < pagingItems.itemCount) pagingItems.peek(index + 1) else null
+
+            // check the date
+            val currStr = curr.creationTime.toString(fmt)
+            val nextStr = next?.creationTime?.toString(fmt)
+
+            val isSameDay = currStr == nextStr
+
+            val isOtherPerson = curr.sent != next?.sent
+
+            // decide if we should show the time:
+            //  show it if is the latest message
+            //  show it if the next message is more than 1min later
+            val showTime =
+                latest || !isSameDay || isOtherPerson || (next.creationTime - curr.creationTime).inMinutes >= 1
+
+            ConversationBubble(
+                text = curr.messageText,
+                time = curr.creationTime,
+                sent = curr.sent,
+                showTime = showTime
+            )
+
+            if (nextStr != null && currStr != nextStr) {
+                ConversationDateDivider(text = nextStr)
+            }
+        }
+
+        items(pendingMessages.asReversed()) { pending ->
+            ConversationBubble(text = pending, time = null, sent = true, pending = true)
+        }
+
+        if (pagingItems.itemCount == 0 && pagingItems.loadState.refresh is LoadState.Loading) {
+            item { LoadingHint() }
+        }
+
+        if (pagingItems.loadState.prepend is LoadState.Loading) {
+            item(key = "prepend-loading") { LoadingHint() }
+        }
+    }
+}
+
+@Composable
 private fun MessageInputBar(
     value: String,
     onValueChange: (String) -> Unit,
@@ -296,25 +316,23 @@ private fun MessageInputBar(
     hint: String?,
     onSend: () -> Unit,
 ) {
-    Surface(tonalElevation = 8.dp) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            verticalAlignment = Alignment.Bottom,
-        ) {
-            OutlinedTextField(
-                value = value,
-                onValueChange = onValueChange,
-                enabled = enabled,
-                placeholder = { Text(hint ?: stringResource(R.string.write_message_placeholder)) },
-                modifier = Modifier.weight(1f),
-                maxLines = 6,
-            )
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        verticalAlignment = Alignment.Bottom,
+    ) {
+        OutlinedTextField(
+            value = value,
+            onValueChange = onValueChange,
+            enabled = enabled,
+            placeholder = { Text(hint ?: stringResource(R.string.write_message_placeholder)) },
+            modifier = Modifier.weight(1f),
+            maxLines = 6,
+        )
 
-            IconButton(onClick = onSend, enabled = enabled && value.isNotBlank()) {
-                Icon(Icons.AutoMirrored.Filled.Send, contentDescription = null)
-            }
+        IconButton(onClick = onSend, enabled = enabled && value.isNotBlank()) {
+            Icon(Icons.AutoMirrored.Filled.Send, contentDescription = null)
         }
     }
 }
@@ -325,42 +343,56 @@ private fun ConversationBubble(
     time: Instant?,
     sent: Boolean,
     pending: Boolean = false,
+    showTime: Boolean = true,
 ) {
-    val bubbleColor = if (sent) Color(0xFF222222) else Color(0xFF333333)
-    val timeFormat = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
+    val colorA = lerp(MaterialTheme.colorScheme.secondary, Color(0xFF333333), 0.8f)
+    val colorB = lerp(MaterialTheme.colorScheme.secondary, Color(0xFF333333), 0.98f)
 
-    Box(
+    val bubbleColor = if (sent) colorA else colorB
+    val timeFormat = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
+    val horizontalAlignment = if (sent) Alignment.Start else Alignment.End
+
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(
-                start = if (sent) 48.dp else 16.dp,
-                end = if (sent) 16.dp else 48.dp,
+                start = 16.dp,
+                end = 16.dp,
                 top = 4.dp,
                 bottom = 4.dp,
             ),
-        contentAlignment = if (sent) Alignment.CenterEnd else Alignment.CenterStart,
+
+        horizontalAlignment = horizontalAlignment,
     ) {
         Box(
             modifier = Modifier
                 .widthIn(max = 320.dp)
-                .clip(RoundedCornerShape(4.dp))
+                .clip(
+                    RoundedCornerShape(
+                        topEnd = 8.dp,
+                        topStart = 8.dp,
+                        bottomStart = if (!sent && showTime) 8.dp else 0.dp,
+                        bottomEnd = if (sent && showTime) 8.dp else 0.dp,
+                    )
+                )
                 .background(bubbleColor)
                 .alpha(if (pending) 0.5f else 1f)
-                .padding(8.dp),
+                .padding(start = 8.dp, end = 8.dp, top = 4.dp, bottom = 4.dp),
         ) {
             LinkifiedText(
                 text = text,
                 color = Color.White,
-                modifier = Modifier.padding(bottom = 14.dp, end = 28.dp),
             )
+        }
 
+        if (showTime) {
             Text(
-                text = if (pending) stringResource(R.string.hint_sending) else time?.toString(timeFormat).orEmpty(),
+                text = if (pending) stringResource(R.string.hint_sending) else time?.toString(
+                    timeFormat
+                ).orEmpty(),
                 color = Color(0xFF888888),
                 fontSize = 10.sp,
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(end = 4.dp, bottom = 4.dp),
+                modifier = Modifier.align(horizontalAlignment),
             )
         }
     }
@@ -383,3 +415,4 @@ private fun ConversationDateDivider(text: String) {
         )
     }
 }
+

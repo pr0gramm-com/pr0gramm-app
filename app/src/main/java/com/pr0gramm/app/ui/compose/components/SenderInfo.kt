@@ -10,9 +10,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.pr0gramm.app.Instant
 import com.pr0gramm.app.R
+import com.pr0gramm.app.ui.compose.theme.Pr0grammTheme
+import com.pr0gramm.app.ui.compose.theme.bodyTiny
 import com.pr0gramm.app.util.DurationFormat
 
 /**
@@ -70,6 +74,7 @@ fun SenderInfo(
                 name = name,
                 mark = mark,
                 op = op,
+                style = MaterialTheme.typography.bodySmall,
                 modifier = if (onSenderClick != null) {
                     Modifier.clickable { onSenderClick() }
                 } else {
@@ -81,7 +86,7 @@ fun SenderInfo(
         Row {
             Text(
                 text = statsText,
-                style = MaterialTheme.typography.bodySmall,
+                style = MaterialTheme.typography.bodyTiny,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = if (onStatsLongClick != null) {
                     Modifier.clickable { onStatsLongClick() }
@@ -101,5 +106,23 @@ fun SenderInfo(
                 )
             }
         }
+    }
+}
+
+@Preview
+@Composable
+private fun SenderInfoPreview() {
+    Pr0grammTheme {
+        SenderInfo(
+            name = "Mopsalarm",
+            mark = 3,
+            date = Instant.now(),
+            op = true,
+            points = SenderPoints.Value(103),
+            onSenderClick = null,
+            onStatsLongClick = null,
+            answerText = null,
+            onAnswerClick = null,
+        )
     }
 }

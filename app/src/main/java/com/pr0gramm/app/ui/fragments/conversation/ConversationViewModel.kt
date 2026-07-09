@@ -38,7 +38,7 @@ class ConversationViewModel(private val inboxService: InboxService, private val 
 
     suspend fun send(messageText: String) {
         // publish message as "pending"
-        pendingMessages.value = pendingMessages.value + messageText
+        pendingMessages.value += messageText
         try {
 
             val response = withContext(NonCancellable) {

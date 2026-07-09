@@ -3,6 +3,7 @@ package com.pr0gramm.app.ui.compose.components
 import android.graphics.drawable.BitmapDrawable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -21,6 +23,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.pr0gramm.app.Duration
 import com.pr0gramm.app.Instant
@@ -52,8 +55,9 @@ fun MessageRow(
 ) {
     val scoreVisibleThreshold = remember { Instant.now() - Duration.hours(1) }
 
-    val visible = (currentUsername != null && message.name.equals(currentUsername, ignoreCase = true)) ||
-            message.creationTime.isBefore(scoreVisibleThreshold)
+    val visible =
+        (currentUsername != null && message.name.equals(currentUsername, ignoreCase = true)) ||
+                message.creationTime.isBefore(scoreVisibleThreshold)
 
     val points = when {
         message.type != MessageType.COMMENT -> SenderPoints.Hidden
@@ -90,15 +94,19 @@ fun MessageRow(
             )
         }
 
-        Row {
-            MessageAvatar(message = message, modifier = Modifier.size(40.dp).clip(RoundedCornerShape(4.dp)))
-
-            Spacer(Modifier.width(16.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            MessageAvatar(
+                message = message,
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(4.dp))
+            )
 
             Column(Modifier.weight(1f)) {
                 LinkifiedText(
                     text = message.message,
                     style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSecondary,
                     modifier = Modifier.padding(bottom = 8.dp),
                 )
 
@@ -118,11 +126,10 @@ fun MessageRow(
 
 @Composable
 private fun MessageAvatar(message: Message, modifier: Modifier = Modifier) {
-    val context = LocalContext.current
     val thumbnail = message.thumbnail
 
     if (thumbnail != null) {
-        val blur = remember(message.flags) { ContentType.firstOf(message.flags) !in Settings.contentType }
+        val blur = ContentType.firstOf(message.flags) !in Settings.contentType
 
         NetworkImage(
             model = "https://thumb.pr0gramm.com/$thumbnail",
@@ -131,12 +138,6 @@ private fun MessageAvatar(message: Message, modifier: Modifier = Modifier) {
             modifier = modifier,
         )
     } else {
-        val userDrawables = remember(context) { UserDrawables(context) }
-
-        val bitmap = remember(message.name) {
-            (userDrawables.drawable(message.name) as BitmapDrawable).bitmap.asImageBitmap()
-        }
-
-        Image(bitmap = bitmap, contentDescription = null, modifier = modifier)
+        UserAvatar(message.name, modifier = modifier)
     }
 }

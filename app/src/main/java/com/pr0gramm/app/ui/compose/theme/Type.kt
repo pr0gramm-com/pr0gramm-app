@@ -27,7 +27,7 @@ val Pr0grammTypography: Typography = Typography().run {
         // TextStyle.12
         bodySmall = bodySmall.copy(
             fontSize = 12.sp,
-            lineHeight = 18.sp,
+            lineHeight = 16.sp,
             fontWeight = FontWeight.Normal,
         ),
     )

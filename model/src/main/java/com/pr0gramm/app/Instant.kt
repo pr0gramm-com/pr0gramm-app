@@ -38,6 +38,10 @@ class Instant(val millis: Long) : Comparable<Instant>, DefaultParcelable {
         return millis > other.millis
     }
 
+    operator fun minus(other: Instant): Duration {
+        return (this.millis - other.millis).milliseconds
+    }
+
     val epochSeconds: Long get() = millis / 1000
 
     constructor(parcel: Parcel) : this(parcel.readLong())

@@ -13,6 +13,12 @@ class Duration(private val nanos: Long) {
     // value in milliseconds
     val inMillis: Long get() = convertTo(TimeUnit.MILLISECONDS)
 
+    val inSeconds: Long
+        get() = convertTo(TimeUnit.SECONDS)
+
+    val inMinutes: Long
+        get() = convertTo(TimeUnit.MINUTES)
+
     override fun toString(): String {
         val unit = chooseUnit(nanos)
         val value = nanos.toDouble() / TimeUnit.NANOSECONDS.convert(1, unit)
@@ -58,8 +64,16 @@ class Duration(private val nanos: Long) {
                 TimeUnit.HOURS.convert(nanos, TimeUnit.NANOSECONDS) > 0 -> TimeUnit.HOURS
                 TimeUnit.MINUTES.convert(nanos, TimeUnit.NANOSECONDS) > 0 -> TimeUnit.MINUTES
                 TimeUnit.SECONDS.convert(nanos, TimeUnit.NANOSECONDS) > 0 -> TimeUnit.SECONDS
-                TimeUnit.MILLISECONDS.convert(nanos, TimeUnit.NANOSECONDS) > 0 -> TimeUnit.MILLISECONDS
-                TimeUnit.MICROSECONDS.convert(nanos, TimeUnit.NANOSECONDS) > 0 -> TimeUnit.MICROSECONDS
+                TimeUnit.MILLISECONDS.convert(
+                    nanos,
+                    TimeUnit.NANOSECONDS
+                ) > 0 -> TimeUnit.MILLISECONDS
+
+                TimeUnit.MICROSECONDS.convert(
+                    nanos,
+                    TimeUnit.NANOSECONDS
+                ) > 0 -> TimeUnit.MICROSECONDS
+
                 else -> TimeUnit.NANOSECONDS
             }
         }

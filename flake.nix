@@ -16,13 +16,15 @@
     in
     {
       devShells.x86_64-linux.default = pkgs.mkShell rec {
-        buildInputs = [ pkgs.android-studio-full ];
+        buildInputs = [
+          pkgs.android-studio-full
+        ];
 
         ANDROID_HOME = "./sdk";
         ANDROID_NDK_ROOT = "${ANDROID_HOME}/ndk-bundle";
 
-        # Use the same buildToolsVersion here
-        # GRADLE_OPTS = "-Dorg.gradle.project.android.aapt2FromMavenOverride=${ANDROID_HOME}/build-tools/${buildToolsVersion}/aapt2"
+        # emulator does not support wayland
+        QT_QPA_PLATFORM = "xcb";
       };
     };
 }

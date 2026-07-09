@@ -14,6 +14,6 @@ class BlurTransformation(private val radius: Int = 25) : Transformation() {
     override val cacheKey: String = "blur:$radius"
 
     override suspend fun transform(input: Bitmap, size: Size): Bitmap {
-        return input.blur(radius, inplace = true)
+        return input.blur(radius)
     }
 }

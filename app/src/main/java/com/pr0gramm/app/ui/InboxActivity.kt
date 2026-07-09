@@ -13,9 +13,10 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.PrimaryScrollableTabRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
+import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -23,14 +24,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import com.pr0gramm.app.Instant
 import com.pr0gramm.app.R
-import com.pr0gramm.app.Settings
 import com.pr0gramm.app.api.pr0gramm.Message
 import com.pr0gramm.app.api.pr0gramm.MessageConverter
 import com.pr0gramm.app.feed.ContentType
@@ -44,7 +42,6 @@ import com.pr0gramm.app.services.UriHelper
 import com.pr0gramm.app.services.UserService
 import com.pr0gramm.app.services.config.ConfigService
 import com.pr0gramm.app.ui.base.BaseAppCompatActivity
-import com.pr0gramm.app.ui.base.launchWhenCreated
 import com.pr0gramm.app.ui.compose.setComposeContent
 import com.pr0gramm.app.ui.fragments.ConversationsScreen
 import com.pr0gramm.app.ui.fragments.DigestsScreen
@@ -188,35 +185,56 @@ class InboxActivity : BaseAppCompatActivity("InboxActivity") {
                     title = {
                         Text(
                             tabs.getOrNull(pagerState.currentPage)
-                                ?.let { tabTitle(it, counts?.total?.minus(counts?.digests ?: 0) ?: 0) } ?: "")
+                                ?.let {
+                                    tabTitle(
+                                        it,
+                                        counts?.total?.minus(counts?.digests ?: 0) ?: 0
+                                    )
+                                } ?: "")
                     },
+                    actions = { },
                     navigationIcon = {
                         IconButton(onClick = onBack) {
                             Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
                         }
                     },
+                    // colors = TopAppBarDefaults.topAppBarColors(
+                    //     containerColor = MaterialTheme.colorScheme.primary,
+                    //     titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                    // ),
                 )
             },
         ) { padding ->
             Column(modifier = Modifier.padding(padding)) {
-                TabRow(selectedTabIndex = pagerState.currentPage) {
-                    tabs.forEachIndexed { index, type ->
-                        Tab(
-                            selected = pagerState.currentPage == index,
-                            onClick = { scope.launch { pagerState.animateScrollToPage(index) } },
-                            text = { Text(tabShortTitle(type, counts, tabs)) },
-                        )
-                    }
-                }
+                PrimaryScrollableTabRow(
+                    selectedTabIndex = pagerState.currentPage,
+                    containerColor = TabRowDefaults.primaryContainerColor,
+                    contentColor = TabRowDefaults.primaryContentColor,
+                    tabs = {
+                        tabs.forEachIndexed { index, type ->
+                            Tab(
+                                selected = pagerState.currentPage == index,
+                                onClick = { scope.launch { pagerState.animateScrollToPage(index) } },
+                                text = { Text(tabShortTitle(type, counts, tabs)) },
+                            )
+                        }
+                    })
 
-                HorizontalPager(state = pagerState, modifier = Modifier.weight(1f).fillMaxSize()) { page ->
-                    when (val type = tabs[page]) {
+                HorizontalPager(
+                    state = pagerState,
+                    beyondViewportPageCount = 1,
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxSize()
+                ) { page ->
+                    when (tabs[page]) {
                         InboxType.PRIVATE -> ConversationsScreen(
                             inboxService = inboxService,
                             onConversationClicked = onConversationClicked,
                         )
 
                         InboxType.COMMENTS_OUT -> InboxMessagesScreen(
+                            type = InboxType.COMMENTS_OUT,
                             loader = writtenCommentsLoader(),
                             currentUsername = userService.name,
                             admin = userService.userIsAdmin,
@@ -228,7 +246,11 @@ class InboxActivity : BaseAppCompatActivity("InboxActivity") {
                         )
 
                         InboxType.ALL -> InboxMessagesScreen(
-                            loader = apiMessageLoader(this@InboxActivity, syncOnLoad = true) { olderThan ->
+                            type = InboxType.ALL,
+                            loader = apiMessageLoader(
+                                this@InboxActivity,
+                                syncOnLoad = true
+                            ) { olderThan ->
                                 inboxService.fetchAll(olderThan)
                             },
                             currentUsername = userService.name,
@@ -241,7 +263,11 @@ class InboxActivity : BaseAppCompatActivity("InboxActivity") {
                         )
 
                         InboxType.COMMENTS_IN -> InboxMessagesScreen(
-                            loader = apiMessageLoader(this@InboxActivity, syncOnLoad = true) { olderThan ->
+                            type = InboxType.COMMENTS_IN,
+                            loader = apiMessageLoader(
+                                this@InboxActivity,
+                                syncOnLoad = true
+                            ) { olderThan ->
                                 inboxService.fetchComments(olderThan)
                             },
                             currentUsername = userService.name,
@@ -254,7 +280,11 @@ class InboxActivity : BaseAppCompatActivity("InboxActivity") {
                         )
 
                         InboxType.STALK -> InboxMessagesScreen(
-                            loader = apiMessageLoader(this@InboxActivity, syncOnLoad = true) { olderThan ->
+                            type = InboxType.STALK,
+                            loader = apiMessageLoader(
+                                this@InboxActivity,
+                                syncOnLoad = true
+                            ) { olderThan ->
                                 inboxService.fetchFollows(olderThan)
                             },
                             currentUsername = userService.name,
@@ -267,7 +297,11 @@ class InboxActivity : BaseAppCompatActivity("InboxActivity") {
                         )
 
                         InboxType.NOTIFICATIONS -> InboxMessagesScreen(
-                            loader = apiMessageLoader(this@InboxActivity, syncOnLoad = true) { olderThan ->
+                            type = InboxType.NOTIFICATIONS,
+                            loader = apiMessageLoader(
+                                this@InboxActivity,
+                                syncOnLoad = true
+                            ) { olderThan ->
                                 inboxService.fetchNotifications(olderThan)
                             },
                             currentUsername = userService.name,

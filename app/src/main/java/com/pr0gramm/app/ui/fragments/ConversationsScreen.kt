@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
@@ -35,11 +36,14 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.pr0gramm.app.api.pr0gramm.Api
+import com.pr0gramm.app.api.pr0gramm.MessageType
 import com.pr0gramm.app.services.InboxService
+import com.pr0gramm.app.ui.InboxType
 import com.pr0gramm.app.ui.Pagination
 import com.pr0gramm.app.ui.compose.components.EmptyHint
 import com.pr0gramm.app.ui.compose.components.ErrorHint
 import com.pr0gramm.app.ui.compose.components.LoadingHint
+import com.pr0gramm.app.ui.compose.components.UserAvatar
 import com.pr0gramm.app.ui.compose.components.Username
 import com.pr0gramm.app.ui.compose.observeAsStateCompat
 import com.pr0gramm.app.util.DurationFormat
@@ -59,7 +63,9 @@ fun ConversationsScreen(
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
 
-    val pagination = remember { Pagination(scope, ConversationsLoader(inboxService)) }
+    val pagination = remember(InboxType.PRIVATE) {
+        Pagination(scope, ConversationsLoader(inboxService))
+    }
 
     var conversations by remember { mutableStateOf(listOf<Api.Conversation>()) }
     var tailState by remember { mutableStateOf(Pagination.EndState<Api.Conversation>(hasMore = true)) }
@@ -97,7 +103,9 @@ fun ConversationsScreen(
         conversations = (conversations + response.conversations).distinctBy { it.name }
     }
 
-    val listState = rememberLazyListState()
+    val listState = remember(InboxType.PRIVATE) {
+        LazyListState()
+    }
 
     LaunchedEffect(listState, pagination) {
         snapshotFlow {
@@ -120,7 +128,7 @@ fun ConversationsScreen(
         modifier = modifier,
     ) {
         LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
-            items(conversations, key = { it.name }) { conversation ->
+            items(conversations) { conversation ->
                 ConversationRow(
                     conversation = conversation,
                     onClick = {
@@ -136,15 +144,15 @@ fun ConversationsScreen(
             }
 
             when {
-                tailState.error != null -> item(key = "error") {
+                tailState.error != null -> item {
                     ErrorHint(ErrorFormatting.format(context, tailState.error!!))
                 }
 
-                tailState.hasMore -> item(key = "loading") { LoadingHint() }
+                tailState.hasMore -> item { LoadingHint() }
             }
 
             if (conversations.isEmpty() && !tailState.hasMore && tailState.error == null) {
-                item(key = "empty") { EmptyHint() }
+                item { EmptyHint() }
             }
         }
     }
@@ -154,11 +162,6 @@ fun ConversationsScreen(
 private fun ConversationRow(conversation: Api.Conversation, onClick: () -> Unit) {
     val context = LocalContext.current
 
-    val avatar = remember(conversation.name) {
-        val userDrawables = UserDrawables(context)
-        (userDrawables.drawable(conversation.name) as BitmapDrawable).bitmap.asImageBitmap()
-    }
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -167,12 +170,11 @@ private fun ConversationRow(conversation: Api.Conversation, onClick: () -> Unit)
             .padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Image(
-            bitmap = avatar,
-            contentDescription = null,
-            modifier = Modifier
-                .size(40.dp)
-                .clip(CircleShape),
+
+
+        UserAvatar(
+            name = conversation.name,
+            modifier = Modifier.size(40.dp),
         )
 
         Column(
@@ -180,10 +182,18 @@ private fun ConversationRow(conversation: Api.Conversation, onClick: () -> Unit)
                 .weight(1f)
                 .padding(start = 16.dp),
         ) {
-            Username(name = conversation.name, mark = conversation.mark)
+            Username(
+                name = conversation.name,
+                mark = conversation.mark,
+                style = MaterialTheme.typography.bodyLarge
+            )
 
             Text(
-                text = DurationFormat.timeSincePastPointInTime(context, conversation.lastMessage, short = true),
+                text = DurationFormat.timeSincePastPointInTime(
+                    context,
+                    conversation.lastMessage,
+                    short = true
+                ),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -207,7 +217,8 @@ private fun ConversationRow(conversation: Api.Conversation, onClick: () -> Unit)
     }
 }
 
-private class ConversationsLoader(private val inboxService: InboxService) : Pagination.Loader<Api.Conversation>() {
+private class ConversationsLoader(private val inboxService: InboxService) :
+    Pagination.Loader<Api.Conversation>() {
     override suspend fun loadAfter(currentValue: Api.Conversation?): Pagination.Page<Api.Conversation> {
         val olderThan = currentValue?.lastMessage
         val response = inboxService.listConversations(olderThan)

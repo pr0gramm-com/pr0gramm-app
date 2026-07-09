@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.HorizontalDivider
@@ -35,7 +36,6 @@ import com.pr0gramm.app.ui.compose.components.MessageRow
 import com.pr0gramm.app.ui.compose.observeAsStateCompat
 import com.pr0gramm.app.util.ErrorFormatting
 import com.pr0gramm.app.util.di.injector
-import com.pr0gramm.app.util.di.instance
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runInterruptible
 import java.util.concurrent.TimeUnit
@@ -50,6 +50,7 @@ import java.util.concurrent.TimeUnit
  */
 @Composable
 fun InboxMessagesScreen(
+    type: InboxType,
     loader: Pagination.Loader<Message>,
     currentUsername: String?,
     admin: Boolean,
@@ -60,10 +61,12 @@ fun InboxMessagesScreen(
     onUserClicked: (userId: Int, username: String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val logger = Logger("InboxMessagesScreen")
+
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
 
-    val pagination = remember(loader) { Pagination(scope, loader) }
+    val pagination = remember(type) { Pagination(scope, loader) }
 
     var messages by remember(pagination) { mutableStateOf(listOf<Message>()) }
     var tailState by remember(pagination) { mutableStateOf(Pagination.EndState<Message>(hasMore = true)) }
@@ -91,14 +94,19 @@ fun InboxMessagesScreen(
 
     val items = remember(messages, tailState) { buildInboxItems(context, messages, tailState) }
 
-    val listState = rememberLazyListState()
+    val listState = remember(type) {
+        LazyListState()
+    }
 
     LaunchedEffect(listState, pagination) {
-        snapshotFlow {
+        val flow = snapshotFlow {
+            logger.info { "ListState ${listState.firstVisibleItemIndex} ${listState.firstVisibleItemScrollOffset}}" }
             val layoutInfo = listState.layoutInfo
             val lastVisible = layoutInfo.visibleItemsInfo.lastOrNull()?.index
             lastVisible to layoutInfo.totalItemsCount
-        }.collect { (lastVisible, total) ->
+        }
+
+        flow.collect { (lastVisible, total) ->
             if (lastVisible != null && total - lastVisible <= 12) {
                 pagination.loadAtTail()
             }
@@ -114,7 +122,7 @@ fun InboxMessagesScreen(
         modifier = modifier,
     ) {
         LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
-            items(items, key = { it.key }) { item ->
+            items(items) { item ->
                 when (item) {
                     is InboxListItem.MessageItem -> {
                         val message = item.message
@@ -125,7 +133,12 @@ fun InboxMessagesScreen(
                             admin = admin,
                             showTypeLabel = showTypeLabel,
                             onClick = when (message.type) {
-                                MessageType.COMMENT, MessageType.STALK -> ({ onCommentClicked(message) })
+                                MessageType.COMMENT, MessageType.STALK -> ({
+                                    onCommentClicked(
+                                        message
+                                    )
+                                })
+
                                 else -> null
                             },
                             onSenderClick = { onUserClicked(message.senderId, message.name) },
@@ -150,8 +163,8 @@ fun InboxMessagesScreen(
                         )
                     }
 
-                    InboxListItem.LoadingItem -> LoadingHint()
                     is InboxListItem.ErrorItem -> ErrorHint(item.text)
+                    InboxListItem.LoadingItem -> LoadingHint()
                     InboxListItem.EmptyItem -> EmptyHint()
                 }
             }
@@ -160,27 +173,11 @@ fun InboxMessagesScreen(
 }
 
 private sealed interface InboxListItem {
-    val key: Any
-
-    data class MessageItem(val message: Message) : InboxListItem {
-        override val key get() = message.id
-    }
-
-    data class DividerItem(val text: String) : InboxListItem {
-        override val key get() = "divider"
-    }
-
-    data object LoadingItem : InboxListItem {
-        override val key get() = "loading"
-    }
-
-    data class ErrorItem(val text: String) : InboxListItem {
-        override val key get() = "error"
-    }
-
-    data object EmptyItem : InboxListItem {
-        override val key get() = "empty"
-    }
+    data class MessageItem(val message: Message) : InboxListItem
+    data class DividerItem(val text: String) : InboxListItem
+    data class ErrorItem(val text: String) : InboxListItem
+    data object LoadingItem : InboxListItem
+    data object EmptyItem : InboxListItem
 }
 
 private fun buildInboxItems(
@@ -194,15 +191,25 @@ private fun buildInboxItems(
 
     messages.forEachIndexed { index, message ->
         if (index == dividerIndex && dividerIndex > 0) {
-            items += InboxListItem.DividerItem(context.getString(R.string.inbox_type_unread))
+            items += InboxListItem.DividerItem(
+                text = context.getString(R.string.inbox_type_unread),
+            )
         }
 
         items += InboxListItem.MessageItem(message)
     }
 
     when {
-        tailState.error != null -> items += InboxListItem.ErrorItem(ErrorFormatting.format(context, tailState.error))
-        tailState.hasMore -> items += InboxListItem.LoadingItem
+        tailState.error != null -> items += InboxListItem.ErrorItem(
+            ErrorFormatting.format(
+                context,
+                tailState.error
+            )
+        )
+
+        tailState.hasMore -> {
+            items += InboxListItem.LoadingItem
+        }
     }
 
     if (items.isEmpty()) {
@@ -250,7 +257,12 @@ fun apiMessageLoader(
             }
 
             if (syncOnLoad) {
-                SyncWorker.scheduleNextSyncIn(ctx, delay = 3, unit = TimeUnit.SECONDS, sourceTag = "inbox")
+                SyncWorker.scheduleNextSyncIn(
+                    ctx,
+                    delay = 3,
+                    unit = TimeUnit.SECONDS,
+                    sourceTag = "inbox"
+                )
             }
 
             return Pagination.Page(messages, messages.lastOrNull()?.takeIf { messages.size > 10 })

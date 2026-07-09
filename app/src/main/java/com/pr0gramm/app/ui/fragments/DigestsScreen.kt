@@ -67,19 +67,18 @@ fun DigestsScreen(
         LazyVerticalGrid(columns = GridCells.Fixed(spanCount), modifier = Modifier.fillMaxSize()) {
             digests.forEach { digest ->
                 item(
-                    key = "header-${digest.pushNotification.title}-${digest.message}",
                     span = { GridItemSpan(spanCount) },
                 ) {
                     DigestHeader(digest)
                 }
 
-                items(digest.items, key = { it.id }) { highlight ->
+                items(digest.items) { highlight ->
                     DigestThumbnail(highlight, onClick = { onItemClicked(highlight.id) })
                 }
             }
 
             if (loading && digests.isEmpty()) {
-                item(key = "loading", span = { GridItemSpan(spanCount) }) {
+                item(span = { GridItemSpan(spanCount) }) {
                     LoadingHint()
                 }
             }
@@ -95,7 +94,10 @@ private fun DigestHeader(digest: Api.DigestsInbox.Digest) {
             .padding(start = 16.dp, end = 16.dp, top = 24.dp, bottom = 16.dp),
     ) {
         if (digest.pushNotification.title.isNotBlank()) {
-            Text(text = digest.pushNotification.title, style = MaterialTheme.typography.headlineSmall)
+            Text(
+                text = digest.pushNotification.title,
+                style = MaterialTheme.typography.headlineSmall
+            )
         }
 
         if (digest.message.isNotBlank()) {
@@ -107,7 +109,11 @@ private fun DigestHeader(digest: Api.DigestsInbox.Digest) {
         }
 
         digest.notice?.takeIf { it.isNotBlank() }?.let { notice ->
-            Text(text = notice, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 8.dp))
+            Text(
+                text = notice,
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.padding(top = 8.dp)
+            )
         }
     }
 }

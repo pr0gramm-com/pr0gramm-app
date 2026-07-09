@@ -6,15 +6,22 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.pr0gramm.app.Logger
 import com.pr0gramm.app.seconds
+import com.pr0gramm.app.util.delay
 import com.pr0gramm.app.util.directName
 import com.pr0gramm.app.util.postOrSetValue
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancelChildren
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.plus
 import kotlin.reflect.KMutableProperty0
 
 class PaginationController(
-        private val pagination: Pagination<*>,
-        private val headOffset: Int = 12,
-        private val tailOffset: Int = 12) {
+    private val pagination: Pagination<*>,
+    private val headOffset: Int = 12,
+    private val tailOffset: Int = 12
+) {
 
     fun hit(position: Int, size: Int) {
         if (position < headOffset) {
@@ -44,10 +51,17 @@ class Pagination<E : Any>(private val baseScope: CoroutineScope, private val loa
     // publishes updates to this pagination
     val updates: LiveData<Update<E>> = mutableUpdates
 
+    override fun equals(other: Any?): Boolean {
+        return other is Pagination<E> && baseScope === other.baseScope && loader === other.loader
+    }
+
     /**
      * Loads the first page if no data is currently available
      */
-    fun initialize(headState: EndState<E> = EndState(), tailState: EndState<E> = EndState(hasMore = true)) {
+    fun initialize(
+        headState: EndState<E> = EndState(),
+        tailState: EndState<E> = EndState(hasMore = true)
+    ) {
         // clear any pending co-routines
         job.cancelChildren()
 
@@ -78,8 +92,9 @@ class Pagination<E : Any>(private val baseScope: CoroutineScope, private val loa
     }
 
     private fun load(
-            loadCallback: suspend (previousValue: E?) -> Page<E>,
-            endStateRef: KMutableProperty0<EndState<E>>) {
+        loadCallback: suspend (previousValue: E?) -> Page<E>,
+        endStateRef: KMutableProperty0<EndState<E>>
+    ) {
 
         val previousStateWasError = endStateRef.get().error != null
 
@@ -90,7 +105,7 @@ class Pagination<E : Any>(private val baseScope: CoroutineScope, private val loa
             try {
                 if (previousStateWasError) {
                     logger.debug { "Was in error state, delay loading" }
-                    delay(1.seconds.inMillis)
+                    delay(1.seconds)
                 }
 
                 logger.debug { "Start loading" }
@@ -126,14 +141,16 @@ class Pagination<E : Any>(private val baseScope: CoroutineScope, private val loa
     data class Update<E>(val state: State<E>, val newValues: List<E>)
 
     data class State<E>(
-            val headState: EndState<E> = EndState(),
-            val tailState: EndState<E> = EndState())
+        val headState: EndState<E> = EndState(),
+        val tailState: EndState<E> = EndState()
+    )
 
     data class EndState<E>(
-            val error: Exception? = null,
-            val value: E? = null,
-            val loading: Boolean = false,
-            val hasMore: Boolean = false)
+        val error: Exception? = null,
+        val value: E? = null,
+        val loading: Boolean = false,
+        val hasMore: Boolean = false
+    )
 
     data class Page<E>(val values: List<E>, val endValue: E? = null) {
         companion object {
@@ -159,8 +176,9 @@ class Pagination<E : Any>(private val baseScope: CoroutineScope, private val loa
 }
 
 fun addEndStateToValues(
-        context: Context, values: MutableList<in Any>, tailState: Pagination.EndState<*>,
-        ifEmptyValue: Any? = null) {
+    context: Context, values: MutableList<in Any>, tailState: Pagination.EndState<*>,
+    ifEmptyValue: Any? = null
+) {
 
     when {
         tailState.error != null ->
