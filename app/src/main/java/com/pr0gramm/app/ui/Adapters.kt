@@ -11,7 +11,6 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
 import com.pr0gramm.app.R
-import com.pr0gramm.app.R.id.value
 import com.pr0gramm.app.ui.views.BindingsViewHolder
 import com.pr0gramm.app.util.ErrorFormatting
 import com.pr0gramm.app.util.find
@@ -51,8 +50,8 @@ abstract class ItemAdapterDelegate<E : T, T : Any, VH : RecyclerView.ViewHolder>
     abstract fun onBindViewHolder(holder: VH, value: E)
 }
 
-abstract class ListItemTypeAdapterDelegate<E : L, L : Any, VH : RecyclerView.ViewHolder>(private val type: Class<E>)
-    : ItemAdapterDelegate<E, L, VH>() {
+abstract class ListItemTypeAdapterDelegate<E : L, L : Any, VH : RecyclerView.ViewHolder>(private val type: Class<E>) :
+    ItemAdapterDelegate<E, L, VH>() {
 
     constructor(type: KClass<E>) : this(type.javaObjectType)
 
@@ -62,12 +61,13 @@ abstract class ListItemTypeAdapterDelegate<E : L, L : Any, VH : RecyclerView.Vie
 }
 
 class AdapterDelegateManager<T : Any>(
-        private val delegates: List<AdapterDelegate<T, RecyclerView.ViewHolder>>) {
+    private val delegates: List<AdapterDelegate<T, RecyclerView.ViewHolder>>
+) {
 
     fun getItemViewType(values: List<T>, itemIndex: Int): Int {
         val idx = delegates.indexOfFirst { it.isForViewType(values, itemIndex) }
         if (idx == -1) {
-            throw IllegalArgumentException("No adapter delegate for item $value")
+            throw IllegalArgumentException("No adapter delegate for item ${values[itemIndex]}")
         }
 
         return idx
@@ -100,10 +100,10 @@ class AdapterDelegateManager<T : Any>(
 }
 
 abstract class DelegateAdapter<T : Any>(
-        diffCallback: DiffUtil.ItemCallback<T> = AsyncListAdapter.InstanceDiffCallback(),
-        detectMoves: Boolean = false)
-    : AsyncListAdapter<T, RecyclerView.ViewHolder>(diffCallback, detectMoves),
-        StatefulRecyclerView.InstanceStateAware {
+    diffCallback: DiffUtil.ItemCallback<T> = AsyncListAdapter.InstanceDiffCallback(),
+    detectMoves: Boolean = false
+) : AsyncListAdapter<T, RecyclerView.ViewHolder>(diffCallback, detectMoves),
+    StatefulRecyclerView.InstanceStateAware {
 
     protected val delegates: MutableList<AdapterDelegate<in T, out RecyclerView.ViewHolder>> = mutableListOf()
 
@@ -142,9 +142,10 @@ abstract class DelegateAdapter<T : Any>(
 }
 
 fun <T : Any> delegateAdapterOf(
-        vararg delegates: AdapterDelegate<T, *>,
-        diffCallback: DiffUtil.ItemCallback<T> = AsyncListAdapter.InstanceDiffCallback(),
-        detectMoves: Boolean = false): DelegateAdapter<T> {
+    vararg delegates: AdapterDelegate<T, *>,
+    diffCallback: DiffUtil.ItemCallback<T> = AsyncListAdapter.InstanceDiffCallback(),
+    detectMoves: Boolean = false
+): DelegateAdapter<T> {
 
     return object : DelegateAdapter<T>(diffCallback, detectMoves) {
         init {
@@ -192,8 +193,8 @@ fun staticLayoutAdapterDelegate(layout: Int, itemValue: Any)
 }
 
 
-class ErrorAdapterDelegate(private val layout: Int = R.layout.feed_error)
-    : ListItemTypeAdapterDelegate<ErrorAdapterDelegate.Value, Any, ErrorAdapterDelegate.ViewHolder>(Value::class) {
+class ErrorAdapterDelegate(private val layout: Int = R.layout.feed_error) :
+    ListItemTypeAdapterDelegate<ErrorAdapterDelegate.Value, Any, ErrorAdapterDelegate.ViewHolder>(Value::class) {
 
     override fun onCreateViewHolder(parent: ViewGroup): ViewHolder {
         return ViewHolder(parent.layoutInflater.inflate(layout, parent, false))
@@ -254,8 +255,8 @@ interface SingleItemAdapterDelegate<T : Any, VH : RecyclerView.ViewHolder> {
 
 object Adapters {
     class ForViewBindings<T : Any, B : ViewBinding>(
-            private val inflate: (LayoutInflater, parent: ViewGroup?, attachToParent: Boolean) -> B,
-            private val bindView: (holder: BindingsViewHolder<B>, value: T) -> Unit,
+        private val inflate: (LayoutInflater, parent: ViewGroup?, attachToParent: Boolean) -> B,
+        private val bindView: (holder: BindingsViewHolder<B>, value: T) -> Unit,
     ) : SingleItemAdapterDelegate<T, BindingsViewHolder<B>> {
         override fun onCreateViewHolder(parent: ViewGroup): BindingsViewHolder<B> {
             return BindingsViewHolder(inflate(parent.layoutInflater, parent, false))
@@ -270,7 +271,10 @@ object Adapters {
         return adapt(adapter) { value -> value }
     }
 
-    fun <E : Any, T : Any, VH : RecyclerView.ViewHolder, A : SingleItemAdapterDelegate<E, VH>> adapt(adapter: A, convert: (T) -> E?): AdapterDelegate<T, RecyclerView.ViewHolder> {
+    fun <E : Any, T : Any, VH : RecyclerView.ViewHolder, A : SingleItemAdapterDelegate<E, VH>> adapt(
+        adapter: A,
+        convert: (T) -> E?
+    ): AdapterDelegate<T, RecyclerView.ViewHolder> {
         return object : AdapterDelegate<T, RecyclerView.ViewHolder> {
             override fun isForViewType(values: List<T>, idx: Int): Boolean {
                 return convert(values[idx]) != null

@@ -1,32 +1,26 @@
 package com.pr0gramm.app.ui
 
-import android.annotation.SuppressLint
-import android.graphics.Color
 import android.os.Bundle
-import android.view.View
-import android.widget.TextView
-import androidx.appcompat.widget.Toolbar
-import androidx.core.view.ViewCompat
-import androidx.core.view.isVisible
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.res.colorResource
 import com.pr0gramm.app.R
 import com.pr0gramm.app.feed.ContentType
 import com.pr0gramm.app.milliseconds
 import com.pr0gramm.app.orm.BenisRecord
 import com.pr0gramm.app.orm.CachedVote
-import com.pr0gramm.app.services.*
+import com.pr0gramm.app.services.Graph
+import com.pr0gramm.app.services.StatisticsService
+import com.pr0gramm.app.services.ThemeHelper
+import com.pr0gramm.app.services.UserService
+import com.pr0gramm.app.services.VoteService
+import com.pr0gramm.app.services.optimizeValuesBy
 import com.pr0gramm.app.ui.base.BaseAppCompatActivity
 import com.pr0gramm.app.ui.base.launchWhenCreated
-import com.pr0gramm.app.ui.base.launchWhenStarted
-import com.pr0gramm.app.ui.views.CircleChartView
-import com.pr0gramm.app.ui.views.TimeRangeSelectorView
-import com.pr0gramm.app.ui.views.formatScore
+import com.pr0gramm.app.ui.compose.setComposeContent
 import com.pr0gramm.app.util.di.instance
-import com.pr0gramm.app.util.dp
-import com.pr0gramm.app.util.find
-import com.pr0gramm.app.util.getColorCompat
-import com.pr0gramm.app.util.observeChange
 import kotlinx.coroutines.withTimeout
-import kotterknife.bindView
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration.Companion.minutes
 
@@ -36,51 +30,42 @@ class StatisticsActivity : BaseAppCompatActivity("StatisticsActivity") {
     private val voteService: VoteService by instance()
     private val statsService: StatisticsService by instance()
 
-    private val benisGraph: View by bindView(R.id.benis_graph)
-    private val benisGraphLoading: View by bindView(R.id.benis_graph_loading)
-    private val benisGraphEmpty: View by bindView(R.id.benis_graph_empty)
-    private val benisGraphTimeSelector: TimeRangeSelectorView by bindView(R.id.graph_time_selector)
+    private var state by mutableStateOf(StatisticsState())
 
-    private val benisChangeDay: TextView by bindView(R.id.stats_change_day)
-    private val benisChangeWeek: TextView by bindView(R.id.stats_change_week)
-    private val benisChangeMonth: TextView by bindView(R.id.stats_change_month)
-
-    private val voteCountUp: TextView by bindView(R.id.stats_up)
-    private val voteCountDown: TextView by bindView(R.id.stats_down)
-
-    private val votesByTags: CircleChartView by bindView(R.id.votes_by_tags)
-    private val votesByItems: CircleChartView by bindView(R.id.votes_by_items)
-    private val votesByComments: CircleChartView by bindView(R.id.votes_by_comments)
-
-    private val typesOfUpload: CircleChartView by bindView(R.id.types_uploads)
-
-    private var benisValues: List<BenisRecord> by observeChange(listOf()) {
-        redrawBenisGraph()
-        updateTimeRange()
-    }
-
-    private var benisTimeRangeStart: Long by observeChange(0L) { redrawBenisGraph() }
+    private var benisValues: List<BenisRecord> = emptyList()
+    private var benisTimeRangeStart: Long = 0L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(ThemeHelper.theme.noActionBar)
         super.onCreate(savedInstanceState)
 
-        setContentView(R.layout.activity_statistics)
+        val hasUsername = userService.name != null
 
-        // setup toolbar as actionbar
-        val tb = find<Toolbar>(R.id.toolbar)
-        setSupportActionBar(tb)
+        state = state.copy(hasUsername = hasUsername)
 
-        // and show back button
-        supportActionBar?.apply {
-            setDisplayShowHomeEnabled(true)
-            setDisplayHomeAsUpEnabled(true)
-        }
+        setComposeContent {
+            // Read color resources inside composition
+            val statsUp = colorResource(R.color.stats_up)
+            val statsDown = colorResource(R.color.stats_down)
+            val typeSfw = colorResource(R.color.type_sfw)
+            val typeNsfp = colorResource(R.color.type_nsfp)
+            val typeNsfw = colorResource(R.color.type_nsfw)
+            val typeNsfl = colorResource(R.color.type_nsfl)
+            val typePol = colorResource(R.color.type_pol)
 
-        launchWhenStarted {
-            benisGraphTimeSelector.selectedTimeRange.collect { millis ->
-                benisTimeRangeStart = System.currentTimeMillis() - millis
-            }
+            // Store colors for use in background coroutines
+            colors = StatColors(statsUp, statsDown, typeSfw, typeNsfp, typeNsfw, typeNsfl, typePol)
+
+            StatisticsScreen(
+                state = state,
+                actions = StatisticsActions(
+                    onBack = { finish() },
+                    onTimeRangeChanged = { range ->
+                        benisTimeRangeStart = System.currentTimeMillis() - range.millis
+                        rebuildGraph()
+                    },
+                ),
+            )
         }
 
         launchWhenCreated(ignoreErrors = true) {
@@ -93,138 +78,120 @@ class StatisticsActivity : BaseAppCompatActivity("StatisticsActivity") {
 
             // and get the values now.
             benisValues = userService.loadBenisRecords().records
+            rebuildGraph()
         }
 
-        userService.name?.let { username ->
-            launchWhenCreated {
-                showContentTypes(typesOfUpload, username)
+        if (hasUsername) {
+            userService.name?.let { username ->
+                launchWhenCreated {
+                    loadContentTypes(username)
+                }
             }
         }
     }
 
-    private suspend fun showContentTypes(view: CircleChartView, username: String) {
+    private var colors = StatColors()
+
+    private data class StatColors(
+        val statsUp: androidx.compose.ui.graphics.Color = androidx.compose.ui.graphics.Color.Unspecified,
+        val statsDown: androidx.compose.ui.graphics.Color = androidx.compose.ui.graphics.Color.Unspecified,
+        val typeSfw: androidx.compose.ui.graphics.Color = androidx.compose.ui.graphics.Color.Unspecified,
+        val typeNsfp: androidx.compose.ui.graphics.Color = androidx.compose.ui.graphics.Color.Unspecified,
+        val typeNsfw: androidx.compose.ui.graphics.Color = androidx.compose.ui.graphics.Color.Unspecified,
+        val typeNsfl: androidx.compose.ui.graphics.Color = androidx.compose.ui.graphics.Color.Unspecified,
+        val typePol: androidx.compose.ui.graphics.Color = androidx.compose.ui.graphics.Color.Unspecified,
+    )
+
+    private suspend fun loadContentTypes(username: String) {
         withTimeout(1.minutes) {
-            statsService.statsForUploads(username).collect { state ->
-                showContentTypes(view, state)
+            statsService.statsForUploads(username).collect { stats ->
+                showContentTypes(stats)
             }
         }
     }
 
-    private fun showContentTypes(view: CircleChartView, stats: StatisticsService.Stats) {
+    private fun showContentTypes(stats: StatisticsService.Stats) {
         val counts = stats.counts
-
         val sfw = counts[ContentType.SFW] ?: 0
         val nsfp = counts[ContentType.NSFP] ?: 0
         val nsfw = counts[ContentType.NSFW] ?: 0
         val nsfl = counts[ContentType.NSFL] ?: 0
         val pol = counts[ContentType.POL] ?: 0
 
-        val values = listOf(
-            CircleChartView.Value(sfw, getColorCompat(R.color.type_sfw)),
-            CircleChartView.Value(nsfp, getColorCompat(R.color.type_nsfp)),
-            CircleChartView.Value(nsfw, getColorCompat(R.color.type_nsfw)),
-            CircleChartView.Value(nsfl, getColorCompat(R.color.type_nsfl)),
-            CircleChartView.Value(pol, getColorCompat(R.color.type_pol)),
+        state = state.copy(
+            uploadTypes = listOf(
+                ChartValue(sfw, colors.typeSfw),
+                ChartValue(nsfp, colors.typeNsfp),
+                ChartValue(nsfw, colors.typeNsfw),
+                ChartValue(nsfl, colors.typeNsfl),
+                ChartValue(pol, colors.typePol),
+            )
         )
-
-        view.chartValues = values
     }
 
-    @SuppressLint("SetTextI18n")
     private fun handleVoteCounts(votes: Map<CachedVote.Type, VoteService.Summary>) {
-        voteCountUp.text = "BLUSSI " + votes.values.sumOf { it.up }
-        voteCountDown.text = "MINUS " + votes.values.sumOf { it.down }
-
-        votesByTags.chartValues = toChartValues(votes[CachedVote.Type.TAG])
-        votesByItems.chartValues = toChartValues(votes[CachedVote.Type.ITEM])
-        votesByComments.chartValues = toChartValues(votes[CachedVote.Type.COMMENT])
-    }
-
-    private fun toChartValues(summary: VoteService.Summary?): List<CircleChartView.Value> {
-        summary ?: return listOf()
-
-        return listOf(
-            CircleChartView.Value(summary.up, getColorCompat(R.color.stats_up)),
-            CircleChartView.Value(-summary.down, getColorCompat(R.color.stats_down))
+        state = state.copy(
+            voteCountUp = votes.values.sumOf { it.up },
+            voteCountDown = votes.values.sumOf { it.down },
+            votesByTags = toChartValues(votes[CachedVote.Type.TAG]),
+            votesByItems = toChartValues(votes[CachedVote.Type.ITEM]),
+            votesByComments = toChartValues(votes[CachedVote.Type.COMMENT]),
         )
     }
 
-    private fun updateTimeRange() {
-        if (benisValues.size > 2) {
-            val min = benisValues.minOf { v -> v.time }
-            val max = benisValues.maxOf { v -> v.time }
-
-            benisGraphTimeSelector.maxRangeInMillis = (max - min)
-        }
+    private fun toChartValues(summary: VoteService.Summary?): List<ChartValue> {
+        summary ?: return emptyList()
+        return listOf(
+            ChartValue(summary.up, colors.statsUp),
+            ChartValue(-summary.down, colors.statsDown),
+        )
     }
 
-    private fun redrawBenisGraph() {
-        benisGraphLoading.isVisible = false
-        benisGraphTimeSelector.isVisible = true
-
+    private fun rebuildGraph() {
         var actualValues = true
         var records = optimizeValuesBy(benisValues) { it.benis.toDouble() }
 
-        // don't show if not enough data available
         if (records.size < 2 ||
             records.all { it.benis == records[0].benis } ||
             System.currentTimeMillis() - records[0].time < 60 * 1000
         ) {
-
-            benisGraphEmpty.isVisible = true
-            benisGraphTimeSelector.isVisible = false
-
             records = randomBenisGraph()
             actualValues = false
         }
 
-        // convert to graph
         val original = Graph(records.map { Graph.Point(it.time.toDouble(), it.benis.toDouble()) })
-
-        // sub-sample to only a few points.
         val startValue = benisTimeRangeStart.toDouble().coerceAtLeast(original.first.x)
         val sampled = original.sampleEquidistant(steps = 16, start = startValue)
 
-        // build the visual
-        val dr = GraphDrawable(sampled).apply {
-            lineColor = Color.WHITE
-            fillColor = 0xa0ffffffL.toInt()
-            lineWidth = dp(4f)
-            highlightFillColor = getColorCompat(ThemeHelper.primaryColorDark)
+        val graphState = if (!actualValues) {
+            BenisGraphState.Empty
+        } else {
+            BenisGraphState.Ready(graph = original, sampled = sampled)
         }
 
-        // add highlight for the a left-ish and a right-ish point.
-        dr.highlights.add(GraphDrawable.Highlight(2, formatScore(sampled[2].y.toInt())))
-        dr.highlights.add(GraphDrawable.Highlight(13, formatScore(sampled[13].y.toInt())))
+        val dayChange = if (actualValues) ScoreChange(computeChange(original, 1)) else null
+        val weekChange = if (actualValues) ScoreChange(computeChange(original, 7)) else null
+        val monthChange = if (actualValues) ScoreChange(computeChange(original, 30)) else null
 
-        // and show the graph
-        ViewCompat.setBackground(benisGraph, dr)
+        state = state.copy(
+            graphState = graphState,
+            benisChangeDay = dayChange,
+            benisChangeWeek = weekChange,
+            benisChangeMonth = monthChange,
+        )
+    }
 
-        if (actualValues) {
-            // calculate the recent changes of benis
-            formatChange(original, 1, benisChangeDay)
-            formatChange(original, 7, benisChangeWeek)
-            formatChange(original, 30, benisChangeMonth)
-        }
+    private fun computeChange(graph: Graph, days: Long): Int {
+        val millis = TimeUnit.DAYS.toMillis(days).toDouble()
+        val nowValue = graph.last.y
+        val baseValue = graph.valueAt(graph.last.x - millis)
+        return (nowValue - baseValue).toInt()
     }
 
     private fun randomBenisGraph(): List<BenisRecord> {
         val offset = (Math.random() * 10000).toInt()
         val timeScale = TimeUnit.DAYS.toMillis(3L)
-
         val values = listOf(0, 100, 75, 150, 90, 60, 130, 160, 90, 70, 60, 130, 170, 210)
         return values.mapIndexed { index, value -> BenisRecord(timeScale * index.toLong(), offset + 10 * value) }
-    }
-
-    private fun formatChange(graph: Graph, days: Long, view: TextView) {
-        val millis = TimeUnit.DAYS.toMillis(days).toDouble()
-
-        val nowValue = graph.last.y
-        val baseValue = graph.valueAt(graph.last.x - millis)
-
-        val absChange = nowValue - baseValue
-
-        view.text = formatScore(absChange.toInt())
-        view.setTextColor(getColorCompat(if (absChange < 0) R.color.stats_down else R.color.stats_up))
     }
 }
