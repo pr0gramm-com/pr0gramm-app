@@ -75,6 +75,7 @@ import com.pr0gramm.app.ui.base.launchWhenCreated
 import com.pr0gramm.app.ui.base.withErrorDialog
 import com.pr0gramm.app.ui.compose.theme.Pr0grammTheme
 import com.pr0gramm.app.ui.configureNewStyle
+import com.pr0gramm.app.ui.dialogs.PopupPlayer
 import com.pr0gramm.app.ui.feed.FeedGridEntry
 import com.pr0gramm.app.ui.feed.FeedScreen
 import com.pr0gramm.app.ui.fragments.CommentRef
@@ -219,6 +220,11 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
                             onItemClicked(item)
                         }
                     },
+                    onItemLongPress = if (Settings.enableQuickPeek) { item ->
+                        if (!isStateSaved) {
+                            activity?.let { PopupPlayer.open(it, item) }
+                        }
+                    } else null,
                     onLoadNext = { feedStateModel.triggerLoadNext() },
                     onLoadPrev = { feedStateModel.triggerLoadPrev() },
                 )

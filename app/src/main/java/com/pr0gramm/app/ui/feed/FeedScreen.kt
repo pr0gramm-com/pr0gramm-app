@@ -1,7 +1,8 @@
 package com.pr0gramm.app.ui.feed
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -109,6 +110,8 @@ fun FeedScreen(
     gridState: LazyGridState,
     onRefresh: () -> Unit,
     onItemClicked: (FeedItem) -> Unit,
+    onItemLongPress: ((FeedItem) -> Unit)? = null,
+    onItemLongPressEnd: (() -> Unit)? = null,
     onLoadNext: () -> Unit,
     onLoadPrev: () -> Unit,
     modifier: Modifier = Modifier,
@@ -148,6 +151,8 @@ fun FeedScreen(
                     is FeedGridEntry.Item -> FeedItemCell(
                         entry = entry,
                         onItemClicked = onItemClicked,
+                        onItemLongPress = onItemLongPress,
+                        onItemLongPressEnd = onItemLongPressEnd,
                     )
 
                     is FeedGridEntry.PlaceholderItem -> PlaceholderCell()
@@ -192,10 +197,13 @@ private fun FeedGridEntry.spanSize(maxSpan: Int): Int = when (this) {
     else -> maxSpan
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun FeedItemCell(
     entry: FeedGridEntry.Item,
     onItemClicked: (FeedItem) -> Unit,
+    onItemLongPress: ((FeedItem) -> Unit)? = null,
+    @Suppress("UNUSED_PARAMETER") onItemLongPressEnd: (() -> Unit)? = null,
 ) {
     val context = LocalContext.current
     val item = entry.item
@@ -209,7 +217,14 @@ private fun FeedItemCell(
         modifier = Modifier
             .aspectRatio(aspectRatio)
             .padding(2.dp)
-            .clickable { onItemClicked(item) },
+            .combinedClickable(
+                onClick = { if (!item.placeholder) onItemClicked(item) },
+                onLongClick = {
+                    if (!item.placeholder) {
+                        onItemLongPress?.invoke(item)
+                    }
+                },
+            ),
     ) {
         if (item.placeholder) {
             Box(
