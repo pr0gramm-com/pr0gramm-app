@@ -62,7 +62,7 @@ class FeedViewModel(
     private val adService: AdService,
     private val itemQueries: FeedItemInfoQueries,
 ) : ViewModel() {
-    private var hasRepostsInApi: Boolean= false
+    private var hasRepostsInApi: Boolean = false
     private val logger = Logger("FeedViewModel")
 
     val feedState = MutableStateFlow(
@@ -414,6 +414,10 @@ class FeedViewModel(
     }
 
     fun triggerLoadNext() {
+        if (feedState.value.feed.isAtEnd) {
+            return
+        }
+
         feedState.update { previousState ->
             previousState.copy(loading = FeedManager.LoadingSpace.NEXT)
         }
@@ -422,6 +426,10 @@ class FeedViewModel(
     }
 
     fun triggerLoadPrev() {
+        if (feedState.value.feed.isAtStart) {
+            return
+        }
+
         feedState.update { previousState ->
             previousState.copy(loading = FeedManager.LoadingSpace.PREV)
         }

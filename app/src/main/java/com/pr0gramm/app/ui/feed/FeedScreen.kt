@@ -270,7 +270,7 @@ private fun FeedItemCell(
                     painter = painterResource(R.drawable.ic_repost),
                     contentDescription = null,
                     tint = Color.White,
-                    modifier = Modifier.size(24.dp),
+                    // modifier = Modifier.size(24.dp),
                 )
             }
         } else if (entry.seen) {

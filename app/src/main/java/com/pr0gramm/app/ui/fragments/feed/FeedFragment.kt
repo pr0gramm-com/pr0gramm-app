@@ -13,6 +13,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.platform.AndroidUiDispatcher
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
@@ -105,13 +106,15 @@ import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.firstOrNull
 
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.EnumSet
 import kotlin.math.min
 
 
 /**
  */
-class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), FilterFragment, TitleFragment,
+class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), FilterFragment,
+    TitleFragment,
     BackAwareFragment {
 
     private val feedStateModel by viewModels { handle ->
@@ -169,7 +172,7 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
 
     private val feedEntriesState = mutableStateOf<List<FeedGridEntry>>(emptyList())
     private val refreshingState = mutableStateOf(false)
-    private val gridState = LazyGridState()
+    private var gridState = LazyGridState()
 
     private val scrollToolbar: Boolean
         get() = isNormalMode
@@ -200,6 +203,13 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
         super.onViewCreated(view, savedInstanceState)
 
         val activity = requireActivity()
+
+        // Restore grid scroll position on configuration change
+        if (savedInstanceState != null && autoScrollRef == null) {
+            val index = savedInstanceState.getInt(STATE_GRID_INDEX, 0)
+            val offset = savedInstanceState.getInt(STATE_GRID_OFFSET, 0)
+            gridState = LazyGridState(index, offset)
+        }
 
         // Set up Compose content
         views.composeView.setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
@@ -241,7 +251,9 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
                             previousIndex = index
                             previousOffset = offset
                             if (scrollToolbar) {
-                                (activity as? ToolbarActivity)?.scrollHideToolbarListener?.onScrolled(dy)
+                                (activity as? ToolbarActivity)?.scrollHideToolbarListener?.onScrolled(
+                                    dy
+                                )
                             }
                         }
                 }
@@ -265,7 +277,10 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
                 .collect { firstVisible ->
                     val entries = feedEntriesState.value
                     if (firstVisible in entries.indices) {
-                        val feedItem = entries.subList(firstVisible, entries.size.coerceAtMost(firstVisible + 10))
+                        val feedItem = entries.subList(
+                            firstVisible,
+                            entries.size.coerceAtMost(firstVisible + 10)
+                        )
                             .filterIsInstance<FeedGridEntry.Item>()
                             .firstOrNull()?.item
                         if (feedItem != null) {
@@ -358,12 +373,15 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
         }
     }
 
-    private fun updateAdapterState(feedState: FeedViewModel.FeedState, userState: UserStateModel.UserState) {
+    private fun updateAdapterState(
+        feedState: FeedViewModel.FeedState,
+        userState: UserStateModel.UserState
+    ) {
         trace { "updateAdapterState()" }
 
         val context = context
         if (this.activity == null || context == null) {
-            logger.warn { "updateAdapterState called with activity alredy null." }
+            logger.warn { "updateAdapterState called with activity already null." }
             return
         }
 
@@ -387,18 +405,27 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
 
             if (userState.userInfo != null) {
                 val userInfo = userState.userInfo
-                val isSelfInfo = userInfo.info.user.name.equals(userState.ownUsername, ignoreCase = true)
+                val isSelfInfo =
+                    userInfo.info.user.name.equals(userState.ownUsername, ignoreCase = true)
 
                 // if we found this user using a normal 'search', we will show a hint
                 // that the user exists
                 if (filter.tags != null) {
                     if (!isSelfInfo) {
                         val userAndMark = userInfo.info.user.run { UserAndMark(name, mark) }
-                        entries += FeedGridEntry.UserHint(userAndMark.name, userAndMark.mark, this::openUserUploads)
+                        entries += FeedGridEntry.UserHint(
+                            userAndMark.name,
+                            userAndMark.mark,
+                            this::openUserUploads
+                        )
                     }
 
                 } else {
-                    entries += FeedGridEntry.UserInfo(userState.userInfo, isSelfInfo, userActionListener)
+                    entries += FeedGridEntry.UserInfo(
+                        userState.userInfo,
+                        isSelfInfo,
+                        userActionListener
+                    )
 
                     if (userState.userInfoCommentsOpen) {
                         val user = userService.name
@@ -412,7 +439,12 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
                 }
 
             } else if (filter.username != null) {
-                val item = feedState.feed.firstOrNull { it.user.equals(filter.username, ignoreCase = true) }
+                val item = feedState.feed.firstOrNull {
+                    it.user.equals(
+                        filter.username,
+                        ignoreCase = true
+                    )
+                }
                 if (item != null) {
                     val user = UserAndMark(item.user, item.mark)
                     entries += FeedGridEntry.UserLoading(user.name, user.mark)
@@ -439,7 +471,12 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
                     )
                 } else {
                     val msg = buildString {
-                        append(getString(R.string.could_not_load_feed_content_type, feedState.missingContentType.name))
+                        append(
+                            getString(
+                                R.string.could_not_load_feed_content_type,
+                                feedState.missingContentType.name
+                            )
+                        )
                         append(" ")
                         append(
                             getString(
@@ -488,7 +525,10 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
                         itemColumnIndex++
                     }
 
-                    entries.add(indexToInsert, FeedGridEntry.Item(item, repost, preloaded, seen, highlight))
+                    entries.add(
+                        indexToInsert,
+                        FeedGridEntry.Item(item, repost, preloaded, seen, highlight)
+                    )
                 }
 
                 when {
@@ -521,6 +561,8 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
 
         if (view != null) {
             outState.putBoolean("searchContainerVisible", searchContainerIsVisible())
+            outState.putInt(STATE_GRID_INDEX, gridState.firstVisibleItemIndex)
+            outState.putInt(STATE_GRID_OFFSET, gridState.firstVisibleItemScrollOffset)
         }
     }
 
@@ -637,6 +679,8 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
     override fun onResume() {
         super.onResume()
 
+        performAutoScroll()
+
         Track.openFeed(currentFilter)
 
         // check if we should show the pin button or not.
@@ -678,6 +722,16 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
     }
 
     fun updateFeedItemTarget(feed: Feed, item: FeedItem) {
+        val entries = feedEntriesState.value
+
+        for (visibleItem in gridState.layoutInfo.visibleItemsInfo) {
+            val entry = entries.getOrNull(visibleItem.index) ?: context
+            if (entry is FeedGridEntry.Item && entry.item.id == item.id) {
+                // already in view
+                return
+            }
+        }
+
         logger.info { "Want to resume from $item" }
         autoScrollRef = ScrollRef(CommentRef(item), feed, smoothScroll = true)
     }
@@ -806,7 +860,8 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
         // switching to normal mode leaves the special favorites fragment.
         menu.findItem(R.id.action_feedtype)?.isVisible = isNormalMode
 
-        val adminOnUserProfile = userService.userIsAdmin && userStateModel.userInfo?.info?.user?.name != null
+        val adminOnUserProfile =
+            userService.userIsAdmin && userStateModel.userInfo?.info?.user?.name != null
         menu.findItem(R.id.action_block_user)?.isVisible = adminOnUserProfile
         menu.findItem(R.id.action_open_in_admin)?.isVisible = adminOnUserProfile
 
@@ -929,7 +984,8 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
     }
 
     private fun openUserInAdmin() {
-        val uri = "https://pr0gramm.com/admin/?view=users&action=show&id=${userStateModel.userInfo?.info?.user?.id}"
+        val uri =
+            "https://pr0gramm.com/admin/?view=users&action=show&id=${userStateModel.userInfo?.info?.user?.id}"
         BrowserHelper.openCustomTab(requireContext(), Uri.parse(uri), handover = true)
     }
 
@@ -1038,7 +1094,11 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
         }
     }
 
-    private fun onItemClicked(item: FeedItem, commentRef: CommentRef? = null, preview: ImageView? = null) {
+    private fun onItemClicked(
+        item: FeedItem,
+        commentRef: CommentRef? = null,
+        preview: ImageView? = null
+    ) {
         val activity = activity ?: return
 
         // reset auto open.
@@ -1157,7 +1217,8 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
         views.searchOptions.initView()
 
         // prepare search view
-        val typeName = FeedFilterFormatter.feedTypeToString(context, currentFilter.withTagsNoReset("dummy"))
+        val typeName =
+            FeedFilterFormatter.feedTypeToString(context, currentFilter.withTagsNoReset("dummy"))
         views.searchOptions.setQueryHint(getString(R.string.action_search, typeName))
 
         if (isNormalMode) {
@@ -1251,7 +1312,9 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
 
         launchInViewScope {
             if (smoothScroll) {
-                gridState.animateScrollToItem(idx)
+                withContext(AndroidUiDispatcher.Main) {
+                    gridState.animateScrollToItem(idx)
+                }
             } else {
                 gridState.scrollToItem(idx)
             }
@@ -1263,6 +1326,9 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
         private const val ARG_FEED_START = "FeedFragment.start"
         private const val ARG_NORMAL_MODE = "FeedFragment.simpleMode"
         private const val ARG_SEARCH_QUERY_STATE = "FeedFragment.searchQueryState"
+
+        private const val STATE_GRID_INDEX = "gridState.firstVisibleItemIndex"
+        private const val STATE_GRID_OFFSET = "gridState.firstVisibleItemScrollOffset"
 
         fun newInstance(
             feedFilter: FeedFilter,
