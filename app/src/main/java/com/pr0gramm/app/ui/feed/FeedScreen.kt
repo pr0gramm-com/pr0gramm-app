@@ -284,7 +284,7 @@ private fun FeedItemCell(
                     painter = painterResource(R.drawable.ic_check),
                     contentDescription = null,
                     tint = Color.White,
-                    modifier = Modifier.size(24.dp),
+                    // modifier = Modifier.size(24.dp),
                 )
             }
         }

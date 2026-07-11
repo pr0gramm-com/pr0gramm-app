@@ -6,7 +6,6 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
-import android.view.animation.DecelerateInterpolator
 import android.widget.ImageView
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.runtime.LaunchedEffect
@@ -15,7 +14,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.platform.AndroidUiDispatcher
 import androidx.compose.ui.platform.ViewCompositionStrategy
-import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.whenResumed
 import com.google.android.material.snackbar.Snackbar
@@ -51,7 +49,7 @@ import com.pr0gramm.app.services.preloading.PreloadService
 import com.pr0gramm.app.time
 import com.pr0gramm.app.ui.ContentTypeDrawable
 import com.pr0gramm.app.ui.ConversationActivity
-import com.pr0gramm.app.ui.DetectTapTouchListener
+
 import com.pr0gramm.app.ui.FancyExifThumbnailGenerator
 import com.pr0gramm.app.ui.FeedFilterFormatter
 import com.pr0gramm.app.ui.FilterFragment
@@ -84,7 +82,10 @@ import com.pr0gramm.app.ui.fragments.ItemUserAdminDialog
 import com.pr0gramm.app.ui.fragments.pager.PostPagerFragment
 import com.pr0gramm.app.ui.showDialog
 import com.pr0gramm.app.ui.viewModels
-import com.pr0gramm.app.ui.views.SearchOptionsView
+import com.pr0gramm.app.ui.feed.SearchBottomSheet
+import com.pr0gramm.app.ui.feed.SearchQuery
+import com.pr0gramm.app.ui.feed.SearchState
+import com.pr0gramm.app.ui.feed.searchStateFromQueryTerm
 import com.pr0gramm.app.ui.views.UserInfoView
 import com.pr0gramm.app.util.AndroidUtility
 import com.pr0gramm.app.util.BrowserHelper
@@ -173,6 +174,9 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
     private val feedEntriesState = mutableStateOf<List<FeedGridEntry>>(emptyList())
     private val refreshingState = mutableStateOf(false)
     private var gridState = LazyGridState()
+
+    private val searchVisibleState = mutableStateOf(false)
+    private val searchInitialState = mutableStateOf(SearchState())
 
     private val scrollToolbar: Boolean
         get() = isNormalMode
@@ -268,6 +272,24 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
                             }
                         }
                 }
+                // Search bottom sheet
+                if (searchVisibleState.value) {
+                    val typeName = FeedFilterFormatter.feedTypeToString(
+                        requireContext(),
+                        currentFilter.withTagsNoReset("dummy")
+                    )
+                    SearchBottomSheet(
+                        initialState = searchInitialState.value,
+                        queryHint = getString(R.string.action_search, typeName),
+                        showExtended = isNormalMode,
+                        recentSearches = recentSearchesServices.searches(),
+                        onSearch = { query ->
+                            hideSearchContainer()
+                            performSearch(query)
+                        },
+                        onDismiss = { hideSearchContainer() },
+                    )
+                }
             }
         }
 
@@ -306,17 +328,10 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
 
         resetToolbar()
 
-        // execute a search when we get a search term
-        views.searchOptions.searchQuery = { performSearch(it) }
-        views.searchOptions.searchCanceled = { hideSearchContainer() }
-
         // restore open search
         if (savedInstanceState != null && savedInstanceState.getBoolean("searchContainerVisible")) {
             showSearchContainer(false)
         }
-
-        // close search on click into the darkened area.
-        views.searchContainer.setOnTouchListener(DetectTapTouchListener { hideSearchContainer() })
 
         launchInViewScope {
             data class Update(
@@ -566,12 +581,17 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
         }
     }
 
-    private fun initialSearchViewState(): Bundle? {
-        return arguments?.getBundle(ARG_SEARCH_QUERY_STATE) ?: run {
-            currentFilter.tags?.let { tags ->
-                SearchOptionsView.ofQueryTerm(tags)
-            }
-        }
+    private fun initialSearchViewState(): SearchState {
+        return arguments?.getBundle(ARG_SEARCH_QUERY_STATE)?.let { bundle ->
+            SearchState(
+                queryTerm = bundle.getCharSequence("queryTerm", "").toString(),
+                customExcludes = bundle.getCharSequence("customWithoutTerm", "").toString(),
+                minScore = bundle.getInt("minScore", 0),
+                excludedTags = bundle.getStringArray("selectedWithoutTags")?.toSet() ?: emptySet(),
+            )
+        } ?: currentFilter.tags?.let { tags ->
+            searchStateFromQueryTerm(tags)
+        } ?: SearchState()
     }
 
     private fun useToolbarTopMargin(): Boolean {
@@ -992,7 +1012,7 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
     private fun switchFeedType() {
         var filter = currentFilter
         filter = filter.withFeedType(switchFeedTypeTarget(filter))
-        (activity as MainActionHandler).onFeedFilterSelected(filter, initialSearchViewState())
+        (activity as MainActionHandler).onFeedFilterSelected(filter, null as Bundle?)
     }
 
     private fun refreshFeedWithIndicator() {
@@ -1065,19 +1085,14 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
         }
     }
 
-    private fun performSearch(query: SearchOptionsView.SearchQuery) {
-        // this is triggered sometimes by an EditorAction after the fragment
-        // is destroyed. we guard against crashing by checking if the view still exists.
+    private fun performSearch(query: SearchQuery) {
         view ?: return
-
         hideSearchContainer()
 
         val current = currentFilter
         var filter = current.withTagsNoReset(query.combined)
 
-        // do nothing, if the filter did not change
-        if (current == filter)
-            return
+        if (current == filter) return
 
         var startAt: CommentRef? = null
         if (query.combined.trim().matches("[1-9][0-9]{5,}|id:[0-9]+".toRegex())) {
@@ -1085,10 +1100,8 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
             startAt = CommentRef(query.combined.filter { it in '0'..'9' }.toLong())
         }
 
-        val searchQueryState = views.searchOptions.currentState()
-        (activity as MainActionHandler).onFeedFilterSelected(filter, searchQueryState, startAt)
+        (activity as MainActionHandler).onFeedFilterSelected(filter, null, startAt)
 
-        // store the term for later
         if (query.queryTerm.isNotBlank()) {
             recentSearchesServices.storeTerm(query.queryTerm)
         }
@@ -1199,57 +1212,15 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
     }
 
     private fun resetAndShowSearchContainer() {
-        views.searchOptions.applyState(initialSearchViewState())
+        searchInitialState.value = initialSearchViewState()
         showSearchContainer(true)
     }
 
     private fun showSearchContainer(animated: Boolean) {
         val context = context ?: return
-
-        if (searchContainerIsVisible())
-            return
-
-        val view = view ?: return
-
-        view.post { this.hideToolbar() }
-
-        // ensure that the search view is initialized
-        views.searchOptions.initView()
-
-        // prepare search view
-        val typeName =
-            FeedFilterFormatter.feedTypeToString(context, currentFilter.withTagsNoReset("dummy"))
-        views.searchOptions.setQueryHint(getString(R.string.action_search, typeName))
-
-        if (isNormalMode) {
-            val paddingTop = AndroidUtility.getStatusBarHeight(context)
-            views.searchOptions.setPadding(0, paddingTop, 0, 0)
-        } else {
-            views.searchOptions.enableSimpleSearch()
-        }
-
-        views.searchContainer.isVisible = true
-
-        if (animated) {
-            views.searchContainer.alpha = 0f
-
-            val searchView = views.searchOptions
-            views.searchContainer.animate()
-                .withEndAction { searchView.requestSearchFocus() }
-                .alpha(1f)
-
-            searchView.translationY = (-(0.1 * view.height).toInt()).toFloat()
-
-            searchView.animate()
-                .setInterpolator(DecelerateInterpolator())
-                .translationY(0f)
-        } else {
-            views.searchContainer.animate().cancel()
-            views.searchContainer.alpha = 1f
-
-            views.searchOptions.animate().cancel()
-            views.searchOptions.translationY = 0f
-        }
+        if (searchVisibleState.value) return
+        view?.post { this.hideToolbar() }
+        searchVisibleState.value = true
     }
 
     override fun onBackButton(): Boolean {
@@ -1262,23 +1233,13 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
     }
 
     private fun searchContainerIsVisible(): Boolean {
-        return view != null && views.searchContainer.isVisible
+        return searchVisibleState.value
     }
 
     private fun hideSearchContainer() {
-        if (!searchContainerIsVisible())
-            return
-
-        val containerView = this.views.searchContainer
-        containerView.animate()
-            .withEndAction { containerView.isVisible = false }
-            .alpha(0f)
-
-        val height = view?.height ?: 0
-        views.searchOptions.animate().translationY((-(0.1 * height).toInt()).toFloat())
-
+        if (!searchVisibleState.value) return
+        searchVisibleState.value = false
         resetToolbar()
-
         hideSoftKeyboard()
     }
 

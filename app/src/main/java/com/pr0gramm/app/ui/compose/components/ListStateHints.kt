@@ -33,6 +33,7 @@ fun LoadingHint(modifier: Modifier = Modifier) {
             text = stringResource(R.string.hint_loading),
             style = MaterialTheme.typography.bodySmall,
             modifier = Modifier.padding(start = 8.dp),
+            color = MaterialTheme.colorScheme.onSurface,
         )
     }
 }

@@ -69,7 +69,11 @@ class PreloadService : IntentService("PreloadService"), LazyInjectorAware {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         // send out the initial notification and bring the service into foreground mode!
-        startForeground(Types.Preload.id, notification.build())
+        startForeground(
+            Types.Preload.id,
+            notification.build(),
+            android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC,
+        )
 
         if (intent?.getLongExtra(EXTRA_CANCEL, -1) == jobId) {
             canceled = true

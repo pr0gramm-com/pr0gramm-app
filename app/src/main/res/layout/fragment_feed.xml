@@ -10,20 +10,4 @@
         android:id="@+id/compose_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
-
-    <ScrollView
-        android:id="@+id/search_container"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#80000000"
-        android:visibility="gone"
-        tools:visibility="invisible">
-
-        <com.pr0gramm.app.ui.views.SearchOptionsView
-            android:id="@+id/search_options"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:elevation="4dp"
-            tools:include="@layout/view_search" />
-    </ScrollView>
 </FrameLayout>
