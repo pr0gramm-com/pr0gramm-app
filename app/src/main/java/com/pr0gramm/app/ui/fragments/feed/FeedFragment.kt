@@ -56,9 +56,7 @@ import com.pr0gramm.app.ui.FilterFragment
 import com.pr0gramm.app.ui.InterstitialAdler
 import com.pr0gramm.app.ui.LoginActivity
 import com.pr0gramm.app.ui.MainActionHandler
-import com.pr0gramm.app.ui.MainActivity
 import com.pr0gramm.app.ui.PreviewInfo
-import com.pr0gramm.app.ui.ScrollHideToolbarListener
 import com.pr0gramm.app.ui.ScrollHideToolbarListener.ToolbarActivity
 import com.pr0gramm.app.ui.TitleFragment
 import com.pr0gramm.app.ui.back.BackAwareFragment
@@ -330,7 +328,7 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
 
         // restore open search
         if (savedInstanceState != null && savedInstanceState.getBoolean("searchContainerVisible")) {
-            showSearchContainer(false)
+            showSearchContainer()
         }
 
         launchInViewScope {
@@ -1213,13 +1211,10 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
 
     private fun resetAndShowSearchContainer() {
         searchInitialState.value = initialSearchViewState()
-        showSearchContainer(true)
+        showSearchContainer()
     }
 
-    private fun showSearchContainer(animated: Boolean) {
-        val context = context ?: return
-        if (searchVisibleState.value) return
-        view?.post { this.hideToolbar() }
+    private fun showSearchContainer() {
         searchVisibleState.value = true
     }
 

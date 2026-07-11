@@ -24,6 +24,9 @@ import androidx.appcompat.view.menu.ActionMenuItem
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
@@ -107,6 +110,11 @@ class MainActivity : BaseAppCompatActivity("MainActivity"),
 
         // use toolbar as action bar
         setSupportActionBar(views.toolbar)
+
+        ViewCompat.setOnApplyWindowInsetsListener(views.toolbarContainer) { v, insets ->
+            views.toolbarContainer.updatePadding(top = insets.systemWindowInsetTop)
+            WindowInsetsCompat.CONSUMED
+        }
 
         // and hide it away on scrolling
         val toolbarContainer = findViewById<View?>(R.id.toolbar_container)
