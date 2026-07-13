@@ -31,7 +31,6 @@ import com.pr0gramm.app.services.DigestsService
 import com.pr0gramm.app.services.DownloadService
 import com.pr0gramm.app.services.FavedCommentService
 import com.pr0gramm.app.services.FollowService
-import com.pr0gramm.app.services.GifDrawableLoader
 import com.pr0gramm.app.services.InMemoryCacheService
 import com.pr0gramm.app.services.InboxService
 import com.pr0gramm.app.services.InfoMessageService
@@ -213,7 +212,6 @@ fun appInjector(app: Application) = Module.build {
     bind<ContactService>() with singleton { ContactService(instance()) }
     bind<DownloadService>() with singleton { DownloadService(instance(), instance(), instance()) }
     bind<FeedService>() with singleton { FeedServiceImpl(instance(), instance(), instance()) }
-    bind<GifDrawableLoader>() with singleton { GifDrawableLoader(app.cacheDir, instance()) }
     bind<InfoMessageService>() with singleton { InfoMessageService(instance()) }
     bind<InviteService>() with singleton { InviteService(instance()) }
     bind<StatisticsService>() with singleton { StatisticsService(instance()) }

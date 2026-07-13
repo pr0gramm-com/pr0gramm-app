@@ -23,9 +23,7 @@ import com.pr0gramm.app.ui.fragments.post.CommentTree
 import com.pr0gramm.app.ui.views.InfoLineView
 import com.pr0gramm.app.ui.views.PostActions
 import com.pr0gramm.app.ui.views.TagsView
-import com.pr0gramm.app.ui.views.viewer.SimpleVideoMediaView
 import com.pr0gramm.app.util.LongSparseArray
-import com.pr0gramm.app.util.debugOnly
 import com.pr0gramm.app.util.dp
 import com.pr0gramm.app.util.removeFromParent
 import com.pr0gramm.app.util.weakref
@@ -285,22 +283,8 @@ private class PlaceholderView(context: Context) : FrameLayout(context) {
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
         val viewer = viewer ?: return false
-        if (viewer !is SimpleVideoMediaView) {
-            return viewer.onTouchEvent(event)
-        }
 
         val offsetY = y - viewer.y
-
-        debugOnly {
-            val log = Logger("Touch")
-            log.info { "Viewer height: ${viewer.height}" }
-            log.info { "Viewer y: ${viewer.y}" }
-            log.info { "Container height: ${height}" }
-            log.info { "Container y: ${y}" }
-            log.info { "TouchY: ${event.y}" }
-        }
-
-        // val eventCopy = MotionEvent.obtainNoHistory(event)
         event.offsetLocation(0.0f, offsetY)
         try {
             return viewer.dispatchTouchEvent(event)

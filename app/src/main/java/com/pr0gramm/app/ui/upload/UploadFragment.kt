@@ -40,11 +40,14 @@ import com.pr0gramm.app.ui.dialogs.ErrorDialogFragment
 import com.pr0gramm.app.ui.showDialog
 import com.pr0gramm.app.ui.viewModels
 import com.pr0gramm.app.ui.views.viewer.MediaUri
-import com.pr0gramm.app.ui.views.viewer.MediaView
-import com.pr0gramm.app.ui.views.viewer.MediaViews
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ComposeView
+import com.pr0gramm.app.ui.compose.theme.Pr0grammTheme
+import com.pr0gramm.app.ui.compose.viewer.MediaViewer
 import com.pr0gramm.app.util.AndroidUtility
 import com.pr0gramm.app.util.ErrorFormatting
-import com.pr0gramm.app.util.addOnAttachListener
+
 import com.pr0gramm.app.util.addTextChangedListener
 import com.pr0gramm.app.util.canStartIntent
 import com.pr0gramm.app.util.di.instance
@@ -174,8 +177,8 @@ class UploadFragment : BaseFragment("UploadFragment", R.layout.fragment_upload) 
 
         launchInViewScope {
             val fSimilarItems = vm.state
-                    .mapNotNull { state -> state.uploadState as? UploadService.State.SimilarItems }
-                    .distinctUntilChanged()
+                .mapNotNull { state -> state.uploadState as? UploadService.State.SimilarItems }
+                .distinctUntilChanged()
 
             fSimilarItems.collect { similarItems ->
                 if (similarItems.items.isNotEmpty()) {
@@ -364,24 +367,33 @@ class UploadFragment : BaseFragment("UploadFragment", R.layout.fragment_upload) 
 
         logger.info { "Loading mediaItem into view: ${state.file}" }
 
-        val viewer = MediaViews.newInstance(MediaView.Config(activity, state.mediaUri))
+        val mediaUri = state.mediaUri
 
-        viewer.layoutParams = FrameLayout.LayoutParams(
+        val composeView = ComposeView(activity).apply {
+            layoutParams = FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT)
-
-        viewer.addOnAttachListener { viewer.playMedia() }
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+            )
+            setContent {
+                Pr0grammTheme {
+                    MediaViewer(
+                        mediaUri = mediaUri,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+            }
+        }
 
         views.preview.removeAllViews()
-        views.preview.addView(viewer)
+        views.preview.addView(composeView)
     }
 
     private fun imageWasShrunken() {
         view?.let { view ->
             Snackbar.make(view, R.string.hint_shrank_successful, Snackbar.LENGTH_LONG)
-                    .configureNewStyle()
-                    .setAction(R.string.okay) {}
-                    .show()
+                .configureNewStyle()
+                .setAction(R.string.okay) {}
+                .show()
         }
     }
 
@@ -426,22 +438,28 @@ class UploadFragment : BaseFragment("UploadFragment", R.layout.fragment_upload) 
 
                 if (videoErrorId != null) {
                     append("\n\n")
-                            .bold { append(getString(R.string.upload_error_video)) }
-                            .append(" ")
-                            .append(getString(videoErrorId))
+                        .bold { append(getString(R.string.upload_error_video)) }
+                        .append(" ")
+                        .append(getString(videoErrorId))
                 }
 
                 append("\n\n")
-                        .bold { append("Info:\n") }
-                        .append(getString(R.string.report_video_summary,
-                                report.width, report.height,
-                                report.format, report.duration))
-                        .append("\n")
+                    .bold { append("Info:\n") }
+                    .append(
+                        getString(
+                            R.string.report_video_summary,
+                            report.width, report.height,
+                            report.format, report.duration
+                        )
+                    )
+                    .append("\n")
 
                 val offset = resources.getDimensionPixelSize(R.dimen.bullet_list_leading_margin)
                 for (stream in report.streams) {
-                    val streamInfo = getString(R.string.report_video_stream,
-                            stream.type, stream.codec ?: "null")
+                    val streamInfo = getString(
+                        R.string.report_video_stream,
+                        stream.type, stream.codec ?: "null"
+                    )
 
                     inSpans(BulletSpan(offset / 3)) {
                         inSpans(LeadingMarginSpan.Standard(offset)) {

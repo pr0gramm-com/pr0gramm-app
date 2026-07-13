@@ -6,14 +6,12 @@ import android.app.Activity
 import android.content.Intent
 import android.graphics.Point
 import android.graphics.Rect
-import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
-import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams
@@ -52,15 +50,14 @@ import com.pr0gramm.app.time
 import com.pr0gramm.app.ui.InterstitialAdler
 import com.pr0gramm.app.ui.LoginActivity
 import com.pr0gramm.app.ui.MainActivity
-import com.pr0gramm.app.ui.PreviewInfo
 import com.pr0gramm.app.ui.RecyclerViewPoolProvider
+import com.pr0gramm.app.ui.ZoomViewActivity
 import com.pr0gramm.app.ui.Screen
 import com.pr0gramm.app.ui.ScrollHideToolbarListener
 import com.pr0gramm.app.ui.ScrollHideToolbarListener.ToolbarActivity
 import com.pr0gramm.app.ui.TitleFragment
 import com.pr0gramm.app.ui.TriangleDrawable
 import com.pr0gramm.app.ui.WriteMessageActivity
-import com.pr0gramm.app.ui.ZoomViewActivity
 import com.pr0gramm.app.ui.back.BackAwareFragment
 import com.pr0gramm.app.ui.base.BaseFragment
 import com.pr0gramm.app.ui.base.MainScope
@@ -79,7 +76,6 @@ import com.pr0gramm.app.ui.fragments.CommentRef
 import com.pr0gramm.app.ui.fragments.CommentView
 import com.pr0gramm.app.ui.fragments.ItemUserAdminDialog
 import com.pr0gramm.app.ui.fragments.PostAdapter
-import com.pr0gramm.app.ui.fragments.PreviewInfoSource
 import com.pr0gramm.app.ui.fragments.ReportDialog
 import com.pr0gramm.app.ui.fragments.TagsDetailsDialog
 import com.pr0gramm.app.ui.fragments.ViewerFullscreenParameters
@@ -88,12 +84,15 @@ import com.pr0gramm.app.ui.fragments.pager.PostPagerFragment
 import com.pr0gramm.app.ui.showDialog
 import com.pr0gramm.app.ui.viewModels
 import com.pr0gramm.app.ui.views.PostActions
-import com.pr0gramm.app.ui.views.viewer.AbstractProgressMediaView
 import com.pr0gramm.app.ui.views.viewer.MediaUri
-import com.pr0gramm.app.ui.views.viewer.MediaView
-import com.pr0gramm.app.ui.views.viewer.MediaView.Config
-import com.pr0gramm.app.ui.views.viewer.MediaViews
-import com.pr0gramm.app.ui.views.viewer.VolumeController
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ComposeView
+import androidx.core.content.edit
+import com.pr0gramm.app.ui.compose.theme.Pr0grammTheme
+import com.pr0gramm.app.ui.compose.viewer.MediaViewer
+import com.pr0gramm.app.util.di.injector
 import com.pr0gramm.app.util.AndroidUtility
 import com.pr0gramm.app.util.Linkify
 import com.pr0gramm.app.util.arguments
@@ -178,7 +177,8 @@ class PostFragment : BaseFragment("PostFragment"), NewTagDialogFragment.OnAddNew
     // only set while we have a viewScope
     private var mediaViewState: StateFlow<MediaViewState>? = null
 
-    private var viewer: MediaView? = null
+    private var viewer: View? = null
+    private val viewerIsPlaying = mutableStateOf(false)
 
     // works as an override in the PostFragment. Uses only title or subtitle, if set.
     override var title: TitleFragment.Title = TitleFragment.Title(subtitle = "…")
@@ -224,7 +224,7 @@ class PostFragment : BaseFragment("PostFragment"), NewTagDialogFragment.OnAddNew
                 model.refreshAsync()
 
                 // rewind video on refresh
-                viewer?.rewind()
+                // TODO: expose rewind via compose state if needed
             }
         }
 
@@ -342,11 +342,11 @@ class PostFragment : BaseFragment("PostFragment"), NewTagDialogFragment.OnAddNew
     }
 
     private fun stopMediaOnViewer() {
-        viewer?.stopMedia()
+        viewerIsPlaying.value = false
     }
 
     private fun playMediaOnViewer() {
-        viewer?.playMedia()
+        viewerIsPlaying.value = true
     }
 
     private fun updateTitle(tags: List<Api.Tag>) {
@@ -371,7 +371,6 @@ class PostFragment : BaseFragment("PostFragment"), NewTagDialogFragment.OnAddNew
 
     private fun updateAdapterFromState(state: PostViewModel.State, mediaViewState: MediaViewState) {
         val viewerBaseHeight = mediaViewState.height
-        val mediaControlsContainer: ViewGroup? = mediaViewState.controlsContainer
 
         logger.debug {
             "Applying post fragment state: h=${viewerBaseHeight}, refreshing=${state.refreshing}, " +
@@ -381,8 +380,7 @@ class PostFragment : BaseFragment("PostFragment"), NewTagDialogFragment.OnAddNew
                     }, " +
                     "comments=${state.comments.size}/${state.comments.hashCode()}, " +
                     "loading=${state.commentsLoading}, commentsVisible=${state.commentsVisible}, " +
-                    "followState=${state.followState}, " +
-                    "mcc=${mediaControlsContainer?.identityHashCode()?.toHexString()}"
+                    "followState=${state.followState}"
         }
 
         val items = mutableListOf<PostAdapter.Item>()
@@ -391,7 +389,7 @@ class PostFragment : BaseFragment("PostFragment"), NewTagDialogFragment.OnAddNew
             if (viewerBaseHeight > 0) {
                 items += PostAdapter.Item.PlaceholderItem(
                     viewerBaseHeight,
-                    viewer, mediaControlsContainer
+                    viewer, null
                 )
             }
         }
@@ -452,7 +450,9 @@ class PostFragment : BaseFragment("PostFragment"), NewTagDialogFragment.OnAddNew
             button.setOnClickListener { overlay.removeFromParent() }
 
             // force video views not to automatically enable sound on startup
-            VolumeController.resetMuteTime(requireContext())
+            requireContext().injector.instance<android.content.SharedPreferences>().edit {
+                putLong("VolumeController.lastUnmutedVideo", 0L)
+            }
         }
     }
 
@@ -560,20 +560,12 @@ class PostFragment : BaseFragment("PostFragment"), NewTagDialogFragment.OnAddNew
             // move to fullscreen!?
             AndroidUtility.applyWindowFullscreen(activity, true)
 
-            // move media controls directly to viewer
-            currentMediaViewState().controlsContainer?.let { mcc ->
-                mcc.removeFromParent()
-                viewer.addView(mcc)
-                applyControlContainerScaling(mcc, viewer, params)
-            }
+
 
             views.fab.hide()
         }
     }
 
-    private fun currentMediaViewState(): MediaViewState {
-        return mediaViewState?.value ?: throw IllegalStateException("must in view lifecycle.")
-    }
 
     private fun realignFullScreen() {
         val viewer = viewer ?: return
@@ -586,9 +578,7 @@ class PostFragment : BaseFragment("PostFragment"), NewTagDialogFragment.OnAddNew
         viewer.scaleX = params.scale
         viewer.scaleY = params.scale
 
-        currentMediaViewState().controlsContainer?.let { mcc ->
-            applyControlContainerScaling(mcc, viewer, params)
-        }
+
     }
 
     fun exitFullscreen() {
@@ -627,13 +617,6 @@ class PostFragment : BaseFragment("PostFragment"), NewTagDialogFragment.OnAddNew
 
         Screen.unlockOrientation(activity)
 
-        // gets attached to different parent somewhere else
-        currentMediaViewState().controlsContainer?.let { mcc ->
-            mcc.removeFromParent()
-            mcc.scaleX = 1.0f
-            mcc.scaleY = 1.0f
-        }
-
         // and tell the adapter to bind it back to the view.
         views.recyclerView.postAdapter?.let { adapter ->
             val idx = adapter.items.indexOfFirst { it is PostAdapter.Item.PlaceholderItem }
@@ -641,22 +624,6 @@ class PostFragment : BaseFragment("PostFragment"), NewTagDialogFragment.OnAddNew
                 adapter.notifyItemChanged(idx)
             }
         }
-    }
-
-    private fun applyControlContainerScaling(
-        mcc: ViewGroup,
-        viewer: MediaView,
-        params: ViewerFullscreenParameters
-    ) {
-        mcc.layoutParams = FrameLayout.LayoutParams(
-            (viewer.width * params.scale).toInt(),
-            ((viewer.height - viewer.paddingTop) * params.scale).toInt(),
-        )
-
-        mcc.scaleX = 1.0f / params.scale
-        mcc.scaleY = 1.0f / params.scale
-        mcc.pivotY = 0.0f
-        mcc.pivotX = 0.0f
     }
 
     internal val isVideoFullScreen: Boolean get() = fullscreenAnimator != null
@@ -728,12 +695,9 @@ class PostFragment : BaseFragment("PostFragment"), NewTagDialogFragment.OnAddNew
     }
 
     private fun downloadPostWithPermissionGranted() {
-        val bitmapDrawable = previewInfo.preview as? BitmapDrawable
-        val preview = bitmapDrawable?.bitmap ?: previewInfo.fancy?.valueOrNull
-
         launchWhenStarted {
             try {
-                downloadService.downloadWithNotification(feedItem, preview)
+                downloadService.downloadWithNotification(feedItem, null)
             } catch (_: DownloadService.CouldNotCreateDownloadDirectoryException) {
                 showErrorString(parentFragmentManager, getString(R.string.error_could_not_create_download_directory))
             }
@@ -797,45 +761,48 @@ class PostFragment : BaseFragment("PostFragment"), NewTagDialogFragment.OnAddNew
     private fun initializeMediaView(): StateFlow<MediaViewState> {
         val activity = requireActivity()
         val uri = buildMediaUri()
+        val aspect = if (feedItem.width > 0 && feedItem.height > 0) {
+            feedItem.width.toFloat() / feedItem.height
+        } else -1f
 
-        val viewerConfig =
-            Config(activity, uri, audio = feedItem.audio, previewInfo = previewInfo, subtitles = feedItem.subtitles)
-        val viewer = logger.time("MediaView.newInstance(${uri.baseUri})") {
-            MediaViews.newInstance(viewerConfig)
+        val composeView = ComposeView(activity).apply {
+            setContent {
+                Pr0grammTheme {
+                    MediaViewer(
+                        mediaUri = uri,
+                        modifier = Modifier.fillMaxWidth(),
+                        aspect = aspect,
+                        audio = feedItem.audio,
+                        subtitles = feedItem.subtitles,
+                        isPlaying = viewerIsPlaying.value,
+                        onMediaShown = {
+                            doInBackground { seenService.markAsSeen(feedItem.id) }
+                        },
+                        onSingleTap = {
+                            if (!feedItem.deleted) executeTapAction(Settings.singleTapAction)
+                        },
+                        onDoubleTap = {
+                            if (!feedItem.deleted) executeTapAction(Settings.doubleTapAction)
+                        },
+                    )
+                }
+            }
         }
 
-        viewer.tag = ViewerTag
-
-        // remember for later
-        this.viewer = viewer
-
-        viewer.wasViewed = {
-            doInBackground { seenService.markAsSeen(feedItem.id) }
-        }
-
-        registerTapListener(viewer)
+        composeView.tag = ViewerTag
+        this.viewer = composeView
 
         // add views in the correct order (normally first child)
         val idx = views.playerContainer.indexOfChild(views.voteAnimationIndicator)
-        views.playerContainer.addView(viewer, idx)
-
-        // Add a container for the children
-        val mediaControlsContainer = FrameLayout(requireContext())
-        mediaControlsContainer.layoutParams = FrameLayout.LayoutParams(
-            LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT, Gravity.BOTTOM
-        )
+        views.playerContainer.addView(composeView, idx)
 
         // initialize the view state
-        val mediaViewState = MutableStateFlow(
-            MediaViewState(
-                controlsContainer = mediaControlsContainer,
-            )
-        )
+        val mediaViewState = MutableStateFlow(MediaViewState())
 
         // add space to the top of the viewer or to the screen to compensate
         // for the action bar.
         val viewerPaddingTop = AndroidUtility.getActionBarContentOffset(activity)
-        viewer.updatePadding(top = viewerPaddingTop)
+        composeView.updatePadding(top = viewerPaddingTop)
 
         if (feedItem.width > 0 && feedItem.height > 0) {
             val screenSize = Point().also { activity.windowManager.defaultDisplay.getSize(it) }
@@ -847,16 +814,10 @@ class PostFragment : BaseFragment("PostFragment"), NewTagDialogFragment.OnAddNew
             mediaViewState.update { previousState ->
                 previousState.copy(height = expectedViewerHeight)
             }
-
-            // if we can guess, that the height of the media will be more than the height of the
-            // screen, we can directly hide the FAB
-            if (expectedMediaHeight > screenSize.y) {
-                // fab.hide()
-            }
         }
 
-        viewer.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
-            val newHeight = viewer.measuredHeight
+        composeView.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
+            val newHeight = composeView.measuredHeight
             val oldHeight = mediaViewState.value.height
 
             if (newHeight != oldHeight) {
@@ -872,27 +833,16 @@ class PostFragment : BaseFragment("PostFragment"), NewTagDialogFragment.OnAddNew
             }
         }
 
-        launchInViewScope {
-            viewer.controllerViews().collect { view ->
-                logger.debug { "Adding view to media container: $view" }
-                mediaControlsContainer.addView(view)
-            }
-        }
-
         if (Settings.showContentTypeFlag) {
             // show the little admin triangle
-            mediaControlsContainer.background = TriangleDrawable(activity, feedItem.contentType, activity.dp(16))
-            mediaControlsContainer.minimumHeight = activity.dp(16)
-        }
-
-        launchInViewScope {
-            // initialize with view model state
-            viewer.videoPauseState.value = model.videoIsPaused
-
-            // but react to updates from view
-            viewer.videoPauseState.collect { paused ->
-                model.videoIsPaused = paused
+            val triangleView = View(requireContext()).apply {
+                background = TriangleDrawable(activity, feedItem.contentType, activity.dp(16))
+                minimumHeight = activity.dp(16)
+                layoutParams = FrameLayout.LayoutParams(
+                    LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT, Gravity.BOTTOM
+                )
             }
+            views.playerContainer.addView(triangleView)
         }
 
         return mediaViewState
@@ -915,14 +865,6 @@ class PostFragment : BaseFragment("PostFragment"), NewTagDialogFragment.OnAddNew
         return uri
     }
 
-    private val previewInfo: PreviewInfo by lazy {
-        val parent = parentFragment
-        if (parent is PreviewInfoSource) {
-            parent.previewInfoFor(feedItem)?.let { return@lazy it }
-        }
-
-        return@lazy PreviewInfo.of(requireContext(), feedItem)
-    }
 
     private fun simulateScroll() {
         if (view != null) {
@@ -930,29 +872,6 @@ class PostFragment : BaseFragment("PostFragment"), NewTagDialogFragment.OnAddNew
         }
     }
 
-    /**
-     * Registers a tap listener on the given viewer instance. The listener is used
-     * to handle double-tap-to-vote events from the view.
-
-     * @param viewer The viewer to register the tap listener to.
-     */
-    private fun registerTapListener(viewer: MediaView) {
-        if (feedItem.deleted) {
-            return
-        }
-
-        viewer.tapListener = object : MediaView.TapListener {
-            override fun onSingleTap(event: MotionEvent): Boolean {
-                executeTapAction(Settings.singleTapAction)
-                return true
-            }
-
-            override fun onDoubleTap(event: MotionEvent): Boolean {
-                executeTapAction(Settings.doubleTapAction)
-                return true
-            }
-        }
-    }
 
     private fun executeTapAction(action: Settings.TapAction) {
         when (action) {
@@ -1001,13 +920,7 @@ class PostFragment : BaseFragment("PostFragment"), NewTagDialogFragment.OnAddNew
      * we will hide the little video progress bar.
      */
     private fun hideProgressIfLoop(tags: List<Api.Tag>) {
-        val actualView = viewer?.actualMediaView
-
-        if (actualView is AbstractProgressMediaView) {
-            if (tags.any { tag -> isLoopTag(tag) }) {
-                actualView.hideVideoProgress()
-            }
-        }
+        // progress visibility is handled inside the Compose VideoViewer
     }
 
     private fun isLoopTag(tag: Api.Tag): Boolean {
@@ -1383,7 +1296,6 @@ class PostFragment : BaseFragment("PostFragment"), NewTagDialogFragment.OnAddNew
 
     private data class MediaViewState(
         val height: Int = 0,
-        val controlsContainer: ViewGroup? = null,
     )
 
     companion object {

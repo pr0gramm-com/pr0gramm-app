@@ -102,16 +102,6 @@ androidComponents {
     onVariants { variant ->
         val variantName = variant.name.replaceFirstChar { it.uppercase() }
 
-        tasks.matching { it.name == "merge${variantName}JniLibFolders" }.configureEach {
-            doLast {
-                fileTree("build/") {
-                    include("**/armeabi/libpl_droidsonroids_gif.so")
-                    include("**/mips*/*.so")
-                }.forEach { it.delete() }
-            }
-        }
-
-
         tasks.matching { it.name == "package${variantName}" }.configureEach {
             doLast {
                 println("Checking for important files in the apk...")
@@ -215,12 +205,9 @@ dependencies {
 
     implementation(libs.moshi)
 
-    implementation(libs.droidsonroids.gifdrawable)
-
     implementation(libs.namedregex)
     implementation(libs.materialishprogress)
     implementation(libs.proguard.annotations)
-    implementation(libs.subsamplingimageview)
     implementation(libs.dogstadClient)
     implementation(variantOf(libs.shortcutbadger) { artifactType("aar") })
     // implementation("com.github.AlexKorRnd:ChipsLayoutManager:v0.3.8.4")

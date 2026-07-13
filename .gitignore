@@ -99,3 +99,5 @@ proguard-final.pro
 
 /sentry.properties
 design/
+
+/.kotlin
