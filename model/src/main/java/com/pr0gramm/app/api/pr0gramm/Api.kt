@@ -75,6 +75,10 @@ interface Api {
     @GET("/api/user/identifier")
     suspend fun identifier(): Identifier
 
+    // blocking on purpose, it is called from inside an OkHttp interceptor
+    @GET("/api/user/avToken")
+    fun avToken(): retrofit2.Call<AvToken>
+
     @FormUrlEncoded
     @POST("/api/profile/block")
     suspend fun block(
@@ -621,6 +625,13 @@ interface Api {
 
     @JsonClass(generateAdapter = true)
     class Identifier(val identifier: String)
+
+    @JsonClass(generateAdapter = true)
+    class AvToken(
+            val token: String? = null,
+            val validUntil: Instant? = null,
+            override val error: String? = null,
+    ) : HasError
 
     @JsonClass(generateAdapter = true)
     class Login(

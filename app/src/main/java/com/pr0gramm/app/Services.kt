@@ -6,6 +6,7 @@ import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.os.Build
 import app.cash.sqldelight.driver.android.AndroidSqliteDriver
+import com.pr0gramm.app.api.pr0gramm.AgeVerificationInterceptor
 import com.pr0gramm.app.api.pr0gramm.Api
 import com.pr0gramm.app.api.pr0gramm.ApiProvider
 import com.pr0gramm.app.api.pr0gramm.LoginCookieJar
@@ -125,6 +126,7 @@ fun appInjector(app: Application) = Module.build {
                 }
             }
 
+            .addInterceptor(AgeVerificationInterceptor(cookieJar) { instance<Api>() })
             .addInterceptor(UseSecondaryServerInterceptor())
 
             .addNetworkInterceptor(
