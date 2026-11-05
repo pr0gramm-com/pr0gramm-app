@@ -23,7 +23,7 @@ pagingRuntime = "3.3.6"
 constraintlayout = "2.2.2"
 userMessagingPlatform = "3.2.0"
 activity = "1.13.0"
-androidxLifecycle = "2.9.0"
+androidxLifecycle = "2.11.0"
 fragmentKtx = "1.9.1"
 composeBom = "2025.05.01"
 # 23.0.0 to 23.2.0 breaks the apk for some reason (too small, fails to read android-manifest)
