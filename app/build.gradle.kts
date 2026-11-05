@@ -17,7 +17,7 @@ android {
 
     defaultConfig {
         applicationId = "com.pr0gramm.app"
-        minSdk = 23
+        minSdk = 24
         targetSdk = 33
         versionCode = appVersion
         versionName = "1.${(appVersion / 10)}.${(appVersion % 10)}"
