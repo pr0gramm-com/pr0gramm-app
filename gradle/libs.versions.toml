@@ -1,7 +1,7 @@
 [versions]
 agp = "8.13.2"
-kotlin = "2.1.10"
-ksp = "2.1.10-1.0.30"
+kotlin = "2.4.21"
+ksp = "2.3.13"
 gradleVersions = "0.67.0"
 gms = "4.5.0"
 gradleCrashlytics = "3.0.8"
