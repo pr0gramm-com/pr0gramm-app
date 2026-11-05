@@ -1,11 +1,11 @@
 [versions]
-agp = "8.13.2"
+agp = "9.5.1"
 kotlin = "2.4.21"
 ksp = "2.3.13"
 gradleVersions = "0.67.0"
 gms = "4.5.0"
 gradleCrashlytics = "3.0.8"
-sqldelight = "2.0.2"
+sqldelight = "2.4.1"
 coreKtx = "1.16.0"
 kotlinCoroutines = "1.11.0"
 viewMaterial = "1.12.0"

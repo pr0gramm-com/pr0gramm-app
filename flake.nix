@@ -22,10 +22,10 @@
       devShells = forAllSystems (
         pkgs:
         let
-          # versions match compileSdk and the AGP 8.10 default build-tools
+          # versions match compileSdk and the AGP 9.5 default build-tools
           android = pkgs.androidenv.composeAndroidPackages {
             platformVersions = [ "35" ];
-            buildToolsVersions = [ "35.0.0" ];
+            buildToolsVersions = [ "36.0.0" ];
           };
           sdk = "${android.androidsdk}/libexec/android-sdk";
         in

@@ -3,7 +3,6 @@ import java.io.ByteArrayOutputStream
 
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.services)
     alias(libs.plugins.firebase.crashlytics)
@@ -54,10 +53,6 @@ android {
         compose = true
     }
 
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.13"
-    }
-
     buildTypes {
         getByName("debug") {
             isMinifyEnabled = false
@@ -101,50 +96,38 @@ android {
     }
 }
 
-android.applicationVariants.configureEach {
-    val variant = name
+// check the final apk for files that the minifier might remove
+tasks.matching { it.name == "packageDebug" || it.name == "packageRelease" }.configureEach {
+    val variant = name.removePrefix("package").lowercase()
+    doLast {
+        println("Checking for important files in the apk...")
 
-    tasks.named("merge${variant.capitalize()}JniLibFolders").configure {
-        doLast {
-            fileTree("build/") {
-                include("**/armeabi/libpl_droidsonroids_gif.so")
-                include("**/mips*/*.so")
-            }.forEach { it.delete() }
+        val pathsToApk = listOf(
+            "${layout.buildDirectory.get().asFile}/outputs/apk/$variant/app-$variant.apk",
+            "${layout.buildDirectory.get().asFile}/intermediates/apk/$variant/app-$variant.apk"
+        )
+
+        if (pathsToApk.none { file(it).exists() }) {
+            throw RuntimeException("No .apk file found.")
         }
-    }
 
-
-    tasks.named("package${variant.capitalize()}").configure {
-        doLast {
-            println("Checking for important files in the apk...")
-
-            val pathsToApk = listOf(
-                "$buildDir/outputs/apk/$variant/app-$variant.apk",
-                "$buildDir/intermediates/apk/$variant/app-$variant.apk"
-            )
-
-            if (pathsToApk.none { file(it).exists() }) {
-                throw RuntimeException("No .apk file found.")
-            }
-
-            pathsToApk.forEach { pathToApk ->
-                println(pathToApk)
-                if (file(pathToApk).exists()) {
-                    val output = providers.exec {
-                        if (OperatingSystem.current().isWindows) {
-                            commandLine("tar", "-tf", pathToApk)
-                        } else {
-                            commandLine("unzip", "-v", pathToApk)
-                        }
+        pathsToApk.forEach { pathToApk ->
+            println(pathToApk)
+            if (file(pathToApk).exists()) {
+                val output = providers.exec {
+                    if (OperatingSystem.current().isWindows) {
+                        commandLine("tar", "-tf", pathToApk)
+                    } else {
+                        commandLine("unzip", "-v", pathToApk)
                     }
+                }
 
-                    println(output.result.get())
+                println(output.result.get())
 
-                    val outputStr = output.standardOutput.asText.get()
+                val outputStr = output.standardOutput.asText.get()
 
-                    if (!outputStr.contains("okhttp3/internal/publicsuffix/publicsuffixes.gz")) {
-                        throw RuntimeException("publicsuffixes.gz not found in build")
-                    }
+                if (!outputStr.contains("okhttp3/internal/publicsuffix/publicsuffixes.gz")) {
+                    throw RuntimeException("publicsuffixes.gz not found in build")
                 }
             }
         }
