@@ -38,12 +38,32 @@ jobs:
             --passphrase "$PASSPHRASE"
             -o release.keystore release.keystore.gpg
 
-      - name: Build and push app release
-        run: ./release.sh
+      - name: Increase version
+        run: |
+          VERSION=$(( $(grep -Eo '[0-9]+' app/version.gradle.kts) + 1 ))
+          echo "extra[\"appVersion\"] = $VERSION" > app/version.gradle.kts
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "TAG=1.$(( VERSION / 10 )).$(( VERSION % 10 ))" >> "$GITHUB_ENV"
+
+      - name: Build release apk
+        run: ./gradlew --console=plain --no-daemon assembleRelease
+
+      - name: Verify apk
+        run: unzip -t app/build/outputs/apk/release/app-release.apk | grep publicsuffixes.gz
+
+      - name: Commit and tag version
+        run: |
+          git add app/version.gradle.kts
+          git commit -m "Released version $VERSION"
+          git tag -a "$TAG" -m "Released version $TAG"
+          git push origin HEAD "$TAG"
+
+      - name: Create github release
         env:
-          CREDENTIALS_UPDATE: ${{ secrets.UPDATE_MANAGER_CREDENTIALS }}
-          CREDENTIALS_GITHUB: ${{ secrets.GITHUB_TOKEN }}
-          VERBOSE: "false"
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "$TAG" --verify-tag --title "$TAG" --generate-notes \
+            app/build/outputs/apk/release/app-release.apk
 
       - name: Delete keystore file
         if: always()
