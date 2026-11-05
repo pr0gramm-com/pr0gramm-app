@@ -24,7 +24,7 @@
         let
           # versions match compileSdk and the AGP 9.5 default build-tools
           android = pkgs.androidenv.composeAndroidPackages {
-            platformVersions = [ "35" ];
+            platformVersions = [ "37" ];
             buildToolsVersions = [ "36.0.0" ];
           };
           sdk = "${android.androidsdk}/libexec/android-sdk";

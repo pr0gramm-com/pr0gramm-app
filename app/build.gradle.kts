@@ -13,7 +13,7 @@ val appVersion: Int by extra
 
 android {
     namespace = "com.pr0gramm.app"
-    compileSdk = 35
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.pr0gramm.app"

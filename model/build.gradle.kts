@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.pr0gramm.app.model"
-    compileSdk = 35
+    compileSdk = 37
 
 
     defaultConfig {
