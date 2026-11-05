@@ -25,7 +25,7 @@ userMessagingPlatform = "3.2.0"
 activity = "1.13.0"
 androidxLifecycle = "2.11.0"
 fragmentKtx = "1.9.1"
-composeBom = "2025.05.01"
+composeBom = "2026.09.00"
 # 23.0.0 to 23.2.0 breaks the apk for some reason (too small, fails to read android-manifest)
 playServicesAds = "24.3.0"
 firebaseBom = "33.14.0"
