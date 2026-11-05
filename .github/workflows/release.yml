@@ -49,7 +49,7 @@ jobs:
         run: ./gradlew --console=plain --no-daemon assembleRelease
 
       - name: Verify apk
-        run: unzip -t app/build/outputs/apk/release/app-release.apk | grep publicsuffixes.gz
+        run: unzip -t app/build/outputs/apk/release/app-release.apk | grep assets/PublicSuffixDatabase.list
 
       - name: Commit and tag version
         run: |

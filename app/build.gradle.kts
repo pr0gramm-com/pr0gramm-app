@@ -104,7 +104,6 @@ tasks.matching { it.name == "packageDebug" || it.name == "packageRelease" }.conf
 
         val pathsToApk = listOf(
             "${layout.buildDirectory.get().asFile}/outputs/apk/$variant/app-$variant.apk",
-            "${layout.buildDirectory.get().asFile}/intermediates/apk/$variant/app-$variant.apk"
         )
 
         if (pathsToApk.none { file(it).exists() }) {
@@ -126,8 +125,8 @@ tasks.matching { it.name == "packageDebug" || it.name == "packageRelease" }.conf
 
                 val outputStr = output.standardOutput.asText.get()
 
-                if (!outputStr.contains("okhttp3/internal/publicsuffix/publicsuffixes.gz")) {
-                    throw RuntimeException("publicsuffixes.gz not found in build")
+                if (!outputStr.contains("assets/PublicSuffixDatabase.list")) {
+                    throw RuntimeException("PublicSuffixDatabase.list not found in build")
                 }
             }
         }
