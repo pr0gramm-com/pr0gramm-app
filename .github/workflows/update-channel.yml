@@ -1,0 +1,68 @@
+name: Publish update
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version code of the release, e.g. 1998 for 1.199.8"
+        required: true
+        type: number
+      changelog:
+        description: "Changelog shown in the update dialog, use \\n for line breaks"
+        required: true
+        type: string
+      stable:
+        description: "Update stable.json"
+        type: boolean
+        default: false
+      beta:
+        description: "Update beta.json"
+        type: boolean
+        default: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    name: Publish update
+
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: updates
+
+      - name: Update channel files
+        env:
+          VERSION: ${{ inputs.version }}
+          CHANGELOG: ${{ inputs.changelog }}
+          STABLE: ${{ inputs.stable }}
+          BETA: ${{ inputs.beta }}
+        run: |
+          TAG="1.$(( VERSION / 10 )).$(( VERSION % 10 ))"
+          APK="https://github.com/${{ github.repository }}/releases/download/$TAG/app-release.apk"
+
+          FILES=()
+          [[ "$STABLE" == true ]] && FILES+=(stable.json)
+          [[ "$BETA" == true ]] && FILES+=(beta.json)
+          if (( ${#FILES[@]} == 0 )); then
+            echo "Select at least one of stable or beta"
+            exit 1
+          fi
+
+          if ! curl -fsSIL -o /dev/null "$APK"; then
+            echo "Release apk not found at $APK"
+            exit 1
+          fi
+
+          for FILE in "${FILES[@]}"; do
+            jq -n --argjson version "$VERSION" --arg apk "$APK" --arg changelog "$CHANGELOG" \
+              '{version: $version, apk: $apk, changelog: ($changelog | gsub("\\\\n"; "\n"))}' > "$FILE"
+          done
+
+          git config user.name "github actions"
+          git config user.email "gh-actions@pr0gramm.com"
+          git add "${FILES[@]}"
+          git commit -m "Update ${FILES[*]} to $TAG ($VERSION)"
+          git push
