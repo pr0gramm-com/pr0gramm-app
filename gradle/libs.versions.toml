@@ -41,7 +41,7 @@ subsamplingImageView = "3.10.0-1"
 dogstatsdClient = "2.0.16"
 shortcutbadger = "1.1.22"
 speeddial = "3.3.0"
-workRuntimeKtx = "2.10.1"
+workRuntimeKtx = "2.12.0"
 # migration to 6+ takes some effort
 appintro = "5.1.0"
 exoplayer = "1.11.1"
