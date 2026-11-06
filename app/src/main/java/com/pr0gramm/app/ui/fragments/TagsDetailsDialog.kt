@@ -2,6 +2,7 @@ package com.pr0gramm.app.ui.fragments
 
 import android.app.Dialog
 import android.view.View
+import androidx.lifecycle.withStarted
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.pr0gramm.app.R
@@ -10,7 +11,7 @@ import com.pr0gramm.app.databinding.AdminTagsDetailsBinding
 import com.pr0gramm.app.databinding.TagsDetailsBinding
 import com.pr0gramm.app.services.AdminService
 import com.pr0gramm.app.ui.base.ViewBindingDialogFragment
-import com.pr0gramm.app.ui.base.launchWhenStarted
+import com.pr0gramm.app.ui.base.launchUntilDestroy
 import com.pr0gramm.app.ui.dialog
 import com.pr0gramm.app.ui.views.SingleTypeViewBindingAdapter
 import com.pr0gramm.app.util.arguments
@@ -40,7 +41,7 @@ class TagsDetailsDialog : ViewBindingDialogFragment<AdminTagsDetailsBinding>("Ta
         views.recyclerView.layoutManager = LinearLayoutManager(
                 requireDialog().context, RecyclerView.VERTICAL, false)
 
-        launchWhenStarted {
+        launchUntilDestroy {
             showTagsDetails(adminService.tagsDetails(itemId))
         }
     }
@@ -60,9 +61,9 @@ class TagsDetailsDialog : ViewBindingDialogFragment<AdminTagsDetailsBinding>("Ta
         val blockAmountStr = if (views.blockUser.isChecked) views.blockUserDays.text.toString() else ""
         val blockAmount = blockAmountStr.toFloatOrNull()
 
-        launchWhenStarted(busyIndicator = true) {
+        launchUntilDestroy(busyIndicator = true) {
             adminService.deleteTags(itemId, selected, blockAmount)
-            dismiss()
+            withStarted { dismiss() }
         }
     }
 
