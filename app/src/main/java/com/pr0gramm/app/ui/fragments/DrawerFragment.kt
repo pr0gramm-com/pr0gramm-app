@@ -25,7 +25,6 @@ import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.pr0gramm.app.R
-import com.pr0gramm.app.RequestCodes
 import com.pr0gramm.app.UserClassesService
 import com.pr0gramm.app.databinding.LeftDrawerBinding
 import com.pr0gramm.app.feed.FeedFilter
@@ -129,11 +128,6 @@ class DrawerFragment : BaseFragment("DrawerFragment", R.layout.left_drawer) {
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        doIfAuthorizedHelper.onActivityResult(requestCode, resultCode)
-    }
-
     fun updateCurrentFilters(current: FeedFilter?) {
         currentSelection.value = current
     }
@@ -149,6 +143,11 @@ class DrawerFragment : BaseFragment("DrawerFragment", R.layout.left_drawer) {
          * Called if the user name itself was clicked.
          */
         fun onUsernameClicked()
+
+        /**
+         * The feedback / contact item was clicked.
+         */
+        fun onFeedbackClicked()
 
         /**
          * Some other menu item was clicked and we request that this
@@ -388,7 +387,7 @@ private class NavigationDelegateAdapter(
                 activity.startActivity<InviteActivity>()
 
             NavigationProvider.ActionType.CONTACT ->
-                activity.startActivity<ContactActivity>(RequestCodes.FEEDBACK)
+                callback.onFeedbackClicked()
 
             NavigationProvider.ActionType.FAQ -> {
                 Track.faqClicked()

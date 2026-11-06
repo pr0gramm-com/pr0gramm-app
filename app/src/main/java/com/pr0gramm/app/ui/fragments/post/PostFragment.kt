@@ -3,7 +3,6 @@ package com.pr0gramm.app.ui.fragments.post
 import android.animation.ObjectAnimator
 import android.animation.PropertyValuesHolder.ofFloat
 import android.app.Activity
-import android.content.Intent
 import android.graphics.Rect
 import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
@@ -28,7 +27,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.pr0gramm.app.Duration
 import com.pr0gramm.app.Instant
 import com.pr0gramm.app.R
-import com.pr0gramm.app.RequestCodes
+import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
 import com.pr0gramm.app.Settings
 import com.pr0gramm.app.api.pr0gramm.Api
 import com.pr0gramm.app.databinding.FragmentPostBinding
@@ -315,7 +314,7 @@ class PostFragment : BaseFragment("PostFragment"), NewTagDialogFragment.OnAddNew
                 R.id.action_write_comment -> {
                     doIfAuthorizedHelper.runAuthNoRetry {
                         val intent = WriteMessageActivity.newComment(requireActivity(), feedItem)
-                        startActivityForResult(intent, RequestCodes.WRITE_COMMENT)
+                        writeCommentLauncher.launch(intent)
                     }
                 }
 
@@ -454,23 +453,20 @@ class PostFragment : BaseFragment("PostFragment"), NewTagDialogFragment.OnAddNew
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
+    private val writeCommentLauncher = registerForActivityResult(StartActivityForResult()) { result ->
+        val data = result.data
+        if (result.resultCode == Activity.RESULT_OK && data != null) {
+            onNewComments(WriteMessageActivity.getNewCommentFromActivityResult(data))
+        }
+    }
 
-        doIfAuthorizedHelper.onActivityResult(requestCode, resultCode)
-
-
-        if (resultCode == Activity.RESULT_OK && data != null) {
-            if (requestCode == RequestCodes.WRITE_COMMENT) {
-                onNewComments(WriteMessageActivity.getNewCommentFromActivityResult(data))
-            }
-
-            if (requestCode == RequestCodes.SELECT_DOWNLOAD_PATH) {
-                if (!Storage.persistTreeUri(requireContext(), data)) {
-                    showDialog(this) {
-                        content(R.string.error_invalid_download_directory)
-                        positive(R.string.okay)
-                    }
+    private val downloadPathLauncher = registerForActivityResult(StartActivityForResult()) { result ->
+        val data = result.data
+        if (result.resultCode == Activity.RESULT_OK && data != null) {
+            if (!Storage.persistTreeUri(requireContext(), data)) {
+                showDialog(this) {
+                    content(R.string.error_invalid_download_directory)
+                    positive(R.string.okay)
                 }
             }
         }
@@ -708,7 +704,7 @@ class PostFragment : BaseFragment("PostFragment"), NewTagDialogFragment.OnAddNew
             showDialog(this) {
                 content(R.string.hint_select_download_directory)
                 positive {
-                    startActivityForResult(intent, RequestCodes.SELECT_DOWNLOAD_PATH)
+                    downloadPathLauncher.launch(intent)
                 }
             }
 
@@ -1237,9 +1233,8 @@ class PostFragment : BaseFragment("PostFragment"), NewTagDialogFragment.OnAddNew
 
             doIfAuthorizedHelper.runAuthWithRetry {
                 val context = context ?: return@runAuthWithRetry
-                startActivityForResult(
-                    WriteMessageActivity.answerToComment(context, feedItem, comment, parentComments),
-                    RequestCodes.WRITE_COMMENT
+                writeCommentLauncher.launch(
+                    WriteMessageActivity.answerToComment(context, feedItem, comment, parentComments)
                 )
             }
         }

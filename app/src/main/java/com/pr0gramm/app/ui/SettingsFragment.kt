@@ -14,7 +14,7 @@ import androidx.preference.PreferenceGroup
 import com.pr0gramm.app.BuildConfig
 import com.pr0gramm.app.Instant
 import com.pr0gramm.app.R
-import com.pr0gramm.app.RequestCodes
+import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
 import com.pr0gramm.app.Settings
 import com.pr0gramm.app.services.BookmarkService
 import com.pr0gramm.app.services.RecentSearchesServices
@@ -182,7 +182,7 @@ class SettingsFragment : BasePreferenceFragment("SettingsFragment"),
             }
 
             "pref_pseudo_onboarding" -> {
-                IntroActivity.launch(requireActivity())
+                startActivity(IntroActivity.intent(requireContext()))
                 return true
             }
 
@@ -196,7 +196,7 @@ class SettingsFragment : BasePreferenceFragment("SettingsFragment"),
 
             "pref_pseudo_download_target" -> {
                 val intent = Storage.openTreeIntent(requireContext())
-                startActivityForResult(intent, RequestCodes.SELECT_DOWNLOAD_PATH)
+                downloadPathLauncher.launch(intent)
                 return true
             }
 
@@ -224,18 +224,12 @@ class SettingsFragment : BasePreferenceFragment("SettingsFragment"),
         }
     }
 
-    @Deprecated("Deprecated in Java")
-    override fun onActivityResult(requestCode: Int, resultCode: Int, resultIntent: Intent?) {
-        if (requestCode == RequestCodes.SELECT_DOWNLOAD_PATH && resultCode == Activity.RESULT_OK) {
-            if (!Storage.persistTreeUri(
-                    requireContext(), resultIntent
-                        ?: return
-                )
-            ) {
+    private val downloadPathLauncher = registerForActivityResult(StartActivityForResult()) { result ->
+        val resultIntent = result.data
+        if (result.resultCode == Activity.RESULT_OK && resultIntent != null) {
+            if (!Storage.persistTreeUri(requireContext(), resultIntent)) {
                 showInvalidDownloadDirectorySelected()
             }
-        } else {
-            super.onActivityResult(requestCode, resultCode, resultIntent)
         }
     }
 

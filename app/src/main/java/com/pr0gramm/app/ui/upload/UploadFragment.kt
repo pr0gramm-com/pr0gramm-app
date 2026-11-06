@@ -20,7 +20,7 @@ import androidx.core.view.children
 import androidx.core.view.isVisible
 import com.google.android.material.snackbar.Snackbar
 import com.pr0gramm.app.R
-import com.pr0gramm.app.RequestCodes
+import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
 import com.pr0gramm.app.api.pr0gramm.Api
 import com.pr0gramm.app.databinding.FragmentUploadBinding
 import com.pr0gramm.app.feed.ContentType
@@ -249,7 +249,7 @@ class UploadFragment : BaseFragment("UploadFragment", R.layout.fragment_upload) 
             return
         }
 
-        startActivityForResult(intent, RequestCodes.SELECT_MEDIA)
+        mediaLauncher.launch(intent)
     }
 
     private fun showSimilarPosts(similar: List<Api.Posted.SimilarItem>) {
@@ -295,17 +295,15 @@ class UploadFragment : BaseFragment("UploadFragment", R.layout.fragment_upload) 
         activity.finish()
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?) {
-        super.onActivityResult(requestCode, resultCode, intent)
+    private val mediaLauncher = registerForActivityResult(StartActivityForResult()) { result ->
+        val intent = result.data
 
-        logger.info { "Got response from image picker: rc=$resultCode, intent=$intent" }
-        if (requestCode == RequestCodes.SELECT_MEDIA) {
-            if (resultCode == Activity.RESULT_OK && intent != null) {
-                val image = intent.data ?: run { activity?.finish(); return }
-                handleMediaUri(image)
-            } else {
-                activity?.finish()
-            }
+        logger.info { "Got response from image picker: rc=${result.resultCode}, intent=$intent" }
+        if (result.resultCode == Activity.RESULT_OK && intent != null) {
+            val image = intent.data ?: run { activity?.finish(); return@registerForActivityResult }
+            handleMediaUri(image)
+        } else {
+            activity?.finish()
         }
     }
 

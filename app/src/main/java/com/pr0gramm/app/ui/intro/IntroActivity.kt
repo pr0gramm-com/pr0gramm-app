@@ -1,6 +1,7 @@
 package com.pr0gramm.app.ui.intro
 
-import android.app.Activity
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.RelativeLayout
@@ -11,7 +12,6 @@ import androidx.core.view.updateLayoutParams
 import com.github.paolorotolo.appintro.AppIntro
 import com.pr0gramm.app.BuildConfig
 import com.pr0gramm.app.R
-import com.pr0gramm.app.RequestCodes
 import com.pr0gramm.app.ui.intro.slides.BetaActionItemsSlide
 import com.pr0gramm.app.ui.intro.slides.CategoriesActionItemsSlide
 import com.pr0gramm.app.ui.intro.slides.SettingsActionItemsSlide
@@ -19,7 +19,6 @@ import com.pr0gramm.app.ui.intro.slides.ThemeActionItemsSlide
 import com.pr0gramm.app.util.di.LazyInjectorAware
 import com.pr0gramm.app.util.di.PropertyInjector
 import com.pr0gramm.app.util.find
-import com.pr0gramm.app.util.startActivity
 import com.pr0gramm.app.util.tryEnumValueOf
 
 class IntroActivity : AppIntro(), LazyInjectorAware {
@@ -107,11 +106,9 @@ class IntroActivity : AppIntro(), LazyInjectorAware {
                 Slides.INITIAL, Slides.CATEOGRIES,
                 Slides.THEMES, Slides.SETTINGS, Slides.BETA)
 
-        fun launch(activity: Activity, steps: List<Slides> = defaultSlides) {
-            activity.startActivity<IntroActivity>(RequestCodes.INTRO_ACTIVITY) { intent ->
-                intent.putExtra("IntroActivity.steps",
-                        steps.map { it.name }.toTypedArray<String>())
-            }
+        fun intent(context: Context, steps: List<Slides> = defaultSlides): Intent {
+            return Intent(context, IntroActivity::class.java)
+                .putExtra("IntroActivity.steps", steps.map { it.name }.toTypedArray<String>())
         }
     }
 

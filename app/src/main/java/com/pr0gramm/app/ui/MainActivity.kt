@@ -19,6 +19,7 @@ import android.view.Window
 import android.view.WindowManager
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts.RequestPermission
+import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.graphics.drawable.DrawerArrowDrawable
@@ -169,7 +170,7 @@ class MainActivity : BaseAppCompatActivity("MainActivity"),
         // show the intro activity if this is the first time the app started.
         singleShotService.doOnce("onboarding-activity:1") {
             skipInTesting {
-                IntroActivity.launch(this)
+                introLauncher.launch(IntroActivity.intent(this))
                 return
             }
         }
@@ -177,7 +178,7 @@ class MainActivity : BaseAppCompatActivity("MainActivity"),
         // set extra slides to show during some migration
         // val extraSlides = mutableListOf<IntroActivity.Slides>()
         // if (extraSlides.isNotEmpty()) {
-        //     IntroActivity.launch(this, extraSlides)
+        //     introLauncher.launch(IntroActivity.intent(this, extraSlides))
         // }
 
         // schedule an update in the background
@@ -392,19 +393,21 @@ class MainActivity : BaseAppCompatActivity("MainActivity"),
         handleIntent(intent)
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
+    private val introLauncher = registerForActivityResult(StartActivityForResult()) {
+        AndroidUtility.recreateActivity(this)
+    }
 
-        if (requestCode == RequestCodes.INTRO_ACTIVITY) {
-            AndroidUtility.recreateActivity(this)
-        }
-
-        if (requestCode == RequestCodes.FEEDBACK && resultCode == Activity.RESULT_OK) {
+    private val feedbackLauncher = registerForActivityResult(StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
             Snackbar.make(views.drawerLayout, R.string.feedback_sent, Snackbar.LENGTH_SHORT)
                 .configureNewStyle()
                 .setAction(R.string.okay, { })
                 .show()
         }
+    }
+
+    override fun onFeedbackClicked() {
+        feedbackLauncher.launch(Intent(this, ContactActivity::class.java))
     }
 
     override fun onDestroy() {

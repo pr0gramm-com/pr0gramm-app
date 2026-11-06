@@ -18,7 +18,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.isVisible
 import com.pr0gramm.app.R
-import com.pr0gramm.app.RequestCodes
+import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
 import com.pr0gramm.app.api.pr0gramm.Api
 import com.pr0gramm.app.decodeBase64
 import com.pr0gramm.app.services.ThemeHelper
@@ -275,17 +275,16 @@ class LoginActivity : BaseAppCompatActivity("LoginActivity") {
         startActivity(intent)
     }
 
+    // must be created before the fragment is created, e.g. as a field initializer.
     class DoIfAuthorizedHelper(private val fragment: androidx.fragment.app.Fragment) {
         private var retry: Callback? = null
 
-        fun onActivityResult(requestCode: Int, resultCode: Int) {
-            if (requestCode == RequestCodes.AUTHORIZED_HELPER) {
-                if (resultCode == Activity.RESULT_OK) {
-                    retry?.invoke()
-                }
-
-                retry = null
+        private val loginLauncher = fragment.registerForActivityResult(StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                retry?.invoke()
             }
+
+            retry = null
         }
 
         /**
@@ -303,8 +302,7 @@ class LoginActivity : BaseAppCompatActivity("LoginActivity") {
             } else {
                 this.retry = retry
 
-                val intent = Intent(context, LoginActivity::class.java)
-                startActivityForResult(intent, RequestCodes.AUTHORIZED_HELPER)
+                loginLauncher.launch(Intent(context, LoginActivity::class.java))
                 false
             }
         }
@@ -322,18 +320,13 @@ class LoginActivity : BaseAppCompatActivity("LoginActivity") {
             val userService: UserService = context.injector.instance()
 
             if (!userService.isAuthorized) {
-                val intent = Intent(context, LoginActivity::class.java)
-                startActivityForResult(intent, RequestCodes.AUTHORIZED_HELPER)
+                loginLauncher.launch(Intent(context, LoginActivity::class.java))
                 return false
             }
 
             runnable()
 
             return true
-        }
-
-        private fun startActivityForResult(intent: Intent, requestCode: Int) {
-            fragment.startActivityForResult(intent, requestCode)
         }
     }
 
