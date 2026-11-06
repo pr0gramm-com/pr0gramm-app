@@ -9,7 +9,7 @@ import com.pr0gramm.app.services.ThemeHelper
 import com.pr0gramm.app.services.Track
 import com.pr0gramm.app.services.UserService
 import com.pr0gramm.app.ui.base.BaseAppCompatActivity
-import com.pr0gramm.app.ui.base.launchWhenStarted
+import com.pr0gramm.app.ui.base.launchUntilDestroy
 import com.pr0gramm.app.ui.base.withViewDisabled
 import com.pr0gramm.app.util.addTextChangedListener
 import com.pr0gramm.app.util.di.instance
@@ -52,7 +52,7 @@ class PasswordRecoveryActivity : BaseAppCompatActivity("PasswordRecoveryActivity
     private fun submitButtonClicked() {
         val password = this.password.text.toString().trim()
 
-        launchWhenStarted(busyIndicator = true) {
+        launchUntilDestroy(busyIndicator = true) {
             withViewDisabled(submit) {
                 val result = withContext(NonCancellable + Dispatchers.Default) {
                     userService.resetPassword(user, token, password)
