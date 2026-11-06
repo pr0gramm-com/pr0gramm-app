@@ -7,6 +7,7 @@ import androidx.browser.customtabs.CustomTabColorSchemeParams
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.browser.customtabs.CustomTabsService
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.withStarted
 import com.pr0gramm.app.Logger
 import com.pr0gramm.app.R
 import com.pr0gramm.app.Settings
@@ -15,7 +16,7 @@ import com.pr0gramm.app.services.ThemeHelper
 import com.pr0gramm.app.services.Track
 import com.pr0gramm.app.services.UserService
 import com.pr0gramm.app.ui.base.BaseAppCompatActivity
-import com.pr0gramm.app.ui.base.launchWhenStarted
+import com.pr0gramm.app.ui.base.launchUntilDestroy
 import com.pr0gramm.app.ui.fragments.withBusyDialog
 import com.pr0gramm.app.ui.showDialog
 import com.pr0gramm.app.util.di.injector
@@ -167,8 +168,8 @@ object BrowserHelper {
 
         val api = context.injector.instance<Api>()
 
-        activity.launchWhenStarted {
-            block(try {
+        activity.launchUntilDestroy {
+            val handoverUri = try {
                 val response = withBusyDialog(activity) {
                     api.handoverToken(null)
                 }
@@ -180,8 +181,10 @@ object BrowserHelper {
 
             } catch (err: Exception) {
                 logger.warn(err) { "Error getting handover token" }
-                return@launchWhenStarted
-            })
+                return@launchUntilDestroy
+            }
+
+            activity.withStarted { block(handoverUri) }
         }
     }
 }
