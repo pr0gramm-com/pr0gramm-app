@@ -17,6 +17,7 @@ import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.isVisible
+import androidx.lifecycle.withStarted
 import com.pr0gramm.app.R
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
 import com.pr0gramm.app.api.pr0gramm.Api
@@ -27,8 +28,8 @@ import com.pr0gramm.app.services.Track
 import com.pr0gramm.app.services.UserService
 import com.pr0gramm.app.sync.SyncWorker
 import com.pr0gramm.app.ui.base.BaseAppCompatActivity
+import com.pr0gramm.app.ui.base.launchUntilDestroy
 import com.pr0gramm.app.ui.base.launchWhenCreated
-import com.pr0gramm.app.ui.base.launchWhenStarted
 import com.pr0gramm.app.ui.base.withViewDisabled
 import com.pr0gramm.app.ui.dialogs.ErrorDialogFragment.Companion.showErrorString
 import com.pr0gramm.app.ui.views.AspectLayout
@@ -197,9 +198,12 @@ class LoginActivity : BaseAppCompatActivity("LoginActivity") {
 
         Track.loginStarted()
 
-        launchWhenStarted(busyIndicator = true) {
+        launchUntilDestroy(busyIndicator = true) {
             withViewDisabled(usernameView, passwordView, submitView) {
-                handleLoginResult(userService.login(username, password, token, captchaAnswer))
+                val result = userService.login(username, password, token, captchaAnswer)
+
+                // error dialogs are fragments, wait until we can show them
+                withStarted { handleLoginResult(result) }
             }
         }
     }
