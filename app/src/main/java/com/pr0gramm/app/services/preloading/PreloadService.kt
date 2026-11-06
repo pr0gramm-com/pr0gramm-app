@@ -1,15 +1,16 @@
 package com.pr0gramm.app.services.preloading
 
 import android.annotation.SuppressLint
-import android.app.IntentService
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.IBinder
 import android.os.PowerManager
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
 import androidx.core.net.toFile
@@ -27,13 +28,17 @@ import com.pr0gramm.app.util.di.instance
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.*
+import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 
 /**
  * This service handles preloading and resolving of preloaded images.
  */
-class PreloadService : IntentService("PreloadService"), LazyInjectorAware {
+class PreloadService : Service(), LazyInjectorAware {
+    // handles one intent after another, like the old IntentService did
+    private val executor = Executors.newSingleThreadExecutor()
+
     override val injector: PropertyInjector = PropertyInjector()
 
     private val httpClient: OkHttpClient by instance()
@@ -76,10 +81,25 @@ class PreloadService : IntentService("PreloadService"), LazyInjectorAware {
             return Service.START_NOT_STICKY
         }
 
-        return super.onStartCommand(intent, flags, startId)
+        executor.execute {
+            try {
+                onHandleIntent(intent)
+            } finally {
+                stopSelf(startId)
+            }
+        }
+
+        return Service.START_NOT_STICKY
     }
 
-    override fun onHandleIntent(intent: Intent?) {
+    override fun onDestroy() {
+        executor.shutdown()
+        super.onDestroy()
+    }
+
+    override fun onBind(intent: Intent?): IBinder? = null
+
+    private fun onHandleIntent(intent: Intent?) {
         checkNotMainThread()
 
         val items = parseFeedItemsFromIntent(intent)
@@ -136,7 +156,7 @@ class PreloadService : IntentService("PreloadService"), LazyInjectorAware {
                 setContentIntent(null)
             }
 
-            stopForeground(false)
+            ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_DETACH)
         }
     }
 
