@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <com.github.paolorotolo.appintro.AppIntroViewPager
+    <com.github.appintro.internal.AppIntroViewPager
         android:id="@+id/view_pager"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
@@ -13,7 +13,7 @@
     <LinearLayout
         android:id="@+id/bottom"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/appIntroBottomBarHeight"
+        android:layout_height="@dimen/appintro_bottombar_height"
         android:layout_alignParentBottom="true"
         android:background="@android:color/transparent"
         android:gravity="bottom"
@@ -59,8 +59,10 @@
                 android:layout_marginStart="8dp"
                 android:layout_marginLeft="8dp"
                 android:minWidth="100dp"
+                android:rotation="180"
                 android:visibility="invisible"
-                app:srcCompat="@drawable/ic_appintro_navigate_before_white"
+                app:srcCompat="@drawable/ic_appintro_next"
+                app:tint="@android:color/white"
                 tools:ignore="ContentDescription" />
 
             <ImageButton
@@ -72,7 +74,8 @@
                 android:layout_marginEnd="8dp"
                 android:layout_marginRight="8dp"
                 android:minWidth="100dp"
-                app:srcCompat="@drawable/ic_appintro_navigate_next_white"
+                app:srcCompat="@drawable/ic_appintro_next"
+                app:tint="@android:color/white"
                 tools:ignore="ContentDescription" />
 
             <Button

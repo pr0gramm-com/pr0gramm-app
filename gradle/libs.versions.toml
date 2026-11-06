@@ -43,7 +43,7 @@ shortcutbadger = "1.1.22"
 speeddial = "3.3.0"
 workRuntimeKtx = "2.12.0"
 # migration to 6+ takes some effort
-appintro = "5.1.0"
+appintro = "6.3.1"
 exoplayer = "1.11.1"
 
 [libraries]
@@ -93,7 +93,7 @@ dogstadClient = { group = "com.indeed", name = "java-dogstatsd-client", version.
 shortcutbadger = { group = "me.leolin", name = "ShortcutBadger", version.ref = "shortcutbadger" }
 speeddial = { group = "com.leinardi.android", name = "speed-dial", version.ref = "speeddial" }
 androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "workRuntimeKtx" }
-appintro = { group = "com.github.paolorotolo", name = "appintro", version.ref = "appintro" }
+appintro = { group = "com.github.AppIntro", name = "AppIntro", version.ref = "appintro" }
 androidx-media3-exoplayer = { group = "androidx.media3", name = "media3-exoplayer", version.ref = "exoplayer" }
 sqldelight-primitiveadapters = { group = "app.cash.sqldelight", name = "primitive-adapters", version.ref = "sqldelight" }
 sqldelight-androiddriver = { group = "app.cash.sqldelight", name = "android-driver", version.ref = "sqldelight" }

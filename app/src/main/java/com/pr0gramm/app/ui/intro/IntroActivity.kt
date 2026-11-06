@@ -9,7 +9,8 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updateLayoutParams
-import com.github.paolorotolo.appintro.AppIntro
+import com.github.appintro.AppIntro
+import com.github.appintro.AppIntroPageTransformerType
 import com.pr0gramm.app.BuildConfig
 import com.pr0gramm.app.R
 import com.pr0gramm.app.ui.intro.slides.BetaActionItemsSlide
@@ -24,7 +25,7 @@ import com.pr0gramm.app.util.tryEnumValueOf
 class IntroActivity : AppIntro(), LazyInjectorAware {
     override val injector: PropertyInjector = PropertyInjector()
 
-    override fun getLayoutId(): Int = R.layout.activity_intro
+    override val layoutId: Int = R.layout.activity_intro
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -81,11 +82,14 @@ class IntroActivity : AppIntro(), LazyInjectorAware {
                 imageDrawable = R.drawable.ic_action_favorite,
                 bgColor = ContextCompat.getColor(this, R.color.olive_primary)))
 
-        setGoBackLock(true)
-        showSkipButton(false)
+        // AppIntro 6 hides the status bar by default, AppIntro 5 did not
+        showStatusBar(true)
+
+        isSystemBackButtonLocked = true
+        isSkipButtonEnabled = false
         setDoneText(getString(R.string.action_done))
 
-        setFadeAnimation()
+        setTransformer(AppIntroPageTransformerType.Fade)
 
         ViewCompat.setOnApplyWindowInsetsListener(find<View>(R.id.bottom)) { v, insets ->
             v.updateLayoutParams<RelativeLayout.LayoutParams> {
