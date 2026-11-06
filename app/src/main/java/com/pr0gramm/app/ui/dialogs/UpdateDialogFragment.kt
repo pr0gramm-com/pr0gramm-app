@@ -9,6 +9,7 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.core.content.edit
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.withStarted
 import com.pr0gramm.app.BuildConfig
 import com.pr0gramm.app.Duration
 import com.pr0gramm.app.Instant
@@ -19,7 +20,7 @@ import com.pr0gramm.app.services.Update
 import com.pr0gramm.app.services.UpdateChecker
 import com.pr0gramm.app.ui.base.BaseAppCompatActivity
 import com.pr0gramm.app.ui.base.BaseDialogFragment
-import com.pr0gramm.app.ui.base.launchWhenStarted
+import com.pr0gramm.app.ui.base.launchUntilDestroy
 import com.pr0gramm.app.ui.dialog
 import com.pr0gramm.app.util.Linkify
 import com.pr0gramm.app.util.arguments
@@ -120,7 +121,7 @@ class UpdateDialogFragment : BaseDialogFragment("UpdateDialogFragment") {
 
             val prefs = activity.applicationContext.injector.instance<SharedPreferences>()
 
-            activity.launchWhenStarted(busyIndicator = true) {
+            activity.launchUntilDestroy(busyIndicator = true) {
                 val update = UpdateChecker().queryAll()
 
                 // remember that we've checked
@@ -134,7 +135,7 @@ class UpdateDialogFragment : BaseDialogFragment("UpdateDialogFragment") {
                 }
 
                 val up = (update as? UpdateChecker.Response.UpdateAvailable)?.update
-                newInstance(up).show(activity.supportFragmentManager, null)
+                activity.withStarted { newInstance(up).show(activity.supportFragmentManager, null) }
             }
         }
 
