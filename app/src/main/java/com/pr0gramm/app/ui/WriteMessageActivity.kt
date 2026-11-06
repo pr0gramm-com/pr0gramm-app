@@ -40,7 +40,7 @@ import com.pr0gramm.app.services.UserSuggestionService
 import com.pr0gramm.app.services.VoteService
 import com.pr0gramm.app.ui.base.BaseAppCompatActivity
 import com.pr0gramm.app.ui.base.bindViews
-import com.pr0gramm.app.ui.base.launchWhenStarted
+import com.pr0gramm.app.ui.base.launchUntilDestroy
 import com.pr0gramm.app.ui.base.withViewDisabled
 import com.pr0gramm.app.util.AndroidUtility
 import com.pr0gramm.app.util.TextViewCache
@@ -208,7 +208,7 @@ class WriteMessageActivity : BaseAppCompatActivity("WriteMessageActivity") {
             val itemId = itemId
             val parentComment = parentCommentId
 
-            launchWhenStarted(busyIndicator = true) {
+            launchUntilDestroy(busyIndicator = true) {
                 withViewDisabled(views.submit) {
                     val newComments = withContext(NonCancellable + Dispatchers.Default) {
                         voteService.postComment(itemId, parentComment, message)
@@ -227,7 +227,7 @@ class WriteMessageActivity : BaseAppCompatActivity("WriteMessageActivity") {
             Track.writeComment(root = parentCommentId == 0L)
 
         } else {
-            launchWhenStarted(busyIndicator = true) {
+            launchUntilDestroy(busyIndicator = true) {
                 withViewDisabled(views.submit) {
                     withContext(NonCancellable + Dispatchers.Default) {
                         inboxService.send(receiverId, message)
