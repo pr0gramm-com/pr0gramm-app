@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.view.MenuProvider
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.paging.LoadState
 import androidx.paging.LoadStateAdapter
 import androidx.paging.PagingData
@@ -30,9 +31,9 @@ import com.pr0gramm.app.ui.SimpleTextWatcher
 import com.pr0gramm.app.ui.base.BaseFragment
 import com.pr0gramm.app.ui.base.bindViews
 import com.pr0gramm.app.ui.base.launchInViewScope
+import com.pr0gramm.app.ui.base.launchUntilDestroy
 import com.pr0gramm.app.ui.base.launchUntilViewDestroy
 import com.pr0gramm.app.ui.base.launchWhenCreated
-import com.pr0gramm.app.ui.base.launchWhenResumed
 import com.pr0gramm.app.ui.fragments.EndOfViewSmoothScroller
 import com.pr0gramm.app.ui.viewModels
 import com.pr0gramm.app.util.ErrorFormatting
@@ -82,12 +83,14 @@ class ConversationFragment : BaseFragment("ConversationFragment", R.layout.fragm
         adapter.addAdapter(pendingMessagesAdapter)
         adapter.addAdapter(footer)
 
-        launchWhenResumed {
-            while (true) {
-                delay(15.seconds)
+        launchUntilDestroy {
+            repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                while (true) {
+                    delay(15.seconds)
 
-                if (isAtConversationTail()) {
-                    conversationAdapter.refresh()
+                    if (isAtConversationTail()) {
+                        conversationAdapter.refresh()
+                    }
                 }
             }
         }
