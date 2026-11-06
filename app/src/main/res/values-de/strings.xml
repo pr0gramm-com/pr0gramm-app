@@ -205,7 +205,6 @@
 
     <string name="filter_format_bestof">Best of</string>
     <string name="action_feed_type_bestof">Best of</string>
-    <string name="error_permission_not_granted">Die Berechtigung \'%s\' fehlt, wird jedoch benötigt!</string>
     <string name="user_registered">Dabei seit %s</string>
     <string name="user_registered_inactive">Dabei seit %s, inaktiv</string>
     <string name="user_banned_forever">Dauerhaft gesperrt</string>

@@ -224,7 +224,6 @@
     <string name="pref_video_quality_human__high">High</string>
     <string name="pref_video_quality_human__extrahigh">Extra high</string>
 
-    <string name="error_permission_not_granted">The permission \'%s\' is required but was not granted.</string>
 
     <string name="user_banned">Banned for %s</string>
     <string name="user_banned_self">Banned voluntarily for %s</string>

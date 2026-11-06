@@ -72,12 +72,10 @@ class MainActivity : BaseAppCompatActivity("MainActivity"),
     FragmentManager.OnBackStackChangedListener,
     ScrollHideToolbarListener.ToolbarActivity,
     MainActionHandler,
-    PermissionHelperActivity,
     RecyclerViewPoolProvider by RecyclerViewPoolMap() {
 
     private var consentInfo: ConsentInformation? = null
     private val handler = Handler(Looper.getMainLooper())
-    private var permissionHelper = PermissionHelperDelegate(this)
 
     private val views by bindViews(ActivityMainBinding::inflate)
 
@@ -840,19 +838,6 @@ class MainActivity : BaseAppCompatActivity("MainActivity"),
             setAction("okay") { dismiss() }
             show()
         }
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int, permissions: Array<String>,
-        grantResults: IntArray
-    ) {
-
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        permissionHelper.onRequestPermissionsResult(requestCode, permissions, grantResults)
-    }
-
-    override fun requirePermission(permission: String, callback: () -> Unit) {
-        return permissionHelper.requirePermission(permission, callback)
     }
 
     override fun showUploadBottomSheet(dialog: DialogFragment) {

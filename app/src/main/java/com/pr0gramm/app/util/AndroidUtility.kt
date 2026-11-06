@@ -38,7 +38,6 @@ import com.pr0gramm.app.BuildConfig
 import com.pr0gramm.app.Logger
 import com.pr0gramm.app.R
 import com.pr0gramm.app.debugConfig
-import com.pr0gramm.app.ui.PermissionHelperDelegate
 import com.pr0gramm.app.ui.base.AsyncScope
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
@@ -113,10 +112,6 @@ object AndroidUtility {
         }
 
         if (!force) {
-            if (causalChain.containsType<PermissionHelperDelegate.PermissionNotGranted>()) {
-                return
-            }
-
             if (causalChain.containsType<IOException>() || causalChain.containsType<HttpException>()) {
                 logger.warn(error) { "Ignoring network exception" }
                 return
