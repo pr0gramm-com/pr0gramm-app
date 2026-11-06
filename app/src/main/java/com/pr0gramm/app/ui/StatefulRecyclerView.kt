@@ -1,12 +1,15 @@
 package com.pr0gramm.app.ui
 
 import android.content.Context
+import android.graphics.Rect
 import android.os.Bundle
 import android.os.Parcelable
 import android.util.AttributeSet
 import android.util.SparseArray
+import android.view.View
 import androidx.core.os.bundleOf
 import androidx.recyclerview.widget.RecyclerView
+import com.pr0gramm.app.ui.views.CompatibleTextView
 import com.pr0gramm.app.ui.views.TagsView
 import com.pr0gramm.app.util.observeChangeEx
 
@@ -107,6 +110,48 @@ class StatefulRecyclerView @JvmOverloads constructor(
             }
 
             savedHierarchyState = null
+        }
+
+        override fun requestChildRectangleOnScreen(
+            parent: RecyclerView,
+            child: View,
+            rect: Rect,
+            immediate: Boolean
+        ): Boolean {
+            // Prevent automatic scrolling when CompatibleTextView requests to show selection.
+            // This fixes the scroll-to-beginning bug when tapping long comment text.
+            if (child is CompatibleTextView || isCompatibleTextViewInHierarchy(child)) {
+                return false
+            }
+            return super.requestChildRectangleOnScreen(parent, child, rect, immediate)
+        }
+
+        override fun requestChildRectangleOnScreen(
+            parent: RecyclerView,
+            child: View,
+            rect: Rect,
+            immediate: Boolean,
+            focusedChildVisible: Boolean
+        ): Boolean {
+            // Prevent automatic scrolling when CompatibleTextView requests to show selection.
+            // This fixes the scroll-to-beginning bug when tapping long comment text.
+            if (child is CompatibleTextView || isCompatibleTextViewInHierarchy(child)) {
+                return false
+            }
+            return super.requestChildRectangleOnScreen(parent, child, rect, immediate, focusedChildVisible)
+        }
+
+        private fun isCompatibleTextViewInHierarchy(view: View): Boolean {
+            // Check if view contains a CompatibleTextView in its hierarchy
+            if (view is CompatibleTextView) return true
+            if (view is android.view.ViewGroup) {
+                for (i in 0 until view.childCount) {
+                    if (isCompatibleTextViewInHierarchy(view.getChildAt(i))) {
+                        return true
+                    }
+                }
+            }
+            return false
         }
     }
 
