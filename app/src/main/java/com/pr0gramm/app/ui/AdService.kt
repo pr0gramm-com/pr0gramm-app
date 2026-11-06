@@ -1,5 +1,6 @@
 package com.pr0gramm.app.ui
 
+import android.os.Build
 import android.app.Application
 import android.content.Context
 import com.google.android.gms.ads.AdListener
@@ -153,9 +154,13 @@ class AdService(
 
     fun isSideloaded(): Boolean {
         return try {
-            val name = appContext
-                .packageManager
-                .getInstallerPackageName(BuildConfig.APPLICATION_ID)
+            val pm = appContext.packageManager
+            val name = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                pm.getInstallSourceInfo(BuildConfig.APPLICATION_ID).installingPackageName
+            } else {
+                @Suppress("DEPRECATION")
+                pm.getInstallerPackageName(BuildConfig.APPLICATION_ID)
+            }
 
             logger.info { "Installer package is '$name'" }
 
