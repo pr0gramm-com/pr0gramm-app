@@ -19,6 +19,7 @@ import android.widget.FrameLayout
 import androidx.core.animation.doOnEnd
 import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
+import androidx.core.view.MenuProvider
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.whenResumed
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -125,7 +126,7 @@ import kotlin.math.min
  * This fragment shows the content of one post.
  */
 class PostFragment : BaseFragment("PostFragment"), NewTagDialogFragment.OnAddNewTagsListener, TitleFragment,
-    BackAwareFragment {
+    BackAwareFragment, MenuProvider {
     /**
      * The item that is displayed
      */
@@ -206,6 +207,9 @@ class PostFragment : BaseFragment("PostFragment"), NewTagDialogFragment.OnAddNew
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?): Unit {
         super.onViewCreated(view, savedInstanceState)
+
+        // only the resumed fragment shows its menu, e.g. the current page in a pager
+        requireActivity().addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
 
         val activity = requireActivity()
 
@@ -472,12 +476,11 @@ class PostFragment : BaseFragment("PostFragment"), NewTagDialogFragment.OnAddNew
         }
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        super.onCreateOptionsMenu(menu, inflater)
+    override fun onCreateMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.menu_post, menu)
     }
 
-    override fun onPrepareOptionsMenu(menu: Menu) {
+    override fun onPrepareMenu(menu: Menu) {
         val config = configService.config()
         val isImage = isStaticImage(feedItem)
         val adminMode = userService.userIsAdmin
@@ -664,7 +667,7 @@ class PostFragment : BaseFragment("PostFragment"), NewTagDialogFragment.OnAddNew
         return false
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+    override fun onMenuItemSelected(item: MenuItem): Boolean {
         val activity = activity ?: return true
 
         return true == when (item.itemId) {
@@ -680,7 +683,7 @@ class PostFragment : BaseFragment("PostFragment"), NewTagDialogFragment.OnAddNew
             R.id.action_report -> showReportDialog()
             R.id.action_zoom -> enterFullscreen()
             MainActivity.ID_FAKE_HOME -> onHomePressed()
-            else -> super.onOptionsItemSelected(item)
+            else -> false
         }
     }
 
@@ -732,11 +735,6 @@ class PostFragment : BaseFragment("PostFragment"), NewTagDialogFragment.OnAddNew
                 showErrorString(parentFragmentManager, getString(R.string.error_could_not_create_download_directory))
             }
         }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        setHasOptionsMenu(true)
     }
 
     private fun showDeleteItemDialog() {

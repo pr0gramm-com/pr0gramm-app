@@ -1,7 +1,6 @@
 package com.pr0gramm.app.ui.fragments.favorites
 
 import android.os.Bundle
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import com.pr0gramm.app.R
@@ -85,10 +84,6 @@ class CollectionsFragment : BaseFragment("CollectionsFragment", R.layout.fragmen
         views.favoritesPager.offscreenPageLimit = 2
 
         views.tabs.setupWithViewPager(views.favoritesPager)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return true
     }
 
     private fun resetToolbar() {

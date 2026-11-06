@@ -11,6 +11,7 @@ import android.view.View
 import android.view.animation.DecelerateInterpolator
 import android.widget.ImageView
 import androidx.core.view.isVisible
+import androidx.core.view.MenuProvider
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.whenResumed
 import androidx.recyclerview.widget.GridLayoutManager
@@ -113,7 +114,7 @@ import kotlin.math.min
 /**
  */
 class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), FilterFragment, TitleFragment,
-        BackAwareFragment {
+        BackAwareFragment, MenuProvider {
 
     private val feedStateModel by viewModels { handle ->
         val start = arguments?.let { BundleCompat.getParcelable(it, ARG_FEED_START, CommentRef::class.java) }
@@ -179,8 +180,6 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
      * Initialize a new feed fragment.
      */
     init {
-        setHasOptionsMenu(true)
-
         debugOnly {
             MainScope.launch {
                 lifecycle.asEventFlow().collect { event ->
@@ -197,6 +196,9 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        // only the resumed fragment shows its menu, e.g. the current page in a pager
+        requireActivity().addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
 
         val activity = requireActivity()
 
@@ -766,12 +768,11 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
         min((screenWidth / 120.0 + 0.5).toInt(), if (portrait) 5 else 7)
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        super.onCreateOptionsMenu(menu, inflater)
+    override fun onCreateMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.menu_feed, menu)
     }
 
-    override fun onPrepareOptionsMenu(menu: Menu) {
+    override fun onPrepareMenu(menu: Menu) {
         val activity = activity ?: return
 
         val filter = currentFilter
@@ -844,7 +845,7 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
         }
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+    override fun onMenuItemSelected(item: MenuItem): Boolean {
         val contentTypes = mapOf(
                 R.id.action_content_type_sfw to "pref_feed_type_sfw",
                 R.id.action_content_type_nsfw to "pref_feed_type_nsfw",
@@ -886,7 +887,7 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
             R.id.action_scroll_seen -> scrollToNextSeenAsync()
             R.id.action_scroll_unseen -> scrollToNextUnseenAsync()
 
-            else -> super.onOptionsItemSelected(item)
+            else -> false
         }
     }
 
