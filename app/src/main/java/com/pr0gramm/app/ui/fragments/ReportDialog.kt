@@ -4,13 +4,14 @@ import android.app.Dialog
 import android.view.View
 import android.widget.ArrayAdapter
 import androidx.appcompat.app.AlertDialog
+import androidx.lifecycle.withStarted
 import com.pr0gramm.app.R
 import com.pr0gramm.app.databinding.ReportItemBinding
 import com.pr0gramm.app.feed.FeedItem
 import com.pr0gramm.app.model.config.Config
 import com.pr0gramm.app.services.ContactService
 import com.pr0gramm.app.ui.base.ViewBindingDialogFragment
-import com.pr0gramm.app.ui.base.launchWhenStarted
+import com.pr0gramm.app.ui.base.launchUntilDestroy
 import com.pr0gramm.app.ui.dialog
 import com.pr0gramm.app.util.di.instance
 import com.pr0gramm.app.util.fragmentArgument
@@ -57,12 +58,12 @@ class ReportDialog : ViewBindingDialogFragment<ReportItemBinding>("ReportDialog"
     private fun onConfirmClicked() {
         val reason = config.reportReasons.getOrNull(views.reasons.checkedItemPosition) ?: return
 
-        launchWhenStarted(busyIndicator = true) {
+        launchUntilDestroy(busyIndicator = true) {
             withContext(NonCancellable) {
                 contactService.report(itemId, commentId ?: 0, reason)
             }
 
-            dismiss()
+            withStarted { dismiss() }
         }
     }
 
