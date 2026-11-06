@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.view.View
 import android.widget.TextView
 import androidx.appcompat.widget.Toolbar
-import androidx.core.view.ViewCompat
 import androidx.core.view.isVisible
 import com.pr0gramm.app.R
 import com.pr0gramm.app.feed.ContentType
@@ -198,7 +197,7 @@ class StatisticsActivity : BaseAppCompatActivity("StatisticsActivity") {
         dr.highlights.add(GraphDrawable.Highlight(13, formatScore(sampled[13].y.toInt())))
 
         // and show the graph
-        ViewCompat.setBackground(benisGraph, dr)
+        benisGraph.background = dr
 
         if (actualValues) {
             // calculate the recent changes of benis

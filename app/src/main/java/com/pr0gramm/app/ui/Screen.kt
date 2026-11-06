@@ -3,7 +3,6 @@ package com.pr0gramm.app.ui
 import androidx.core.content.ContextCompat
 import android.app.Activity
 import android.content.pm.ActivityInfo
-import android.graphics.Point
 import android.view.Surface
 
 
@@ -19,9 +18,8 @@ object Screen {
         val display = ContextCompat.getDisplayOrDefault(activity)
         val rotation = display.rotation
 
-        val size = Point().also { display.getSize(it) }
-        val width = size.x
-        val height = size.y
+        val width = activity.resources.displayMetrics.widthPixels
+        val height = activity.resources.displayMetrics.heightPixels
 
         when (rotation) {
             Surface.ROTATION_90 -> if (width > height) {

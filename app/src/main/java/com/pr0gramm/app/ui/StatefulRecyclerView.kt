@@ -5,7 +5,7 @@ import android.os.Bundle
 import android.os.Parcelable
 import android.util.AttributeSet
 import android.util.SparseArray
-import androidx.core.os.bundleOf
+import androidx.core.os.BundleCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.pr0gramm.app.ui.views.TagsView
 import com.pr0gramm.app.util.observeChangeEx
@@ -35,19 +35,19 @@ class StatefulRecyclerView @JvmOverloads constructor(
 
     override fun onSaveInstanceState(): Parcelable {
         val superState = super.onSaveInstanceState()
-        return bundleOf(
-            "viewState" to superState,
-            "adapterState" to (adapter as? InstanceStateAware)?.onSaveInstanceState(),
-        )
+        return Bundle().apply {
+            putParcelable("viewState", superState)
+            putParcelable("adapterState", (adapter as? InstanceStateAware)?.onSaveInstanceState())
+        }
     }
 
     override fun onRestoreInstanceState(state: Parcelable?) {
         val bundle = state as? Bundle ?: return super.onRestoreInstanceState(state)
 
-        super.onRestoreInstanceState(bundle.getParcelable("viewState"))
+        super.onRestoreInstanceState(BundleCompat.getParcelable(bundle, "viewState", Parcelable::class.java))
 
         val adapter = this.adapter
-        val adapterState = bundle.getParcelable<Parcelable>("adapterState")
+        val adapterState = BundleCompat.getParcelable(bundle, "adapterState", Parcelable::class.java)
 
         if (this.adapter == null) {
             this.savedAdapterState = adapterState
