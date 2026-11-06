@@ -16,7 +16,6 @@ import android.widget.ImageView
 import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
-import androidx.core.view.ViewCompat
 import androidx.core.view.isVisible
 import com.pr0gramm.app.R
 import com.pr0gramm.app.RequestCodes
@@ -163,7 +162,7 @@ class LoginActivity : BaseAppCompatActivity("LoginActivity") {
 
         val fallbackColor = ContextCompat.getColor(this, primaryColorDark)
         val background = createBackgroundDrawable(drawableId, fallbackColor)
-        ViewCompat.setBackground(findViewById(R.id.content), background)
+        findViewById<View>(R.id.content).background = background
     }
 
     private fun createBackgroundDrawable(drawableId: Int, fallbackColor: Int): Drawable {

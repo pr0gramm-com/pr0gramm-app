@@ -1,5 +1,6 @@
 package com.pr0gramm.app.ui
 
+import android.graphics.PorterDuffColorFilter
 import android.annotation.SuppressLint
 import android.annotation.TargetApi
 import android.content.Context
@@ -252,7 +253,7 @@ class MenuSheetView(context: Context, @StringRes titleRes: Int, listener: OnMenu
                 val menuItem = item.menuItem ?: return
 
                 menuItem.icon?.let { icon ->
-                    icon.mutate().setColorFilter(iconColor, PorterDuff.Mode.SRC_IN)
+                    icon.mutate().colorFilter = PorterDuffColorFilter(iconColor, PorterDuff.Mode.SRC_IN)
                     this.icon.setImageDrawable(icon)
                 }
 

@@ -42,8 +42,11 @@ class ContentTypeDrawable(context: Context, types: Collection<ContentType>) : Dr
         tp.typeface = Typeface.DEFAULT_BOLD
         tp.isAntiAlias = true
 
-        val layout = StaticLayout(text, tp, bounds.width(),
-                Layout.Alignment.ALIGN_CENTER, 0.8f, 0f, false)
+        val layout = StaticLayout.Builder.obtain(text, 0, text.length, tp, bounds.width())
+                .setAlignment(Layout.Alignment.ALIGN_CENTER)
+                .setLineSpacing(0f, 0.8f)
+                .setIncludePad(false)
+                .build()
 
         canvas.save {
             // center the text on the icon
@@ -72,6 +75,7 @@ class ContentTypeDrawable(context: Context, types: Collection<ContentType>) : Dr
         // yea, just do nothing..
     }
 
+    @Deprecated("Deprecated in Java")
     override fun getOpacity(): Int {
         return PixelFormat.TRANSLUCENT
     }

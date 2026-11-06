@@ -1,5 +1,6 @@
 package com.pr0gramm.app.ui
 
+import androidx.core.content.ContextCompat
 import android.app.Activity
 import android.content.pm.ActivityInfo
 import android.graphics.Point
@@ -15,7 +16,7 @@ object Screen {
 
 
     fun lockOrientation(activity: Activity) {
-        val display = activity.windowManager.defaultDisplay
+        val display = ContextCompat.getDisplayOrDefault(activity)
         val rotation = display.rotation
 
         val size = Point().also { display.getSize(it) }
