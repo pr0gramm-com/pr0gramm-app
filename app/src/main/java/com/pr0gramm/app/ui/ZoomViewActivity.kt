@@ -6,9 +6,12 @@ import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
-import android.view.View.SYSTEM_UI_FLAG_IMMERSIVE
 import android.widget.ImageView
 import androidx.annotation.ColorRes
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.isVisible
 import com.davemorrissey.labs.subscaleview.ImageSource
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
@@ -92,31 +95,28 @@ class ZoomViewActivity : BaseAppCompatActivity("ZoomViewActivity") {
             toggleSystemUI()
         }
 
-        // set the correct flags on startup
+        // draw below the bars, so the image does not move when they hide
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         showSystemUI()
     }
 
+    private val insetsController by lazy { WindowCompat.getInsetsController(window, window.decorView) }
+
     private fun hideSystemUI() {
-        window.decorView.systemUiVisibility = (SYSTEM_UI_FLAG_IMMERSIVE
-                // Set the content to appear under the system bars so that the
-                // content doesn't resize when the system bars hide and show.
-                or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                // Hide the nav bar and status bar
-                or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_FULLSCREEN)
+        // bars stay visible after a swipe, like the old SYSTEM_UI_FLAG_IMMERSIVE
+        insetsController.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_DEFAULT
+        insetsController.hide(WindowInsetsCompat.Type.systemBars())
     }
 
     private fun showSystemUI() {
-        window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
+        insetsController.show(WindowInsetsCompat.Type.systemBars())
     }
 
     private fun toggleSystemUI() {
-        val immersive = window.decorView.systemUiVisibility and SYSTEM_UI_FLAG_IMMERSIVE == 0
-        if (immersive) {
+        val barsVisible = ViewCompat.getRootWindowInsets(window.decorView)
+            ?.isVisible(WindowInsetsCompat.Type.statusBars()) ?: true
+
+        if (barsVisible) {
             hideSystemUI()
         } else {
             showSystemUI()

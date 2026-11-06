@@ -5,6 +5,8 @@ import android.os.Bundle
 import android.view.View
 import android.widget.RelativeLayout
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updateLayoutParams
 import com.github.paolorotolo.appintro.AppIntro
 import com.pr0gramm.app.BuildConfig
@@ -86,9 +88,9 @@ class IntroActivity : AppIntro(), LazyInjectorAware {
 
         setFadeAnimation()
 
-        find<View>(R.id.bottom).setOnApplyWindowInsetsListener { v, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(find<View>(R.id.bottom)) { v, insets ->
             v.updateLayoutParams<RelativeLayout.LayoutParams> {
-                bottomMargin = insets.systemWindowInsetBottom
+                bottomMargin = insets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom
             }
 
             insets

@@ -15,7 +15,6 @@ import android.text.style.BulletSpan
 import android.text.style.LeadingMarginSpan
 import android.util.LruCache
 import android.view.View
-import android.view.WindowInsets
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.ImageView
@@ -29,6 +28,10 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.core.content.res.use
 import androidx.core.graphics.drawable.DrawableCompat
 import androidx.core.text.inSpans
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.postDelayed
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.pr0gramm.app.BuildConfig
@@ -80,24 +83,16 @@ object AndroidUtility {
      * Gets the height of the statusbar.
      */
     fun getStatusBarHeight(context: Context): Int {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            val window = activityFromContext(context)?.window
-            val rootWindowInsets = window?.decorView?.rootWindowInsets
-            if (rootWindowInsets != null) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    // this seems to be always correct on android 11 and better.
-                    return rootWindowInsets
-                        .getInsetsIgnoringVisibility(WindowInsets.Type.statusBars())
-                        .top
-                }
-
-                // this works for android 6 and above
-                return rootWindowInsets.stableInsetTop
-            }
+        val decorView = activityFromContext(context)?.window?.decorView
+        val rootWindowInsets = decorView?.let { ViewCompat.getRootWindowInsets(it) }
+        if (rootWindowInsets != null) {
+            // uses the stable insets below android 11
+            return rootWindowInsets
+                .getInsetsIgnoringVisibility(WindowInsetsCompat.Type.statusBars())
+                .top
         }
 
-        // use the old code as fallback in case we have a really old android
-        // or if we don't have a window or decorView
+        // fallback in case we don't have a window or decorView
 
         var result = 0
 
@@ -209,7 +204,7 @@ object AndroidUtility {
                 view.requestFocus()
 
                 val imm = view.context.getSystemService<InputMethodManager>()
-                imm?.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT)
+                imm?.showSoftInput(view, 0)
 
             } catch (err: Exception) {
                 logger.warn(err) { "Failed to show soft keyboard" }
@@ -221,7 +216,7 @@ object AndroidUtility {
         if (view != null) {
             try {
                 val imm = view.context.getSystemService<InputMethodManager>()
-                imm?.hideSoftInputFromWindow(view.windowToken, InputMethodManager.HIDE_NOT_ALWAYS)
+                imm?.hideSoftInputFromWindow(view.windowToken, 0)
 
             } catch (err: Exception) {
                 logger.warn(err) { "Failed to hide soft keyboard" }
@@ -238,21 +233,18 @@ object AndroidUtility {
     }
 
     fun applyWindowFullscreen(activity: Activity, fullscreen: Boolean) {
-        var flags = 0
+        val window = activity.window
+        val controller = WindowCompat.getInsetsController(window, window.decorView)
 
         if (fullscreen) {
-            flags = flags or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-
-            flags = flags or (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                    or View.SYSTEM_UI_FLAG_FULLSCREEN)
-
-            flags = flags or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+            // draw below the bars, so the content does not resize when they hide
+            WindowCompat.setDecorFitsSystemWindows(window, false)
+            controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            controller.hide(WindowInsetsCompat.Type.systemBars())
+        } else {
+            controller.show(WindowInsetsCompat.Type.systemBars())
+            WindowCompat.setDecorFitsSystemWindows(window, true)
         }
-
-        val decorView = activity.window.decorView
-        decorView.systemUiVisibility = flags
     }
 
     fun screenSize(activity: Activity): Point {
