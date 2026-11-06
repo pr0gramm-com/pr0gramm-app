@@ -1,5 +1,6 @@
 package com.pr0gramm.app.ui
 
+import androidx.core.content.IntentCompat
 import android.net.Uri
 import android.os.BadParcelableException
 import android.os.Bundle
@@ -21,7 +22,7 @@ class UpdateActivity : BaseAppCompatActivity("UpdateActivity"), DialogDismissLis
 
 
         val update: Update? = try {
-            intent.getParcelableExtra(EXTRA_UPDATE)
+            IntentCompat.getParcelableExtra(intent, EXTRA_UPDATE, Update::class.java)
         } catch (err: BadParcelableException) {
             // do not crash, sometimes this activity is called after the update was installed.
             // the parcelable is then out of date and crashes the activity.

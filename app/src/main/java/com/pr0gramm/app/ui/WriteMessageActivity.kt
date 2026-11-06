@@ -1,5 +1,6 @@
 package com.pr0gramm.app.ui
 
+import androidx.core.content.IntentCompat
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
@@ -71,7 +72,7 @@ class WriteMessageActivity : BaseAppCompatActivity("WriteMessageActivity") {
     private val titleOverride: String? by lazy { intent.getStringExtra(ARGUMENT_TITLE) }
 
     private val parentComments: List<ParentComment> by lazy {
-        intent.getParcelableExtra<ParentComments>(ARGUMENT_EXCERPTS)?.comments ?: listOf()
+        IntentCompat.getParcelableExtra(intent, ARGUMENT_EXCERPTS, ParentComments::class.java)?.comments ?: listOf()
     }
 
     private var selectedUsers by observeChangeEx(setOf<String>()) { _, _ -> updateViewState() }
