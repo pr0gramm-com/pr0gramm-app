@@ -501,7 +501,7 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
 
     private val userActionListener = object : UserInfoView.UserActionListener {
         override fun onWriteMessageClicked(name: String) {
-            doIfAuthorizedHelper.run {
+            doIfAuthorizedHelper.runAuthWithRetry {
                 ConversationActivity.start(requireContext(), name)
             }
         }

@@ -1335,7 +1335,7 @@ class PostFragment : BaseFragment("PostFragment"), NewTagDialogFragment.OnAddNew
         }
 
         override fun writeNewTagClicked() {
-            doIfAuthorizedHelper.run {
+            doIfAuthorizedHelper.runAuthWithRetry {
                 if (!childFragmentManager.isStateSaved) {
                     val dialog = NewTagDialogFragment()
                     dialog.show(childFragmentManager, null)
