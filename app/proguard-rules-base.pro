@@ -65,3 +65,6 @@
 # Optional window extension APIs, only present on some devices.
 -dontwarn androidx.window.extensions.**
 -dontwarn androidx.window.sidecar.**
+
+# Source-only IntDef annotation, not shipped in the aar.
+-dontwarn ir.mahdiparastesh.chlm.Orientation
