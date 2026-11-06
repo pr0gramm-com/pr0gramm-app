@@ -16,7 +16,7 @@ import com.pr0gramm.app.services.Track
 import com.pr0gramm.app.services.UriHelper
 import com.pr0gramm.app.ui.base.BaseAppCompatActivity
 import com.pr0gramm.app.ui.base.bindViews
-import com.pr0gramm.app.ui.base.launchWhenStarted
+import com.pr0gramm.app.ui.base.launchUntilDestroy
 import com.pr0gramm.app.ui.dialogs.ErrorDialogFragment.Companion.handleOnError
 import com.pr0gramm.app.ui.views.SingleTypeViewBindingAdapter
 import com.pr0gramm.app.util.DurationFormat
@@ -61,7 +61,7 @@ class InviteActivity : BaseAppCompatActivity("InviteActivity") {
         // disable all views
         disableInputViews()
 
-        launchWhenStarted(busyIndicator = true) {
+        launchUntilDestroy(busyIndicator = true) {
             try {
                 withContext(NonCancellable + Dispatchers.Default) {
                     inviteService.send(email)
@@ -82,7 +82,7 @@ class InviteActivity : BaseAppCompatActivity("InviteActivity") {
     override fun onResume() {
         super.onResume()
 
-        launchWhenStarted {
+        launchUntilDestroy {
             handleInvites(inviteService.invites())
         }
     }
