@@ -334,21 +334,19 @@ fun Throwable.getMessageWithCauses(): String {
         .replaceFirst(".+\\.".toRegex(), "")
         .replace('$', '.')
 
-    val cause = error.cause
+    val cause = error.cause?.takeIf { it !== error }
 
-    val hasCause = cause != null && error !== cause
     val message = error.message ?: ""
-    val hasMessage = message.isNotBlank() && (
-            !hasCause || (cause != null && cause.javaClass.directName !in message))
+    val hasMessage = message.isNotBlank() && (cause == null || cause.javaClass.directName !in message)
 
     return if (hasMessage) {
-        if (hasCause && cause != null) {
+        if (cause != null) {
             "$type(${error.message}), caused by ${cause.getMessageWithCauses()}"
         } else {
             "$type(${error.message})"
         }
     } else {
-        if (hasCause && cause != null) {
+        if (cause != null) {
             "$type, caused by ${cause.getMessageWithCauses()}"
         } else {
             type

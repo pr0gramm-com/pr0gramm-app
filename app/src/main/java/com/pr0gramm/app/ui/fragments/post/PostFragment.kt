@@ -772,7 +772,6 @@ class PostFragment : BaseFragment("PostFragment"), NewTagDialogFragment.OnAddNew
             when (vote) {
                 Vote.UP -> R.drawable.ic_vote_up
                 Vote.DOWN -> R.drawable.ic_vote_down
-                else -> R.drawable.ic_vote_fav
             }
         )
 

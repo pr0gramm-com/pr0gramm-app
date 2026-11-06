@@ -145,7 +145,7 @@ class MainActivity : BaseAppCompatActivity("MainActivity"),
 
             createDrawerFragment()
 
-            if (startedFromLauncher || intent == null) {
+            if (startedFromLauncher) {
                 // load feed-fragment into view
                 gotoFeedFragment(defaultFeedFilter(), true)
 

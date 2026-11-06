@@ -72,7 +72,7 @@ class CommentSpacerView @JvmOverloads constructor(context: Context, attrs: Attri
     }
 
     @SuppressLint("DrawAllocation")
-    override fun onDraw(canvas: Canvas) = logger.time("Draw spacer at depth $depth") {
+    override fun onDraw(canvas: Canvas): Unit = logger.time("Draw spacer at depth $depth") {
         super.onDraw(canvas)
 
         if (spacings.maxLineIsAt < 2)

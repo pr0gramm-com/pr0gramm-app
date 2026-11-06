@@ -73,7 +73,6 @@ class Duration(private val nanos: Long) {
                 TimeUnit.MINUTES -> "min"
                 TimeUnit.HOURS -> "h"
                 TimeUnit.DAYS -> "d"
-                else -> throw AssertionError()
             }
         }
     }
