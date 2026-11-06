@@ -13,7 +13,6 @@ import android.view.inputmethod.EditorInfo
 import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.appcompat.widget.AppCompatCheckBox
-import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import com.pr0gramm.app.R
 import com.pr0gramm.app.databinding.ViewSearchBinding
@@ -141,10 +140,10 @@ class SearchOptionsView @JvmOverloads constructor(context: Context, attrs: Attri
     }
 
     override fun onSaveInstanceState(): Parcelable {
-        return bundleOf(
-            "viewState" to super.onSaveInstanceState(),
-            "customState" to currentState()
-        )
+        return Bundle().apply {
+            putParcelable("viewState", super.onSaveInstanceState())
+            putBundle("customState", currentState())
+        }
     }
 
     override fun onRestoreInstanceState(state: Parcelable) {

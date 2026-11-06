@@ -9,7 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.animation.doOnEnd
 import androidx.core.animation.doOnStart
-import androidx.core.os.bundleOf
+import androidx.core.os.BundleCompat
 import androidx.core.view.children
 import androidx.core.view.isVisible
 import com.pr0gramm.app.R
@@ -43,14 +43,15 @@ class TagCloudContainerView @JvmOverloads constructor(
 
     override fun onSaveInstanceState(): Parcelable? {
         val superState = super.onSaveInstanceState()
-        return bundleOf(
-                "superState" to superState,
-                "expanded" to (state != State.COLLAPSED))
+        return Bundle().apply {
+            putParcelable("superState", superState)
+            putBoolean("expanded", state != State.COLLAPSED)
+        }
     }
 
     override fun onRestoreInstanceState(state: Parcelable?) {
         if (state is Bundle) {
-            super.onRestoreInstanceState(state.getParcelable("superState"))
+            super.onRestoreInstanceState(BundleCompat.getParcelable(state, "superState", Parcelable::class.java))
 
             this.expandAnimator?.cancel()
             this.expandAnimator = null

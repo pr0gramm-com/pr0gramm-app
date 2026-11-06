@@ -6,7 +6,7 @@ import android.view.View
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
-import androidx.core.os.bundleOf
+import android.os.Bundle
 import androidx.core.view.isVisible
 import com.pr0gramm.app.R
 import com.pr0gramm.app.Settings
@@ -119,7 +119,7 @@ class EditBookmarkDialog : ViewBindingDialogFragment<BookmarkEditBinding>("EditB
     companion object {
         fun forBookmark(b: Bookmark): EditBookmarkDialog {
             return EditBookmarkDialog().apply {
-                arguments = bundleOf("Bookmark" to b.title)
+                arguments = Bundle().apply { putString("Bookmark", b.title) }
             }
         }
     }

@@ -1,5 +1,6 @@
 package com.pr0gramm.app.ui.fragments.feed
 
+import androidx.core.os.BundleCompat
 import android.content.Context
 import android.net.Uri
 import android.os.Bundle
@@ -115,7 +116,7 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
         BackAwareFragment {
 
     private val feedStateModel by viewModels { handle ->
-        val start = arguments?.getParcelable<CommentRef?>(ARG_FEED_START)
+        val start = arguments?.let { BundleCompat.getParcelable(it, ARG_FEED_START, CommentRef::class.java) }
         if (start != null) {
             logger.debug { "Requested to open item $start on load" }
             autoScrollRef = ScrollRef(start, autoOpen = true)

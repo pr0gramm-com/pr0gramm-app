@@ -1,5 +1,6 @@
 package com.pr0gramm.app.ui.fragments
 
+import androidx.core.os.BundleCompat
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.os.Parcelable
@@ -209,7 +210,7 @@ abstract class IdFragmentStatePagerAdapter(private val mFragmentManager: Fragmen
             state.classLoader = loader
 
             val ids = state.getLongArray("ids")
-            val fss = state.getParcelableArray("states")
+            val fss = BundleCompat.getParcelableArray(state, "states", Fragment.SavedState::class.java)
 
             mFragments.clear()
             mSavedState.clear()

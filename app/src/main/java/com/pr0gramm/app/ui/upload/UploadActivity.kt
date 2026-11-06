@@ -1,5 +1,6 @@
 package com.pr0gramm.app.ui.upload
 
+import androidx.core.content.IntentCompat
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
@@ -75,7 +76,7 @@ class UploadActivity : BaseAppCompatActivity("UploadActivity"), ChooseMediaTypeF
     private fun showUploadFragment(type: UploadMediaType?, addToBackstack: Boolean) {
         val fragment = when {
             intent?.action == Intent.ACTION_SEND -> {
-                val url = intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)
+                val url = IntentCompat.getParcelableExtra(intent, Intent.EXTRA_STREAM, Uri::class.java)
                 UploadFragment.forLocalUri(url)
             }
 

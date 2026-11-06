@@ -1,5 +1,6 @@
 package com.pr0gramm.app.ui.dialogs
 
+import androidx.core.os.BundleCompat
 import android.app.Dialog
 import android.content.Context
 import android.content.Intent
@@ -36,7 +37,7 @@ class UpdateDialogFragment : BaseDialogFragment("UpdateDialogFragment") {
     private val singleShotService: SingleShotService by instance()
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val update = arguments?.getParcelable<Update?>("update")
+        val update = arguments?.let { BundleCompat.getParcelable(it, "update", Update::class.java) }
         return update?.let { updateAvailableDialog(it) } ?: noNewUpdateDialog()
     }
 

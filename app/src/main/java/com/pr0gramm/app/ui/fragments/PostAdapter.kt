@@ -1,5 +1,6 @@
 package com.pr0gramm.app.ui.fragments
 
+import androidx.core.os.BundleCompat
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
@@ -151,7 +152,7 @@ private class TagsViewHolderAdapterDelegate
         super.onRestoreInstanceState(inState)
 
         // load the previous view state
-        viewStates = inState.getParcelable("TagsViewHolder.state") ?: ViewHolderState()
+        viewStates = BundleCompat.getParcelable(inState, "TagsViewHolder.state", ViewHolderState::class.java) ?: ViewHolderState()
     }
 
     class ViewHolder(val tagsView: TagsView) : RecyclerView.ViewHolder(tagsView),
