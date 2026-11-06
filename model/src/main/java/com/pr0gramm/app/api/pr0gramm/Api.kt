@@ -1040,5 +1040,5 @@ interface Api {
     }
 }
 
-// To work around some quirks in moshis serialization we use java.util.Map here.
-typealias GenericSettings = java.util.Map<String, Object?>
+// Suppress wildcards so retrofit sees Map<String, Object> like before.
+typealias GenericSettings = Map<String, @JvmSuppressWildcards Any?>

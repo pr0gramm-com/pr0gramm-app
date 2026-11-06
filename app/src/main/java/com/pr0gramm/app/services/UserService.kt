@@ -4,7 +4,6 @@ import android.content.SharedPreferences
 import androidx.core.content.edit
 import com.pr0gramm.app.*
 import com.pr0gramm.app.api.pr0gramm.Api
-import com.pr0gramm.app.api.pr0gramm.GenericSettings
 import com.pr0gramm.app.api.pr0gramm.LoginCookieJar
 import com.pr0gramm.app.feed.ContentType
 import com.pr0gramm.app.model.config.Config
@@ -399,7 +398,7 @@ class UserService(
             }
         }
 
-        return api.storeSettings(null, fields as GenericSettings)
+        return api.storeSettings(null, fields)
     }
 
     /**
