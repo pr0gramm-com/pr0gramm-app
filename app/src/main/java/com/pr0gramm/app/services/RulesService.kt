@@ -23,7 +23,7 @@ class RulesService(private val okHttpClient: OkHttpClient) {
                 val url = "https://pr0gramm.com/media/templates/rules.html"
                 val request = Request.Builder().url(url).build()
                 val response = okHttpClient.newCall(request).execute()
-                if (response.isSuccessful) response.body?.string() else null
+                if (response.isSuccessful) response.body.string() else null
             }
 
             if (text != null) {

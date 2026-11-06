@@ -542,7 +542,6 @@ internal class CacheEntry(
                 var (totalSize, body, readAll) = try {
                     logger.debug { "Response is $response" }
                     val body = response.body
-                        ?: throw IllegalStateException("no body in media response")
 
                     val (totalSize, readAll) = when (response.code) {
                         200 -> {

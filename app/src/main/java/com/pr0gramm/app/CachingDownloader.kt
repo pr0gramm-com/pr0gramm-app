@@ -32,7 +32,7 @@ class CachingDownloader(private val cache: Cache, private val httpClient: OkHttp
 
             // check if we want to cache the response in memory
             val body = response.body
-            if (body != null && body.contentLength() in (1 until 20 * 1024)) {
+            if (body.contentLength() in (1 until 20 * 1024)) {
                 val bytes = response.use { body.bytes() }
 
                 memoryCache.put(url.toString(), bytes)
