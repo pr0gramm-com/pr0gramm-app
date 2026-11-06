@@ -40,6 +40,7 @@ import com.pr0gramm.app.services.BookmarkService
 import com.pr0gramm.app.services.FollowService
 import com.pr0gramm.app.services.InMemoryCacheService
 import com.pr0gramm.app.services.RecentSearchesServices
+import com.pr0gramm.app.services.SeenService
 import com.pr0gramm.app.services.ShareService
 import com.pr0gramm.app.services.SingleShotService
 import com.pr0gramm.app.services.ThemeHelper
@@ -153,6 +154,7 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
     private val recentSearchesServices: RecentSearchesServices by instance()
     private val followService: FollowService by instance()
     private val shareService: ShareService by instance()
+    private val seenService: SeenService by instance()
 
     private val views by bindViews(FragmentFeedBinding::bind)
 
@@ -245,6 +247,7 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
         views.refresh.setOnRefreshListener {
             logger.debug { "onRefresh called for swipe view." }
             views.refresh.isRefreshing = false
+            feedStateModel.applyAccumulatedSeenFilter()
             refreshContent()
         }
 
@@ -405,10 +408,9 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
                 }
 
             } else if (!userState.userInfoCommentsOpen) {
-                // check if we need to check if the posts are 'seen'
-                val markAsSeen = feedState.markItemsAsSeen && !run {
-                    userState.ownUsername != null && userState.ownUsername.equalsIgnoreCase(filter.username)
-                }
+                // check if we need to mark posts as 'seen' (respects filter exclusions)
+                val sessionStartSeen = feedState.sessionStartSeenIds
+                val markAsSeen = feedState.markItemsAsSeen && shouldApplySeenFilter(filter)
 
                 // always show at least one ad banner - e.g. during load
                 if (feedState.adsVisible && feedState.feed.isEmpty()) {
@@ -419,9 +421,15 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
 
                 for (item in feedState.feed) {
                     val id = item.id
-                    val seen = markAsSeen && id in feedState.seen
+                    val seenBeforeSession = markAsSeen && (id in sessionStartSeen)
+                    val seen = markAsSeen && (id in feedState.seen)
                     val repost = inMemoryCacheService.isRepost(id)
                     val preloaded = id in feedState.preloadedItemIds
+
+                    // skip seen items that were seen BEFORE current session (exclusions handled in markAsSeen)
+                    if (seenBeforeSession) {
+                        continue
+                    }
 
                     // show an ad banner every ~50 lines
                     if (feedState.adsVisible && (itemColumnIndex % (50 * thumbnailColumnCount)) == 0) {
@@ -474,8 +482,42 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
 
             feedAdapter.submitList(entries) {
                 feedAdapter.stateRestorationPolicy = StateRestorationPolicy.ALLOW
+
+                // Proactive load if filtering resulted in very few visible items
+                if (shouldApplySeenFilter(filter) && !feedState.isLoading && !feed.isAtEnd) {
+                    val visibleItemCount = entries.count { it is FeedAdapter.Entry.Item }
+                    val threshold = 10
+
+                    if (visibleItemCount < threshold) {
+                        logger.info { "Proactive load: only $visibleItemCount visible items (threshold: $threshold), loading more..." }
+                        feedStateModel.triggerLoadNext()
+                    }
+                }
             }
         }
+    }
+
+    private fun shouldApplySeenFilter(filter: FeedFilter): Boolean {
+        if (!Settings.hideSeenPosts) return false
+
+        // Don't filter in collections - user curated content
+        if (filter.collection != null) return false
+
+        // Don't filter in user profiles - browsing specific user's posts
+        if (filter.username != null) return false
+
+        // Don't filter in search results - intentional query for specific content
+        if (filter.tags != null) return false
+
+        // Don't filter in following feed - content from followed users
+        if (filter.feedType == FeedType.STALK) return false
+
+        // Don't filter when accessing a post directly (deep links, notifications, comment links)
+        // Check if fragment was created with a specific start item
+        val hasSpecificStartItem = arguments?.getParcelable<CommentRef?>(ARG_FEED_START) != null
+        if (hasSpecificStartItem) return false
+
+        return true
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -652,7 +694,19 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
 
     fun updateFeedItemTarget(feed: Feed, item: FeedItem) {
         logger.info { "Want to resume from $item" }
-        autoScrollRef = ScrollRef(CommentRef(item), feed, smoothScroll = true)
+
+        val feedToPass = if (shouldApplySeenFilter(feed.filter)) {
+            // Use session-based filtering: only filter posts seen BEFORE this session
+            val sessionStartSeen = feedStateModel.feedState.value.sessionStartSeenIds
+            val filteredItems = feed.filter { feedItem ->
+                feedItem.id !in sessionStartSeen
+            }
+            feed.copy(items = filteredItems)
+        } else {
+            feed
+        }
+
+        autoScrollRef = ScrollRef(CommentRef(item), feedToPass, smoothScroll = true)
     }
 
     private fun checkForNewItems() {
@@ -708,6 +762,9 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
         if (autoScrollRef == null) {
             autoScrollRef = startAtItemId?.let { id -> ScrollRef(CommentRef(id)) }
         }
+
+        // Apply accumulated seen filter before replacing feed
+        feedStateModel.applyAccumulatedSeenFilter()
 
         // this clears the current feed immediately
         val filter = feedFilter ?: feed.filter
@@ -817,6 +874,15 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
             // never bookmark a user
             bookmark.isVisible = false
         }
+
+        menu.findItem(R.id.action_hide_seen_posts)?.let { item ->
+            item.setTitle(
+                if (Settings.hideSeenPosts)
+                    R.string.action_show_seen_posts
+                else
+                    R.string.action_hide_seen_posts
+            )
+        }
     }
 
     private fun switchFeedTypeTarget(filter: FeedFilter): FeedType {
@@ -884,6 +950,11 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
             R.id.action_open_in_admin -> openUserInAdmin()
             R.id.action_scroll_seen -> scrollToNextSeenAsync()
             R.id.action_scroll_unseen -> scrollToNextUnseenAsync()
+            R.id.action_hide_seen_posts -> {
+                Settings.hideSeenPosts = !Settings.hideSeenPosts
+                activity?.invalidateOptionsMenu()
+                updateAdapterState(feedStateModel.feedState.value, userStateModel.userState.value)
+            }
 
             else -> super.onOptionsItemSelected(item)
         }
@@ -917,6 +988,7 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
     private fun switchFeedType() {
         var filter = currentFilter
         filter = filter.withFeedType(switchFeedTypeTarget(filter))
+        feedStateModel.applyAccumulatedSeenFilter()
         (activity as MainActionHandler).onFeedFilterSelected(filter, initialSearchViewState())
     }
 
@@ -1025,7 +1097,18 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
         // reset auto open.
         autoScrollRef = null
 
-        val idx = feed.indexById(item.id) ?: return
+        val feedToPass = if (shouldApplySeenFilter(feed.filter)) {
+            // Use session-based filtering: only filter posts seen BEFORE this session
+            val sessionStartSeen = feedStateModel.feedState.value.sessionStartSeenIds
+            val filteredItems = feed.filter { feedItem ->
+                feedItem.id !in sessionStartSeen
+            }
+            feed.copy(items = filteredItems)
+        } else {
+            feed
+        }
+
+        val idx = feedToPass.indexById(item.id) ?: return
         trace { "onItemClicked(feedIndex=$idx, id=${item.id})" }
 
         try {
@@ -1039,7 +1122,7 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
                 else -> currentTitle?.title
             }
 
-            val fragment = PostPagerFragment.newInstance(feed, idx, commentRef, title)
+            val fragment = PostPagerFragment.newInstance(feedToPass, idx, commentRef, title)
             if (preview != null) {
                 // pass pixels info to target fragment.
                 val image = preview.drawable
@@ -1356,15 +1439,16 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
             val maxEdgeDistance = 48
 
             if (dy > 0 && !feed.isAtEnd) {
-                if (lastVisibleItem >= 0 && totalItemCount > maxEdgeDistance && lastVisibleItem >= totalItemCount - maxEdgeDistance) {
+                if (lastVisibleItem >= 0 && feed.size > maxEdgeDistance && lastVisibleItem >= totalItemCount - maxEdgeDistance) {
                     logger.info { "Request next page now (last visible is $lastVisibleItem of $totalItemCount. Last feed item is ${feed.oldestNonPlaceholderItem}" }
                     feedStateModel.triggerLoadNext()
                 }
             }
 
             if (dy < 0 && !feed.isAtStart) {
-                if (firstVisibleItem >= 0 && totalItemCount > maxEdgeDistance && firstVisibleItem < maxEdgeDistance) {
+                if (firstVisibleItem >= 0 && feed.size > maxEdgeDistance && firstVisibleItem < maxEdgeDistance) {
                     logger.info { "Request previous page now (first visible is $firstVisibleItem of $totalItemCount. Most recent feed item is ${feed.newestNonPlaceholderItem}" }
+                    feedStateModel.applyAccumulatedSeenFilter()
                     feedStateModel.triggerLoadPrev()
                 }
             }

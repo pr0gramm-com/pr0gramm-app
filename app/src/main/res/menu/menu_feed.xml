@@ -76,6 +76,11 @@
         app:showAsAction="never" />
 
     <item
+        android:id="@+id/action_hide_seen_posts"
+        android:title="@string/action_hide_seen_posts"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/action_block_user"
         android:title="@string/action_block_user"
         android:visible="false"
