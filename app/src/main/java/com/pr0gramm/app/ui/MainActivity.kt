@@ -30,6 +30,10 @@ import androidx.core.view.GravityCompat
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.repeatOnLifecycle
+import androidx.lifecycle.withResumed
+import androidx.lifecycle.withStarted
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.ump.ConsentInformation
 import com.google.android.ump.ConsentRequestParameters
@@ -153,8 +157,8 @@ class MainActivity : BaseAppCompatActivity("MainActivity"),
                 // load feed-fragment into view
                 gotoFeedFragment(defaultFeedFilter(), true)
 
-                launchWhenResumed {
-                    checkForInfoMessage()
+                launchUntilDestroy {
+                    withResumed { checkForInfoMessage() }
                 }
 
             } else {
@@ -162,7 +166,9 @@ class MainActivity : BaseAppCompatActivity("MainActivity"),
                 onNewIntent(intent)
             }
 
-            launchWhenStarted { onColdStart() }
+            launchUntilDestroy {
+                withStarted { onColdStart() }
+            }
         }
 
         // show the intro activity if this is the first time the app started.
@@ -289,13 +295,15 @@ class MainActivity : BaseAppCompatActivity("MainActivity"),
     private fun buildDrawerArrowDrawable(): DrawerArrowDrawable {
         val drawable = NotificationDrawerArrowDrawable(this)
 
-        launchWhenResumed {
+        launchUntilDestroy {
             val inboxService = applicationContext.injector.instance<InboxService>()
 
-            inboxService.unreadMessagesCount()
-                .map { it.total > 0 }
-                .distinctUntilChanged()
-                .collect { hasNotification -> drawable.hasNotification = hasNotification }
+            repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                inboxService.unreadMessagesCount()
+                    .map { it.total > 0 }
+                    .distinctUntilChanged()
+                    .collect { hasNotification -> drawable.hasNotification = hasNotification }
+            }
         }
 
         return drawable
@@ -327,7 +335,7 @@ class MainActivity : BaseAppCompatActivity("MainActivity"),
     }
 
     private fun showBuyPremiumHint() {
-        launchWhenStarted {
+        launchUntilDestroy {
             val adsEnabledFlow = merge(
                 adService.enabledForType(Config.AdType.FEED).take(1),
                 adService.enabledForType(Config.AdType.FEED_TO_POST_INTERSTITIAL).take(1)
@@ -583,7 +591,7 @@ class MainActivity : BaseAppCompatActivity("MainActivity"),
         }
     }
 
-    private suspend fun onColdStart() {
+    private fun onColdStart() {
         var updateCheck = true
         var updateCheckDelay = false
 
@@ -636,21 +644,24 @@ class MainActivity : BaseAppCompatActivity("MainActivity"),
 
         Track.logout()
 
-        launchWhenStarted(busyIndicator = true) {
+        launchUntilDestroy(busyIndicator = true) {
             userService.logout()
 
-            // show a short information.
-            Snackbar.make(
-                views.contentContainer,
-                R.string.logout_successful_hint,
-                Snackbar.LENGTH_SHORT
-            )
-                .configureNewStyle()
-                .setAction(R.string.okay) { }
-                .show()
+            // gotoFeedFragment is a fragment transaction
+            withStarted {
+                // show a short information.
+                Snackbar.make(
+                    views.contentContainer,
+                    R.string.logout_successful_hint,
+                    Snackbar.LENGTH_SHORT
+                )
+                    .configureNewStyle()
+                    .setAction(R.string.okay) { }
+                    .show()
 
-            // reset everything!
-            gotoFeedFragment(defaultFeedFilter(), true)
+                // reset everything!
+                gotoFeedFragment(defaultFeedFilter(), true)
+            }
         }
     }
 
@@ -797,7 +808,11 @@ class MainActivity : BaseAppCompatActivity("MainActivity"),
 
         ".*/user/[^/]+/validate/([^/]+)".toRegex().find(uriString)?.let { match ->
             val uriToken = match.groupValues[1]
-            launchWhenResumed { doUserValidate(uriToken) }
+            launchUntilDestroy {
+                // wait until visible so the user sees the snackbar
+                withResumed {}
+                doUserValidate(uriToken)
+            }
         }
 
         if (uriString.endsWith("/inbox/messages")) {
