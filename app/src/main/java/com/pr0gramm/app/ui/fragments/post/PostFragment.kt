@@ -22,6 +22,7 @@ import androidx.core.view.updatePadding
 import androidx.core.view.MenuProvider
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.lifecycle.withStarted
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
@@ -67,7 +68,7 @@ import com.pr0gramm.app.ui.base.asEventFlow
 import com.pr0gramm.app.ui.base.asStateFlow
 import com.pr0gramm.app.ui.base.bindViews
 import com.pr0gramm.app.ui.base.launchInViewScope
-import com.pr0gramm.app.ui.base.launchWhenStarted
+import com.pr0gramm.app.ui.base.launchUntilDestroy
 import com.pr0gramm.app.ui.configureNewStyle
 import com.pr0gramm.app.ui.configureRecyclerView
 import com.pr0gramm.app.ui.dialogs.CollectionsSelectionDialog
@@ -184,9 +185,11 @@ class PostFragment : BaseFragment("PostFragment"), NewTagDialogFragment.OnAddNew
     override fun onCreate(savedInstanceState: Bundle?): Unit {
         super.onCreate(savedInstanceState)
 
-        launchWhenStarted {
-            userService.loginStates.drop(1).collect {
-                activity?.invalidateOptionsMenu()
+        launchUntilDestroy {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                userService.loginStates.drop(1).collect {
+                    activity?.invalidateOptionsMenu()
+                }
             }
         }
 
@@ -688,7 +691,7 @@ class PostFragment : BaseFragment("PostFragment"), NewTagDialogFragment.OnAddNew
     }
 
     private fun shareImage() {
-        launchWhenStarted(busyIndicator = true) {
+        launchUntilDestroy(busyIndicator = true) {
             shareService.shareImage(requireActivity(), feedItem)
         }
     }
@@ -728,11 +731,13 @@ class PostFragment : BaseFragment("PostFragment"), NewTagDialogFragment.OnAddNew
         val bitmapDrawable = previewInfo.preview as? BitmapDrawable
         val preview = bitmapDrawable?.bitmap ?: previewInfo.fancy?.valueOrNull
 
-        launchWhenStarted {
+        launchUntilDestroy {
             try {
                 downloadService.downloadWithNotification(feedItem, preview)
             } catch (_: DownloadService.CouldNotCreateDownloadDirectoryException) {
-                showErrorString(parentFragmentManager, getString(R.string.error_could_not_create_download_directory))
+                withStarted {
+                    showErrorString(parentFragmentManager, getString(R.string.error_could_not_create_download_directory))
+                }
             }
         }
     }
@@ -962,7 +967,7 @@ class PostFragment : BaseFragment("PostFragment"), NewTagDialogFragment.OnAddNew
     }
 
     private fun doVoteOnDoubleTap(targetVote: Vote) {
-        launchWhenStarted {
+        launchUntilDestroy {
             if (voteService.getItemVote(feedItem.id).first() != targetVote) {
                 doVoteFeedItem(targetVote)
             } else {
@@ -1184,7 +1189,7 @@ class PostFragment : BaseFragment("PostFragment"), NewTagDialogFragment.OnAddNew
         return doIfAuthorizedHelper.runAuthWithRetry {
             showPostVoteAnimation(vote)
 
-            launchWhenStarted {
+            launchUntilDestroy {
                 withContext(NonCancellable + Dispatchers.Default) {
                     voteService.vote(feedItem, vote)
                 }
@@ -1198,7 +1203,7 @@ class PostFragment : BaseFragment("PostFragment"), NewTagDialogFragment.OnAddNew
     inner class CommentListener : CommentView.Listener {
         override fun onCommentVoteClicked(comment: Api.Comment, vote: Vote): Boolean {
             return doIfAuthorizedHelper.runAuthNoRetry {
-                launchWhenStarted {
+                launchUntilDestroy {
                     voteService.vote(comment, vote)
                 }
             }
@@ -1206,7 +1211,7 @@ class PostFragment : BaseFragment("PostFragment"), NewTagDialogFragment.OnAddNew
 
         override fun onCommentFavedClicked(comment: Api.Comment, faved: Boolean): Boolean {
             return doIfAuthorizedHelper.runAuthNoRetry {
-                launchWhenStarted {
+                launchUntilDestroy {
                     if (faved) {
                         favedCommentService.markAsFaved(comment.id)
                     } else {
@@ -1309,7 +1314,7 @@ class PostFragment : BaseFragment("PostFragment"), NewTagDialogFragment.OnAddNew
     private val actions = object : PostActions {
         override fun voteTagClicked(tag: Api.Tag, vote: Vote): Boolean {
             return doIfAuthorizedHelper.runAuthWithRetry {
-                launchWhenStarted {
+                launchUntilDestroy {
                     withContext(NonCancellable + Dispatchers.Default) {
                         voteService.vote(tag, vote)
                     }

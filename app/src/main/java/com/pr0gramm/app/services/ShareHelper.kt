@@ -8,6 +8,8 @@ import android.net.Uri
 import android.view.View
 import androidx.core.app.ShareCompat
 import androidx.core.content.FileProvider
+import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.withStarted
 import com.google.android.material.snackbar.Snackbar
 import com.pr0gramm.app.BuildConfig
 import com.pr0gramm.app.R
@@ -75,7 +77,7 @@ class ShareService(private val cache: Cache) {
     }
 
 
-    suspend fun shareImage(activity: Activity, feedItem: FeedItem) {
+    suspend fun shareImage(activity: FragmentActivity, feedItem: FeedItem) {
         val mimetype = guessMimetype(activity, feedItem)
 
         val toShare = runInterruptible(Dispatchers.IO) {
@@ -103,11 +105,14 @@ class ShareService(private val cache: Cache) {
         val provider = BuildConfig.APPLICATION_ID + ".FileProvider"
         val shareUri = FileProvider.getUriForFile(activity, provider, toShare)
 
-        ShareCompat.IntentBuilder(activity)
-            .setType(mimetype)
-            .addStream(shareUri)
-            .setChooserTitle(R.string.share_with)
-            .startChooser()
+        // copying can take a while, only open the chooser once we are visible again
+        activity.withStarted {
+            ShareCompat.IntentBuilder(activity)
+                .setType(mimetype)
+                .addStream(shareUri)
+                .setChooserTitle(R.string.share_with)
+                .startChooser()
+        }
     }
 
 
