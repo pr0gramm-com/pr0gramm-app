@@ -7,6 +7,7 @@ import android.widget.ArrayAdapter
 import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.Spinner
+import androidx.lifecycle.withStarted
 import com.pr0gramm.app.R
 import com.pr0gramm.app.api.pr0gramm.Api
 import com.pr0gramm.app.databinding.AdminActionDialogBinding
@@ -18,7 +19,7 @@ import com.pr0gramm.app.parcel.getParcelableOrNull
 import com.pr0gramm.app.services.AdminService
 import com.pr0gramm.app.services.config.ConfigService
 import com.pr0gramm.app.ui.base.ViewBindingDialogFragment
-import com.pr0gramm.app.ui.base.launchWhenStarted
+import com.pr0gramm.app.ui.base.launchUntilDestroy
 import com.pr0gramm.app.ui.dialog
 import com.pr0gramm.app.util.arguments
 import com.pr0gramm.app.util.di.instance
@@ -113,14 +114,14 @@ class ItemUserAdminDialog : ViewBindingDialogFragment<AdminActionDialogBinding>(
             return
         }
 
-        launchWhenStarted(busyIndicator = true) {
+        launchUntilDestroy(busyIndicator = true) {
             withContext(NonCancellable + Dispatchers.Default) {
                 user?.let { blockUser(it, reason) }
                 item?.let { deleteItem(it, reason) }
                 comment?.let { deleteComment(it, reason) }
             }
 
-            dismiss()
+            withStarted { dismiss() }
         }
     }
 
