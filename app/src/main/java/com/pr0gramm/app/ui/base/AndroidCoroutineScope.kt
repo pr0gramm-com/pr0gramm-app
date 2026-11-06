@@ -197,25 +197,6 @@ fun AppCompatActivity.launchWhenCreated(
     }
 }
 
-fun AppCompatActivity.launchWhenStarted(
-    ignoreErrors: Boolean = false,
-    busyIndicator: Boolean = false,
-    block: suspend CoroutineScope.() -> Unit
-): Job {
-
-    return lifecycleScope.launchWhenStarted(decorate(this, ignoreErrors, busyIndicator, block))
-}
-
-fun AppCompatActivity.launchWhenResumed(
-    ignoreErrors: Boolean = false,
-    busyIndicator: Boolean = false,
-    block: suspend CoroutineScope.() -> Unit
-): Job {
-
-    return lifecycleScope.launchWhenResumed(decorate(this, ignoreErrors, busyIndicator, block))
-}
-
-
 fun Fragment.launchWhenCreated(
     ignoreErrors: Boolean = false,
     busyIndicator: Boolean = false,
@@ -228,29 +209,6 @@ fun Fragment.launchWhenCreated(
         decorate(requireActivity(), ignoreErrors, busyIndicator, block)()
     }
 }
-
-fun Fragment.launchWhenStarted(
-    ignoreErrors: Boolean = false,
-    busyIndicator: Boolean = false,
-    block: suspend CoroutineScope.() -> Unit
-): Job {
-
-    return lifecycleScope.launchWhenStarted {
-        decorate(requireActivity(), ignoreErrors, busyIndicator, block)()
-    }
-}
-
-fun Fragment.launchWhenResumed(
-    ignoreErrors: Boolean = false,
-    busyIndicator: Boolean = false,
-    block: suspend CoroutineScope.() -> Unit
-): Job {
-
-    return lifecycleScope.launchWhenResumed {
-        decorate(requireActivity(), ignoreErrors, busyIndicator, block)()
-    }
-}
-
 
 fun View.launchWhenCreated(
     ignoreErrors: Boolean = false,
