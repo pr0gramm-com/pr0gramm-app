@@ -9,7 +9,7 @@ plugins {
 }
 
 apply(from = "version.gradle.kts")
-val appVersion: Int by extra
+val appVersion = extra["appVersion"] as Int
 
 android {
     namespace = "com.pr0gramm.app"
