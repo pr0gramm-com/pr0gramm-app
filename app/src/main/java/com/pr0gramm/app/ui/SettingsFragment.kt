@@ -24,8 +24,8 @@ import com.pr0gramm.app.services.UserService
 import com.pr0gramm.app.services.preloading.PreloadManager
 import com.pr0gramm.app.ui.base.BaseAppCompatActivity
 import com.pr0gramm.app.ui.base.BasePreferenceFragment
+import com.pr0gramm.app.ui.base.launchUntilDestroy
 import com.pr0gramm.app.ui.base.launchUntilPause
-import com.pr0gramm.app.ui.base.launchWhenStarted
 import com.pr0gramm.app.ui.dialogs.LanguagePickerDialog
 import com.pr0gramm.app.ui.dialogs.UpdateDialogFragment
 import com.pr0gramm.app.ui.intro.IntroActivity
@@ -187,7 +187,7 @@ class SettingsFragment : BasePreferenceFragment("SettingsFragment"),
             }
 
             "pref_pseudo_restore_bookmarks" -> {
-                launchWhenStarted(busyIndicator = true) {
+                launchUntilDestroy(busyIndicator = true) {
                     bookmarkService.restore()
                 }
 
