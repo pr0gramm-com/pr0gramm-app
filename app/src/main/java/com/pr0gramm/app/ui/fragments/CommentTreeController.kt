@@ -8,7 +8,6 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.widget.PopupMenu
-import androidx.core.view.ViewCompat
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.pr0gramm.app.Duration
@@ -183,7 +182,7 @@ class CommentView(parent: ViewGroup) : RecyclerView.ViewHolder(inflateCommentVie
             val color = context.getColorCompat(R.color.selected_comment_background)
             itemView.setBackgroundColor(color)
         } else {
-            ViewCompat.setBackground(itemView, null)
+            itemView.background = null
         }
 
         itemView.onAttachedScope {

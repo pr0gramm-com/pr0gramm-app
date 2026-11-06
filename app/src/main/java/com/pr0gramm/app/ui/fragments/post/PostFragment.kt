@@ -4,7 +4,6 @@ import android.animation.ObjectAnimator
 import android.animation.PropertyValuesHolder.ofFloat
 import android.app.Activity
 import android.content.Intent
-import android.graphics.Point
 import android.graphics.Rect
 import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
@@ -836,20 +835,14 @@ class PostFragment : BaseFragment("PostFragment"), NewTagDialogFragment.OnAddNew
         viewer.updatePadding(top = viewerPaddingTop)
 
         if (feedItem.width > 0 && feedItem.height > 0) {
-            val screenSize = Point().also { activity.windowManager.defaultDisplay.getSize(it) }
-            val expectedMediaHeight = screenSize.x * feedItem.height / feedItem.width
+            val screenWidth = activity.resources.displayMetrics.widthPixels
+            val expectedMediaHeight = screenWidth * feedItem.height / feedItem.width
             val expectedViewerHeight = expectedMediaHeight + viewerPaddingTop
 
             logger.debug { "Initialize viewer height to $expectedViewerHeight" }
 
             mediaViewState.update { previousState ->
                 previousState.copy(height = expectedViewerHeight)
-            }
-
-            // if we can guess, that the height of the media will be more than the height of the
-            // screen, we can directly hide the FAB
-            if (expectedMediaHeight > screenSize.y) {
-                // fab.hide()
             }
         }
 

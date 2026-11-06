@@ -1,5 +1,6 @@
 package com.pr0gramm.app.ui.fragments
 
+import android.graphics.PorterDuffColorFilter
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
@@ -496,7 +497,7 @@ private class NavigationDelegateAdapter(
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 drawable.mutate().colorFilter = BlendModeColorFilter(defaultColor, BlendMode.SRC_IN)
             } else {
-                drawable.mutate().setColorFilter(defaultColor, PorterDuff.Mode.SRC_IN)
+                drawable.mutate().colorFilter = PorterDuffColorFilter(defaultColor, PorterDuff.Mode.SRC_IN)
             }
         }
     }

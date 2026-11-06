@@ -8,7 +8,6 @@ import android.graphics.PixelFormat
 import android.graphics.RectF
 import android.util.AttributeSet
 import androidx.annotation.ColorInt
-import androidx.core.view.ViewCompat
 import com.pr0gramm.app.R
 import com.pr0gramm.app.databinding.CircleChartViewBinding
 import com.pr0gramm.app.ui.BaseDrawable
@@ -85,7 +84,7 @@ class CircleChartView @JvmOverloads constructor(context: Context, attrs: Attribu
 
             viewLines[1].text = it.getString(R.styleable.CircleChartView_chartType) ?: "POST"
         }
-        ViewCompat.setBackground(this, chart)
+        background = chart
     }
 }
 

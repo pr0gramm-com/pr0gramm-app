@@ -28,7 +28,6 @@ import androidx.core.content.getSystemService
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.content.res.use
 import androidx.core.graphics.drawable.DrawableCompat
-import androidx.core.net.ConnectivityManagerCompat
 import androidx.core.text.inSpans
 import androidx.core.view.postDelayed
 import com.google.firebase.crashlytics.FirebaseCrashlytics
@@ -171,7 +170,7 @@ object AndroidUtility {
         }
 
         val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        return ConnectivityManagerCompat.isActiveNetworkMetered(cm)
+        return cm.isActiveNetworkMetered
     }
 
     /**
@@ -257,12 +256,13 @@ object AndroidUtility {
     }
 
     fun screenSize(activity: Activity): Point {
-        val screenSize = Point()
-        val display = activity.windowManager.defaultDisplay
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val bounds = activity.windowManager.maximumWindowMetrics.bounds
+            return Point(bounds.width(), bounds.height())
+        }
 
-        display.getRealSize(screenSize)
-
-        return screenSize
+        @Suppress("DEPRECATION")
+        return Point().also { activity.windowManager.defaultDisplay.getRealSize(it) }
     }
 
     fun screenIsLandscape(activity: Activity?): Boolean {
