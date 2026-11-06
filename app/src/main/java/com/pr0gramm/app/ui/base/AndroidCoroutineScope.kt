@@ -9,6 +9,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.withCreated
 import com.pr0gramm.app.BuildConfig
 import com.pr0gramm.app.Logger
 import com.pr0gramm.app.ui.dialogs.ErrorDialogFragment
@@ -189,7 +190,11 @@ fun AppCompatActivity.launchWhenCreated(
     block: suspend CoroutineScope.() -> Unit
 ): Job {
 
-    return lifecycleScope.launchWhenCreated(decorate(this, ignoreErrors, busyIndicator, block))
+    return lifecycleScope.launch {
+        // wait for onCreate to finish, the only thing launchWhenCreated pauses for
+        lifecycle.withCreated {}
+        decorate(this@launchWhenCreated, ignoreErrors, busyIndicator, block)()
+    }
 }
 
 fun AppCompatActivity.launchWhenStarted(
@@ -217,18 +222,9 @@ fun Fragment.launchWhenCreated(
     block: suspend CoroutineScope.() -> Unit
 ): Job {
 
-    return lifecycleScope.launchWhenCreated {
-        decorate(requireActivity(), ignoreErrors, busyIndicator, block)()
-    }
-}
-
-fun Fragment.launchWhenViewCreated(
-    ignoreErrors: Boolean = false,
-    busyIndicator: Boolean = false,
-    block: suspend CoroutineScope.() -> Unit
-): Job {
-
-    return viewLifecycleOwner.lifecycleScope.launchWhenCreated {
+    return lifecycleScope.launch {
+        // wait for onCreate to finish, the only thing launchWhenCreated pauses for
+        lifecycle.withCreated {}
         decorate(requireActivity(), ignoreErrors, busyIndicator, block)()
     }
 }
