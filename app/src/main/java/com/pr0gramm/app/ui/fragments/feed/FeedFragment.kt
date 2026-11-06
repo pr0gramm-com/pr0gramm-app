@@ -13,7 +13,7 @@ import android.widget.ImageView
 import androidx.core.view.isVisible
 import androidx.core.view.MenuProvider
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.whenResumed
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -295,7 +295,7 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
         }
 
         launchInViewScope {
-            whenResumed {
+            repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 userStateModel.userState.collectLatest { userState ->
                     requireActivity().invalidateOptionsMenu()
 

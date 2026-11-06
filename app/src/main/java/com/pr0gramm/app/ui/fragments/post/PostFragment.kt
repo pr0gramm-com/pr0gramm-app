@@ -21,7 +21,7 @@ import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
 import androidx.core.view.MenuProvider
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.whenResumed
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
@@ -275,7 +275,7 @@ class PostFragment : BaseFragment("PostFragment"), NewTagDialogFragment.OnAddNew
         }
 
         launchInViewScope {
-            whenResumed {
+            repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 model.state.distinctUntilChangedBy { it.tags }.collect { state ->
                     hideProgressIfLoop(state.tags)
                     updateTitle(state.tags)
