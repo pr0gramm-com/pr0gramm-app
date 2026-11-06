@@ -7,6 +7,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.commitNow
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.ViewModelProvider
 import androidx.viewpager.widget.ViewPager
 import com.pr0gramm.app.R
 import com.pr0gramm.app.Settings
@@ -31,7 +32,7 @@ import com.pr0gramm.app.ui.base.launchInViewScope
 import com.pr0gramm.app.ui.fragments.CommentRef
 import com.pr0gramm.app.ui.fragments.IdFragmentStatePagerAdapter
 import com.pr0gramm.app.ui.fragments.PreviewInfoSource
-import com.pr0gramm.app.ui.fragments.feed.FeedFragment
+import com.pr0gramm.app.ui.fragments.feed.ScrollTargets
 import com.pr0gramm.app.ui.fragments.post.PostFragment
 import com.pr0gramm.app.ui.viewModels
 import com.pr0gramm.app.util.arguments
@@ -161,12 +162,13 @@ class PostPagerFragment : BaseFragment("PostPagerFragment", R.layout.fragment_po
     }
 
     override fun onStop() {
-        val target = targetFragment as? FeedFragment
+        val targetKey = requireArguments().getString(ARG_TARGET_KEY)
 
         // merge the updated feed back into our parent fragment.
         val feed = model.state.value.feed
-        if (target != null && model.currentItem.id in feed) {
-            target.updateFeedItemTarget(feed, model.currentItem)
+        if (targetKey != null && model.currentItem.id in feed) {
+            val targets = ViewModelProvider(requireActivity())[ScrollTargets::class.java]
+            targets.pending[targetKey] = feed to model.currentItem
         }
 
         super.onStop()
@@ -302,13 +304,18 @@ class PostPagerFragment : BaseFragment("PostPagerFragment", R.layout.fragment_po
         private const val ARG_TITLE = "PP.title"
         private const val ARG_START_ITEM = "PP.startItem"
         private const val ARG_START_ITEM_COMMENT_REF = "PP.startItemComment"
+        private const val ARG_TARGET_KEY = "PP.targetKey"
 
-        fun newInstance(feed: Feed, idx: Int, commentRef: CommentRef?, fragmentTitle: String?): PostPagerFragment {
+        fun newInstance(
+            feed: Feed, idx: Int, commentRef: CommentRef?, fragmentTitle: String?,
+            targetKey: String?,
+        ): PostPagerFragment {
             return PostPagerFragment().arguments {
                 putParcelable(ARG_FEED, feed.parcelAround(idx))
                 putParcelable(ARG_START_ITEM, feed[idx])
                 putParcelable(ARG_START_ITEM_COMMENT_REF, commentRef)
                 putString(ARG_TITLE, fragmentTitle)
+                putString(ARG_TARGET_KEY, targetKey)
             }
         }
     }

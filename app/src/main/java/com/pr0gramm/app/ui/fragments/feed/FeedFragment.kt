@@ -13,6 +13,8 @@ import android.widget.ImageView
 import androidx.core.view.isVisible
 import androidx.core.view.MenuProvider
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -108,6 +110,7 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 import java.util.EnumSet
+import java.util.UUID
 import kotlin.math.min
 
 
@@ -165,6 +168,12 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
     private var bookmarkable: Boolean = false
     private var autoScrollRef: ScrollRef? = null
 
+    // identifies this fragment for PostPagerFragment, see ScrollTargets
+    private lateinit var scrollTargetKey: String
+
+    private val scrollTargets: ScrollTargets
+        get() = ViewModelProvider(requireActivity())[ScrollTargets::class.java]
+
     private var lastCheckForNewItemsTime = Instant(0)
 
     private lateinit var interstitialAdler: InterstitialAdler
@@ -192,6 +201,24 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         interstitialAdler = InterstitialAdler(requireActivity())
+
+        scrollTargetKey = savedInstanceState?.getString("scrollTargetKey") ?: UUID.randomUUID().toString()
+    }
+
+    override fun onStart() {
+        super.onStart()
+
+        scrollTargets.pending.remove(scrollTargetKey)?.let { (feed, item) ->
+            updateFeedItemTarget(feed, item)
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        if (activity?.isChangingConfigurations != true) {
+            scrollTargets.pending.remove(scrollTargetKey)
+        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -484,6 +511,8 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
 
+        outState.putString("scrollTargetKey", scrollTargetKey)
+
         if (view != null) {
             outState.putBoolean("searchContainerVisible", searchContainerIsVisible())
         }
@@ -653,7 +682,7 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
         }
     }
 
-    fun updateFeedItemTarget(feed: Feed, item: FeedItem) {
+    private fun updateFeedItemTarget(feed: Feed, item: FeedItem) {
         logger.info { "Want to resume from $item" }
         autoScrollRef = ScrollRef(CommentRef(item), feed, smoothScroll = true)
     }
@@ -1041,7 +1070,12 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
                 else -> currentTitle?.title
             }
 
-            val fragment = PostPagerFragment.newInstance(feed, idx, commentRef, title)
+            // Only pass the scroll target key if we are using the same fragment manager
+            // to replace the current fragment. This is not the case, if we were started
+            // from the Favorites page.
+            val targetKey = scrollTargetKey.takeIf { parentFragmentManager === activity.supportFragmentManager }
+
+            val fragment = PostPagerFragment.newInstance(feed, idx, commentRef, title, targetKey)
             if (preview != null) {
                 // pass pixels info to target fragment.
                 val image = preview.drawable
@@ -1049,13 +1083,6 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
                 val info = PreviewInfo.of(requireContext(), item, image)
                 info.preloadFancyPreviewImage(generator)
                 fragment.setPreviewInfo(info)
-            }
-
-            // Only set the target fragment if we are using the same fragment manager
-            // to replace the current fragment. This is not the case, if we were started
-            // from the Favorites page.
-            if (parentFragmentManager === activity.supportFragmentManager) {
-                fragment.setTargetFragment(this, 0)
             }
 
             activity.supportFragmentManager.beginTransaction()
@@ -1412,6 +1439,14 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
             putBoolean(ARG_NORMAL_MODE, false)
         }
     }
+}
+
+/**
+ * Scroll targets that PostPagerFragment hands back to the FeedFragment that opened it.
+ * Kept in memory only, as a Feed can be too large for a Bundle.
+ */
+class ScrollTargets : ViewModel() {
+    val pending = mutableMapOf<String, Pair<Feed, FeedItem>>()
 }
 
 private val RecyclerView.gridLayoutManager: GridLayoutManager
