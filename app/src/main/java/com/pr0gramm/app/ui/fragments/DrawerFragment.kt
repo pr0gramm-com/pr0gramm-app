@@ -22,6 +22,8 @@ import androidx.core.view.isVisible
 import androidx.core.view.postDelayed
 import androidx.core.view.updatePaddingRelative
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.pr0gramm.app.R
@@ -36,7 +38,7 @@ import com.pr0gramm.app.time
 import com.pr0gramm.app.ui.*
 import com.pr0gramm.app.ui.base.BaseFragment
 import com.pr0gramm.app.ui.base.bindViews
-import com.pr0gramm.app.ui.base.launchWhenStarted
+import com.pr0gramm.app.ui.base.launchUntilDestroy
 import com.pr0gramm.app.ui.dialogs.EditBookmarkDialog
 import com.pr0gramm.app.ui.dialogs.LogoutDialogFragment
 import com.pr0gramm.app.ui.upload.UploadTypeDialogFragment
@@ -120,10 +122,12 @@ class DrawerFragment : BaseFragment("DrawerFragment", R.layout.left_drawer) {
             }
         }
 
-        launchWhenStarted {
-            elements.distinctUntilChanged().debounce(100).collect { items ->
-                logger.debug { "Submitting ${items.size} navigation items" }
-                navigationAdapter.submitList(items)
+        launchUntilDestroy {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                elements.distinctUntilChanged().debounce(100).collect { items ->
+                    logger.debug { "Submitting ${items.size} navigation items" }
+                    navigationAdapter.submitList(items)
+                }
             }
         }
     }
