@@ -352,7 +352,7 @@ inline fun Context.dp(dpValue: Int): Int {
 
 @Suppress("NOTHING_TO_INLINE")
 inline fun Context.sp(spValue: Float): Float {
-    return spValue * resources.displayMetrics.scaledDensity
+    return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, spValue, resources.displayMetrics)
 }
 
 @Suppress("NOTHING_TO_INLINE")
@@ -372,7 +372,7 @@ inline fun View.dp(dpValue: Int): Int {
 
 @Suppress("NOTHING_TO_INLINE")
 inline fun View.sp(spValue: Float): Float {
-    return spValue * resources.displayMetrics.scaledDensity
+    return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, spValue, resources.displayMetrics)
 }
 
 @Suppress("NOTHING_TO_INLINE")

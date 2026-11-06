@@ -2,7 +2,6 @@ package com.pr0gramm.app.util
 
 import android.graphics.Bitmap
 import androidx.collection.LruCache
-import androidx.core.graphics.BitmapCompat
 import com.pr0gramm.app.Logger
 import com.squareup.picasso.Cache
 
@@ -16,7 +15,7 @@ class LruPicassoCache private constructor(maxSize: Int) : Cache {
     private val logger = Logger("LruPicassoCache")
 
     private val cache = object : LruCache<String, Bitmap>(maxSize) {
-        override fun sizeOf(key: String, value: Bitmap): Int = BitmapCompat.getAllocationByteCount(value)
+        override fun sizeOf(key: String, value: Bitmap): Int = value.allocationByteCount
     }
 
     init {

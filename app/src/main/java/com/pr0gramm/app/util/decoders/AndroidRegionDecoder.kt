@@ -1,5 +1,6 @@
 package com.pr0gramm.app.util.decoders
 
+import android.os.Build
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -21,8 +22,13 @@ class AndroidRegionDecoder(private val config: Bitmap.Config) : Decoder {
         if (!uri.isLocalFile)
             throw IllegalArgumentException("Must be a file:// uri")
 
-        val decoder = FileInputStream(uri.toFile()).use { input ->
-            BitmapRegionDecoder.newInstance(input.fd, false)
+        val decoder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            BitmapRegionDecoder.newInstance(uri.toFile().path)
+        } else {
+            FileInputStream(uri.toFile()).use { input ->
+                @Suppress("DEPRECATION")
+                BitmapRegionDecoder.newInstance(input.fd, false)
+            }
         }
 
         this.decoder = decoder
