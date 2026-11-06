@@ -4,7 +4,11 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.media.AudioManager
 import android.widget.ImageView
+import androidx.annotation.OptIn
 import androidx.core.content.edit
+import androidx.media3.common.audio.AudioFocusRequestCompat
+import androidx.media3.common.audio.AudioManagerCompat
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import com.pr0gramm.app.Duration
 import com.pr0gramm.app.Logger
@@ -18,16 +22,21 @@ import com.pr0gramm.app.util.delay
 import com.pr0gramm.app.util.di.injector
 import com.pr0gramm.app.util.setImageResource
 
+@OptIn(UnstableApi::class)
 class VolumeController(val view: ImageView, private val exo: () -> ExoPlayer?) {
     private val logger = Logger("VolumeController")
     private val preferences = view.context.injector.instance<SharedPreferences>()
 
     private val audioManager: AudioManager = view.context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
 
+    // the last focus request, needed to abandon focus again
+    @Volatile
+    private var focusRequest: AudioFocusRequestCompat? = null
+
     private val afChangeListener = object : AudioManager.OnAudioFocusChangeListener {
         override fun onAudioFocusChange(focusChange: Int) {
             if (focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT || focusChange == AudioManager.AUDIOFOCUS_LOSS) {
-                audioManager.abandonAudioFocus(this)
+                abandonAudioFocus()
                 logger.info { "Lost audio focus, muting now." }
                 setMuted(true)
             }
@@ -41,7 +50,7 @@ class VolumeController(val view: ImageView, private val exo: () -> ExoPlayer?) {
     fun abandonAudioFocusSoon() {
         AsyncScope.launchIgnoreErrors {
             delay(Duration.millis(500))
-            audioManager.abandonAudioFocus(afChangeListener)
+            abandonAudioFocus()
         }
     }
 
@@ -56,20 +65,22 @@ class VolumeController(val view: ImageView, private val exo: () -> ExoPlayer?) {
 
         if (exo == null) {
             logger.debug { "No exo player found, abandon audio focus now." }
-            audioManager.abandonAudioFocus(afChangeListener)
+            abandonAudioFocus()
             return
         }
 
         val hasAudioFocus = if (mute) {
             logger.debug { "Mute requested, abandon audio focus" }
-            audioManager.abandonAudioFocus(afChangeListener)
+            abandonAudioFocus()
             false
         } else {
             logger.debug { "Request to get audio focus" }
-            val result = audioManager.requestAudioFocus(
-                afChangeListener,
-                AudioManager.STREAM_MUSIC, audioFocusGain()
-            )
+            val request = AudioFocusRequestCompat.Builder(audioFocusGain())
+                .setOnAudioFocusChangeListener(afChangeListener)
+                .build()
+
+            focusRequest = request
+            val result = AudioManagerCompat.requestAudioFocus(audioManager, request)
 
             result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
         }
@@ -86,6 +97,11 @@ class VolumeController(val view: ImageView, private val exo: () -> ExoPlayer?) {
         }
 
 
+    }
+
+    private fun abandonAudioFocus() {
+        val request = focusRequest ?: return
+        AudioManagerCompat.abandonAudioFocusRequest(audioManager, request)
     }
 
     /**
@@ -106,9 +122,9 @@ class VolumeController(val view: ImageView, private val exo: () -> ExoPlayer?) {
 
     private fun audioFocusGain(): Int {
         return if (Settings.audioFocusTransient) {
-            AudioManager.AUDIOFOCUS_GAIN_TRANSIENT
+            AudioManagerCompat.AUDIOFOCUS_GAIN_TRANSIENT
         } else {
-            AudioManager.AUDIOFOCUS_GAIN
+            AudioManagerCompat.AUDIOFOCUS_GAIN
         }
     }
 
