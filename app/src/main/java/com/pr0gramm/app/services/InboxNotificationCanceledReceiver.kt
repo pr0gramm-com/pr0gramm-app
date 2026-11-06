@@ -1,5 +1,6 @@
 package com.pr0gramm.app.services
 
+import androidx.core.content.IntentCompat
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -19,7 +20,7 @@ class InboxNotificationCanceledReceiver : BroadcastReceiver() {
         val inboxService: InboxService = context.injector.instance()
 
         val unreadId: String = intent.getStringExtra(EXTRA_MESSAGE_UNREAD_ID) ?: return
-        val timestamp: Instant = intent.getParcelableExtra(EXTRA_MESSAGE_TIMESTAMP) ?: return
+        val timestamp: Instant = IntentCompat.getParcelableExtra(intent, EXTRA_MESSAGE_TIMESTAMP, Instant::class.java) ?: return
 
         // now mark message as read
         inboxService.markAsRead(unreadId, timestamp)

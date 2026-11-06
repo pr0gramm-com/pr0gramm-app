@@ -1,12 +1,12 @@
 package com.pr0gramm.app.parcel
 
+import androidx.core.os.BundleCompat
 import android.content.Intent
 import android.os.Bundle
 import android.os.Parcelable
 
 inline fun <reified T : Parcelable> Bundle.getParcelableOrNull(key: String): T? {
-    val parcelable = getParcelable<Parcelable?>(key)
-    return parcelable as? T
+    return BundleCompat.getParcelable(this, key, T::class.java)
 }
 
 inline fun <reified T : Parcelable?> Bundle.getParcelableOrThrow(key: String): T {

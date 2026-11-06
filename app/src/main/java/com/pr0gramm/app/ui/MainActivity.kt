@@ -1,5 +1,6 @@
 package com.pr0gramm.app.ui
 
+import androidx.core.content.IntentCompat
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -801,7 +802,7 @@ class MainActivity : BaseAppCompatActivity("MainActivity"),
             }
         }
 
-        val notificationTime: Instant? = intent.getParcelableExtra("MainActivity.NOTIFICATION_TIME")
+        val notificationTime: Instant? = IntentCompat.getParcelableExtra(intent, "MainActivity.NOTIFICATION_TIME", Instant::class.java)
 
         val result = FilterParser.parse(uri, notificationTime)
         if (result != null) {
