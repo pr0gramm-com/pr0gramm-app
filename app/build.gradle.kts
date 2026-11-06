@@ -67,8 +67,7 @@ android {
 
         getByName("release") {
             isMinifyEnabled = true
-            // setting this to true prevents the in-app update dialog to work.
-            isShrinkResources = false
+            isShrinkResources = true
             isCrunchPngs = false
 
             proguardFiles("proguard-rules-base.pro", "proguard-rules-release.pro")
