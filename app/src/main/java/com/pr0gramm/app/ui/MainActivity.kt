@@ -17,6 +17,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.Window
 import android.view.WindowManager
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts.RequestPermission
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.ActionBarDrawerToggle
@@ -105,6 +106,9 @@ class MainActivity : BaseAppCompatActivity("MainActivity"),
         }
 
         setContentView(views)
+
+        // registered after the FragmentManager's callback, so it runs first.
+        onBackPressedDispatcher.addCallback(this, backPressedCallback)
 
         // use toolbar as action bar
         setSupportActionBar(views.toolbar)
@@ -478,7 +482,7 @@ class MainActivity : BaseAppCompatActivity("MainActivity"),
         if (!drawerToggle.isDrawerIndicatorEnabled) {
             if (item.itemId == android.R.id.home) {
                 if (!dispatchFakeHomeEvent(item))
-                    onBackPressed()
+                    onBackPressedDispatcher.onBackPressed()
 
                 return true
             }
@@ -496,7 +500,11 @@ class MainActivity : BaseAppCompatActivity("MainActivity"),
         )
     }
 
-    override fun onBackPressed() {
+    private val backPressedCallback = object : OnBackPressedCallback(true) {
+        override fun handleOnBackPressed() = handleBackPressed()
+    }
+
+    private fun handleBackPressed() {
         if (views.drawerLayout.isDrawerOpen(GravityCompat.START)) {
             views.drawerLayout.closeDrawers()
             return
@@ -525,12 +533,16 @@ class MainActivity : BaseAppCompatActivity("MainActivity"),
             }
         }
 
+        // let the FragmentManager or the system handle it.
+        backPressedCallback.isEnabled = false
         try {
-            super.onBackPressed()
+            onBackPressedDispatcher.onBackPressed()
         } catch (err: IllegalStateException) {
             // workaround for:
             // this is sometimes called after onSaveInstanceState
             logger.warn("Error in onBackPressed:", err)
+        } finally {
+            backPressedCallback.isEnabled = true
         }
     }
 
