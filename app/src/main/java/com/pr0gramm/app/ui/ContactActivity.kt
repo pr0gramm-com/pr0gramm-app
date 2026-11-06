@@ -17,7 +17,7 @@ import com.pr0gramm.app.services.ThemeHelper
 import com.pr0gramm.app.services.UserService
 import com.pr0gramm.app.ui.base.BaseAppCompatActivity
 import com.pr0gramm.app.ui.base.bindViews
-import com.pr0gramm.app.ui.base.launchWhenStarted
+import com.pr0gramm.app.ui.base.launchUntilDestroy
 import com.pr0gramm.app.ui.base.withViewDisabled
 import com.pr0gramm.app.util.Linkify
 import com.pr0gramm.app.util.di.instance
@@ -134,7 +134,7 @@ class ContactActivity : BaseAppCompatActivity("ContactActivity") {
         // hide keyboard when sending
         hideSoftKeyboard()
 
-        launchWhenStarted(busyIndicator = true) {
+        launchUntilDestroy(busyIndicator = true) {
             withViewDisabled(views.submit) {
                 sendFeedback()
                 onSubmitSuccess()
