@@ -62,5 +62,6 @@
 ## Firebase logging
 -keepnames class * extends java.lang.Exception
 
-# Optional sidecar API, only present on some devices.
+# Optional window extension APIs, only present on some devices.
 -dontwarn androidx.window.extensions.**
+-dontwarn androidx.window.sidecar.**
