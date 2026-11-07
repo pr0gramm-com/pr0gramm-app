@@ -450,16 +450,6 @@ interface Api {
     @GET("api/user/me")
     suspend fun me(): MeInfo
 
-    @GET("api/seen/bits")
-    suspend fun seenBitsGet(): SeenBits
-
-    @POST("api/seen/update")
-    suspend fun seenBitsUpdate(
-            @Header("X-pr0gramm-Nonce") nonce: Nonce?,
-            @Header("X-pr0gramm-Bits-Version") version: Int,
-            @Body body: RequestBody,
-    ): UpdateSeenBitsResponse
-
     /** Raw, uncompressed seen bits. Answers 304 if the etag still matches, 404 if there is no data yet. */
     @GET("api/seen/data?compressed=false")
     suspend fun seenData(@Header("If-None-Match") etag: String?): Response<okhttp3.ResponseBody>
@@ -1100,16 +1090,6 @@ interface Api {
             // "banInfo" omitted because it is irrelevant to the app
     )
 
-
-    @JsonClass(generateAdapter = true)
-    data class SeenBits(
-            /** Same user ID as returned by /api/user/me. */
-            val userIdentifier: String,
-            /** Server sends the base64 encoded value of compressed seen bits. Automatically decoded by Retrofit. */
-            val value: ByteArray,
-            /** Current version of seen bits. */
-            val version: Int,
-    )
 
     /**
      * @property version
