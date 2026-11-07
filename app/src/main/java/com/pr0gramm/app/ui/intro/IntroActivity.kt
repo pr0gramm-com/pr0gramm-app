@@ -7,10 +7,10 @@ import android.view.View
 import android.widget.RelativeLayout
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
+import androidx.core.view.isInvisible
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updateLayoutParams
 import com.github.appintro.AppIntro
-import com.github.appintro.AppIntroPageTransformerType
 import com.pr0gramm.app.BuildConfig
 import com.pr0gramm.app.R
 import com.pr0gramm.app.ui.intro.slides.BetaActionItemsSlide
@@ -21,6 +21,7 @@ import com.pr0gramm.app.util.di.LazyInjectorAware
 import com.pr0gramm.app.util.di.PropertyInjector
 import com.pr0gramm.app.util.find
 import com.pr0gramm.app.util.tryEnumValueOf
+import kotlin.math.abs
 
 class IntroActivity : AppIntro(), LazyInjectorAware {
     override val injector: PropertyInjector = PropertyInjector()
@@ -89,7 +90,12 @@ class IntroActivity : AppIntro(), LazyInjectorAware {
         isSkipButtonEnabled = false
         setDoneText(getString(R.string.action_done))
 
-        setTransformer(AppIntroPageTransformerType.Fade)
+        // AppIntro's Fade leaves off-screen pages transparent on top of the current one, stealing its touches
+        setCustomTransformer { page, position ->
+            page.translationX = page.width * -position
+            page.alpha = 1f - abs(position).coerceAtMost(1f)
+            page.isInvisible = abs(position) >= 1f
+        }
 
         ViewCompat.setOnApplyWindowInsetsListener(find<View>(R.id.bottom)) { v, insets ->
             v.updateLayoutParams<RelativeLayout.LayoutParams> {
