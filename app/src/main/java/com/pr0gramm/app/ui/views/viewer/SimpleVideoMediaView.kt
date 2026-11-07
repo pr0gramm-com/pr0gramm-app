@@ -453,7 +453,7 @@ class SimpleVideoMediaView(config: Config) :
 
     @OptIn(UnstableApi::class)
     private val playerListener = object : Player.Listener {
-        override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
+        override fun onPlaybackStateChanged(playbackState: Int) {
             showBusyIndicator(playbackState == Player.STATE_IDLE || playbackState == Player.STATE_BUFFERING)
         }
 
