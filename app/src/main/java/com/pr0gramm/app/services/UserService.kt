@@ -14,6 +14,7 @@ import com.pr0gramm.app.ui.base.AsyncScope
 import com.pr0gramm.app.ui.base.launchIgnoreErrors
 import com.pr0gramm.app.util.*
 import com.squareup.moshi.adapter
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.*
@@ -319,6 +320,9 @@ class UserService(
             if (userId > 0) {
                 // save the current benis value
                 benisService.storeValue(userId, response.score)
+                if (loginState.premium) {
+                    importScoreHistoryWeekly(userId)
+                }
 
                 loginStateLock.withLock {
                     // and update login state
@@ -361,6 +365,25 @@ class UserService(
 
         val lastLogOffset = preferences.getLong(syncOffsetKey(), 0L)
         return api.sync(lastLogOffset)
+    }
+
+    private suspend fun importScoreHistoryWeekly(userId: Int) {
+        // kept on logout on purpose: per user, the import itself is safe to repeat
+        val key = "$KEY_SCORE_HISTORY_IMPORTED_AT:$userId"
+        val lastImport = Instant(preferences.getLong(key, 0L))
+        if (lastImport > Instant.now() - Duration.days(7)) {
+            return
+        }
+
+        try {
+            val history = api.scoreHistory().history
+            benisService.importHistory(userId, history.map { BenisRecord(it.created.millis, it.score) })
+            preferences.edit { putLong(key, Instant.now().millis) }
+            logger.info { "Imported ${history.size} score history points" }
+        } catch (err: Exception) {
+            if (err is CancellationException) throw err
+            logger.warn(err) { "Could not import score history, retry on next sync" }
+        }
     }
 
     private fun syncOffsetKey(): String {
@@ -537,6 +560,7 @@ class UserService(
 private const val KEY_LAST_LOF_OFFSET = "UserService.lastLogLength"
 private const val KEY_LAST_USER_INFO = "UserService.lastUserInfo"
 private const val KEY_LAST_LOGIN_STATE = "UserService.lastLoginState"
+private const val KEY_SCORE_HISTORY_IMPORTED_AT = "UserService.scoreHistoryImportedAt"
 
 private fun createLoginStateFromInfo(user: Api.Info.User, cookie: LoginCookie?, token: String?): LoginState {
     return LoginState(
