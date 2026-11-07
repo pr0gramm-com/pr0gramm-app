@@ -142,6 +142,7 @@ dependencies {
 
     implementation(libs.view.material)
     implementation(libs.androidx.recyclerview)
+    implementation(libs.androidx.viewpager2)
     implementation(libs.androidx.browser)
     implementation(libs.androidx.annotation)
     implementation(libs.androidx.cardview)

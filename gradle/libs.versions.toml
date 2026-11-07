@@ -10,6 +10,7 @@ coreKtx = "1.19.1"
 kotlinCoroutines = "1.11.0"
 viewMaterial = "1.14.0"
 recyclerview = "1.4.0"
+viewpager2 = "1.1.0"
 browser = "1.10.0"
 annotation = "1.11.0"
 cardview = "1.0.0"
@@ -51,6 +52,7 @@ androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = 
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinCoroutines" }
 view-material = { group = "com.google.android.material", name = "material", version.ref = "viewMaterial" }
 androidx-recyclerview = { group = "androidx.recyclerview", name = "recyclerview", version.ref = "recyclerview" }
+androidx-viewpager2 = { group = "androidx.viewpager2", name = "viewpager2", version.ref = "viewpager2" }
 androidx-browser = { group = "androidx.browser", name = "browser", version.ref = "browser" }
 androidx-annotation = { group = "androidx.annotation", name = "annotation", version.ref = "annotation" }
 androidx-cardview = { group = "androidx.cardview", name = "cardview", version.ref = "cardview" }
