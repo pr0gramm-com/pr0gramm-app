@@ -4,10 +4,19 @@ import android.annotation.SuppressLint
 import android.graphics.Color
 import android.os.Bundle
 import android.view.View
+import android.widget.HorizontalScrollView
+import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.annotation.StringRes
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.isVisible
+import com.pr0gramm.app.Instant
 import com.pr0gramm.app.R
+import com.pr0gramm.app.Settings
+import com.pr0gramm.app.api.pr0gramm.Api
+import com.pr0gramm.app.api.pr0gramm.Message
+import com.pr0gramm.app.api.pr0gramm.MessageType
 import com.pr0gramm.app.feed.ContentType
 import com.pr0gramm.app.milliseconds
 import com.pr0gramm.app.orm.BenisRecord
@@ -23,7 +32,9 @@ import com.pr0gramm.app.util.di.instance
 import com.pr0gramm.app.util.dp
 import com.pr0gramm.app.util.find
 import com.pr0gramm.app.util.getColorCompat
+import com.pr0gramm.app.util.inflateDetachedChild
 import com.pr0gramm.app.util.observeChange
+import com.squareup.picasso.Picasso
 import kotlinx.coroutines.withTimeout
 import kotterknife.bindView
 import java.util.concurrent.TimeUnit
@@ -52,6 +63,10 @@ class StatisticsActivity : BaseAppCompatActivity("StatisticsActivity") {
     private val votesByComments: CircleChartView by bindView(R.id.votes_by_comments)
 
     private val typesOfUpload: CircleChartView by bindView(R.id.types_uploads)
+
+    private val premiumStats: LinearLayout by bindView(R.id.premium_stats)
+
+    private val picasso: Picasso by instance()
 
     private var benisValues: List<BenisRecord> by observeChange(listOf()) {
         redrawBenisGraph()
@@ -98,6 +113,155 @@ class StatisticsActivity : BaseAppCompatActivity("StatisticsActivity") {
             launchWhenCreated {
                 showContentTypes(typesOfUpload, username)
             }
+        }
+
+        logger.info { "Premium stats: userIsPremium=${userService.userIsPremium}" }
+
+        if (userService.userIsPremium) {
+            launchWhenCreated(ignoreErrors = true) {
+                val stats = statsService.userStats()
+                logger.info { "Premium stats loaded: ${stats.topScoredItems.size} top posts, ${stats.topScoredComments.size} top comments" }
+                showPremiumStats(stats)
+            }
+        }
+    }
+
+    private fun showPremiumStats(stats: Api.UserStats) {
+        fun scoreBlocks(scores: Api.UserStats.Scores) = listOf(
+            R.string.stats_posts to scores.items,
+            R.string.stats_comments to scores.comments,
+            R.string.stats_tags to scores.tags,
+        )
+
+        addCard(R.string.stats_title_score).addBlockRow(scoreBlocks(stats.score))
+        addCard(R.string.stats_title_abs_score).addBlockRow(scoreBlocks(stats.absScore))
+
+        addCard(R.string.stats_title_account).apply {
+            addBlockRow(listOf(R.string.stats_faved_posts to stats.favCount.items, R.string.stats_faved_comments to stats.favCount.comments))
+            addBlockRow(listOf(R.string.stats_followers to stats.followers.count, R.string.stats_subscribed to stats.followers.subscribed))
+
+            addBlockRow(listOf(
+                R.string.stats_messages_received to stats.messages.received,
+                R.string.stats_messages_sent to stats.messages.send,
+                R.string.stats_conversations to stats.messages.conversations,
+            ))
+
+            addBlockRow(listOf(
+                R.string.stats_blocked_users to stats.blocks.blockedUsers,
+                R.string.stats_blocked_tags to stats.blocks.blockedTags,
+                R.string.stats_blocked_by to stats.blocks.blockedByUsers,
+            ))
+
+        }
+
+        addPosts(R.string.stats_title_top_posts, stats.topScoredItems)
+        addPosts(R.string.stats_title_lowest_posts, stats.lowestScoredItems)
+        addPosts(R.string.stats_title_collected_posts, stats.topCollectedItems)
+
+        addComments(R.string.stats_title_top_comments, stats.topScoredComments.map { c ->
+            commentMessage(c.id, c.itemId, c.content, c.up - c.down, c.thumb, c.flags, c.commentCreated)
+        })
+
+        addComments(R.string.stats_title_lowest_comments, stats.lowestScoredComments.map { c ->
+            commentMessage(c.id, c.itemId, c.content, c.up - c.down, c.thumb, c.flags, c.commentCreated)
+        })
+
+        addComments(R.string.stats_title_faved_comments, stats.topFavedComments.map { c ->
+            commentMessage(c.id, c.itemId, c.content, c.up - c.down, c.thumb, c.flags, c.commentCreated)
+        })
+
+        // tags are shown like comments, the tag being the text. id 0 opens the post without a comment.
+        addComments(R.string.stats_title_top_tags, stats.topScoredTags.map { t ->
+            commentMessage(0, t.itemId, t.tag, t.up - t.down, t.thumb, t.flags, t.created)
+        })
+
+        addComments(R.string.stats_title_lowest_tags, stats.lowestScoredTags.map { t ->
+            commentMessage(0, t.itemId, t.tag, t.up - t.down, t.thumb, t.flags, t.created)
+        })
+    }
+
+    private fun commentMessage(id: Long, itemId: Long, text: String, score: Int, thumb: String?, flags: Int, created: Instant): Message {
+        val loginState = userService.loginState
+
+        return Message(
+            type = MessageType.COMMENT, id = id, itemId = itemId, message = text.trim(),
+            name = loginState.name ?: "", mark = loginState.mark, senderId = loginState.id,
+            score = score, creationTime = created, thumbnail = thumb, image = null,
+            flags = flags, read = true,
+        )
+    }
+
+    /** Adds a card and returns the container to put content into. */
+    private fun addCard(@StringRes title: Int): LinearLayout {
+        val card = premiumStats.inflateDetachedChild<View>(R.layout.stats_card)
+        card.find<TextView>(R.id.stats_card_title).setText(title)
+        premiumStats.addView(card)
+        return card.find(R.id.stats_card_content)
+    }
+
+    private fun LinearLayout.addBlockRow(blocks: List<Pair<Int, Int>>) {
+        val row = LinearLayout(context)
+
+        for ((title, value) in blocks) {
+            val block = row.inflateDetachedChild<View>(R.layout.stats_block)
+            block.find<TextView>(R.id.stats_block_title).setText(title)
+            block.find<TextView>(R.id.stats_block_value).text = formatScore(value)
+            row.addView(block)
+        }
+
+        addView(row)
+    }
+
+    private fun addPosts(@StringRes title: Int, items: List<Api.UserStats.Item>) {
+        if (items.isEmpty()) return
+
+        val row = LinearLayout(this)
+        val scroller = HorizontalScrollView(this)
+        scroller.addView(row)
+        addCard(title).addView(scroller)
+
+        val contentTypes = Settings.contentType
+
+        for (item in items) {
+            val cell = row.inflateDetachedChild<View>(R.layout.stats_post_cell)
+
+            val image = cell.find<ImageView>(R.id.stats_post_image)
+            picasso.load("https://thumb.pr0gramm.com/${item.thumb}").apply {
+                if (ContentType.firstOf(item.flags) !in contentTypes) {
+                    transform(BlurTransformation(12))
+                }
+
+                into(image)
+            }
+
+            cell.find<TextView>(R.id.stats_post_info).text = buildString {
+                append(formatScore(item.up - item.down))
+                item.count?.let { append(" · ♥ ").append(formatScore(it)) }
+            }
+
+            cell.setOnClickListener {
+                startActivity(MainActivity.openItemIntent(this, item.id))
+            }
+
+            row.addView(cell)
+        }
+    }
+
+    private fun addComments(@StringRes title: Int, messages: List<Message>) {
+        if (messages.isEmpty()) return
+
+        val container = addCard(title)
+
+        for (message in messages) {
+            val view = container.inflateDetachedChild<MessageView>(R.layout.user_info_comment)
+            view.update(message, message.name)
+
+            view.setOnClickListener {
+                val commentId = message.commentId.takeIf { it > 0 }
+                startActivity(MainActivity.openItemIntent(this, message.itemId, commentId))
+            }
+
+            container.addView(view)
         }
     }
 
