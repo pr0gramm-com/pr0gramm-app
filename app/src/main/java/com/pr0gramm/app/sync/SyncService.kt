@@ -73,7 +73,8 @@ class SyncService(private val userService: UserService,
                 }
 
                 catchAll {
-                    syncSeenService()
+                    // cheap: the server answers 304 if nothing changed.
+                    performSyncSeenService()
                 }
             }
         })
@@ -99,18 +100,6 @@ class SyncService(private val userService: UserService,
         } else {
             // remove if no messages are found
             notificationService.cancelForAllUnread()
-        }
-    }
-
-    private suspend fun syncSeenService() {
-        val shouldSync = Settings.backup && if (Settings.markItemsAsSeen) {
-            singleShotService.firstTimeInHour("sync-seen")
-        } else {
-            singleShotService.firstTimeToday("sync-seen")
-        }
-
-        if (shouldSync) {
-            performSyncSeenService()
         }
     }
 
