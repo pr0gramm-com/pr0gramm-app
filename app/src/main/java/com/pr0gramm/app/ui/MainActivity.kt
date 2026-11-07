@@ -60,6 +60,7 @@ import com.pr0gramm.app.ui.fragments.DrawerFragment
 import com.pr0gramm.app.ui.fragments.favorites.CollectionsFragment
 import com.pr0gramm.app.ui.fragments.feed.AdViewAdapter
 import com.pr0gramm.app.ui.fragments.feed.FeedFragment
+import com.pr0gramm.app.ui.fragments.pager.PostPagerFragment
 import com.pr0gramm.app.ui.intro.IntroActivity
 import com.pr0gramm.app.util.*
 import com.pr0gramm.app.util.delay
@@ -94,6 +95,10 @@ class MainActivity : BaseAppCompatActivity("MainActivity"),
     private lateinit var drawerToggle: ActionBarDrawerToggle
 
     private var startedWithIntent = false
+
+    // back stack size while the post opened via EXTRA_SINGLE_POST is shown, 0 if none.
+    // Back from that post also closes the feed that was opened behind it.
+    private var singlePostDepth = 0
 
     override var scrollHideToolbarListener: ScrollHideToolbarListener by Delegates.notNull()
 
@@ -134,6 +139,8 @@ class MainActivity : BaseAppCompatActivity("MainActivity"),
         supportFragmentManager.addOnBackStackChangedListener(this)
 
         handleMarkAsRead(intent)
+
+        singlePostDepth = savedInstanceState?.getInt(EXTRA_SINGLE_POST) ?: 0
 
         if (savedInstanceState == null) {
             val intent: Intent? = intent
@@ -399,6 +406,11 @@ class MainActivity : BaseAppCompatActivity("MainActivity"),
         handleIntent(intent)
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putInt(EXTRA_SINGLE_POST, singlePostDepth)
+    }
+
     private val introLauncher = registerForActivityResult(StartActivityForResult()) {
         AndroidUtility.recreateActivity(this)
     }
@@ -522,6 +534,23 @@ class MainActivity : BaseAppCompatActivity("MainActivity"),
         // dispatch to fragments
         if (BackFragmentHelper.dispatchOnBackAction(this)) {
             return
+        }
+
+        val backStackSize = supportFragmentManager.backStackEntryCount
+        if (singlePostDepth > 0 && backStackSize == singlePostDepth && currentFragment is PostPagerFragment) {
+            singlePostDepth = 0
+
+            if (backStackSize >= 2) {
+                // pop the post and the feed below it
+                val feedEntry = supportFragmentManager.getBackStackEntryAt(backStackSize - 2)
+                supportFragmentManager.popBackStack(feedEntry.id, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+                return
+            }
+
+            // the feed is the root fragment
+            if (startedWithIntent) {
+                return finish()
+            }
         }
 
         // at the end, go back to the "top" page before stopping everything.
@@ -837,7 +866,16 @@ class MainActivity : BaseAppCompatActivity("MainActivity"),
             val filter = result.filter
             val start = result.start
 
-            gotoFeedFragment(filter, shouldClearOnIntent, start)
+            val clear = shouldClearOnIntent
+
+            // shortcut: if the post is not auto-opened, the next post opened from that feed counts as the single post.
+            singlePostDepth = when {
+                !intent.getBooleanExtra(EXTRA_SINGLE_POST, false) -> 0
+                clear -> 1
+                else -> supportFragmentManager.backStackEntryCount + 2
+            }
+
+            gotoFeedFragment(filter, clear, start)
 
         } else {
             gotoFeedFragment(defaultFeedFilter(), true)
@@ -866,6 +904,9 @@ class MainActivity : BaseAppCompatActivity("MainActivity"),
         const val EXTRA_MARK_AS_READ_MESSAGE_ID = "MainActivity.EXTRA_MARK_AS_READ_MESSAGE_ID"
         const val EXTRA_MARK_AS_READ_MESSAGE_TYPE = "MainActivity.EXTRA_MARK_AS_READ_MESSAGE_TYPE"
 
+        // open only the post: back from it skips the feed it was opened in
+        const val EXTRA_SINGLE_POST = "MainActivity.EXTRA_SINGLE_POST"
+
         // we use this to propagate a fake-home event to the fragments.
         const val ID_FAKE_HOME = android.R.id.list
 
@@ -882,6 +923,7 @@ class MainActivity : BaseAppCompatActivity("MainActivity"),
             }
 
             return Intent(Intent.ACTION_VIEW, uri, context, MainActivity::class.java)
+                .putExtra(EXTRA_SINGLE_POST, true)
         }
     }
 }
