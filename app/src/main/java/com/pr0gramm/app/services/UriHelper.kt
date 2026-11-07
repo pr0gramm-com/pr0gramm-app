@@ -133,6 +133,20 @@ class UriHelper private constructor(private val context: Context) {
             return absoluteJoin(start("img"), image)
         }
 
+        /**
+         * Small webp version of a user avatar, or null if the api gave us no valid file name.
+         */
+        fun avatarSmall(avatar: String?): Uri? {
+            // same check as the web app, the name must not contain a path
+            if (avatar == null || !avatarFileName.matches(avatar)) {
+                return null
+            }
+
+            return start("avatar").path(avatar.dropLast(4) + "_small.webp").build()
+        }
+
+        private val avatarFileName = Regex("[a-f0-9]{32,64}\\.png", RegexOption.IGNORE_CASE)
+
         fun subtitle(subtitle: String): Uri {
             return absoluteJoin(start("img"), subtitle)
         }

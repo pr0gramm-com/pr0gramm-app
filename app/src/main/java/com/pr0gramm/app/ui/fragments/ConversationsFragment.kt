@@ -16,6 +16,7 @@ import com.pr0gramm.app.api.pr0gramm.Api
 import com.pr0gramm.app.databinding.FragmentConversationsBinding
 import com.pr0gramm.app.services.InboxService
 import com.pr0gramm.app.services.ThemeHelper
+import com.pr0gramm.app.services.UriHelper
 import com.pr0gramm.app.ui.ConversationActivity
 import com.pr0gramm.app.ui.DelegateAdapter
 import com.pr0gramm.app.ui.ErrorAdapterDelegate
@@ -34,10 +35,12 @@ import com.pr0gramm.app.ui.views.UsernameView
 import com.pr0gramm.app.ui.views.ViewUpdater
 import com.pr0gramm.app.util.DurationFormat
 import com.pr0gramm.app.util.UserDrawables
+import com.pr0gramm.app.util.di.injector
 import com.pr0gramm.app.util.di.instance
 import com.pr0gramm.app.util.find
 import com.pr0gramm.app.util.inflateDetachedChild
 import com.pr0gramm.app.util.observeChange
+import com.squareup.picasso.Picasso
 import java.util.Objects
 
 /**
@@ -182,6 +185,7 @@ private class ConversationAdapterDelegate(
     : ListItemTypeAdapterDelegate<Api.Conversation, Any, ConversationAdapterDelegate.ViewHolder>(Api.Conversation::class) {
 
     private val userIconService = UserDrawables(context)
+    private val picasso: Picasso = context.injector.instance()
 
     override fun onCreateViewHolder(parent: ViewGroup): ViewHolder {
         return ViewHolder(parent.inflateDetachedChild(R.layout.item_conversation))
@@ -189,7 +193,14 @@ private class ConversationAdapterDelegate(
 
     override fun onBindViewHolder(holder: ViewHolder, value: Api.Conversation) {
         holder.name.setUsername(value.name, value.mark)
-        holder.image.setImageDrawable(userIconService.drawable(value.name))
+        val fallback = userIconService.drawable(value.name)
+        val avatar = UriHelper.NoPreload.avatarSmall(value.avatar)
+        if (avatar != null) {
+            picasso.load(avatar).placeholder(fallback).error(fallback).fit().centerCrop().into(holder.image)
+        } else {
+            picasso.cancelRequest(holder.image)
+            holder.image.setImageDrawable(fallback)
+        }
         holder.itemView.setOnClickListener { conversationClicked(value) }
 
         holder.unreadCount.isVisible = value.unreadCount > 0
