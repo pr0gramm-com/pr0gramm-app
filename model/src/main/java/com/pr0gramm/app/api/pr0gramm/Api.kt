@@ -133,6 +133,9 @@ interface Api {
             @Query("offset") offset: Long
     ): Sync
 
+    @GET("/api/stats/scoreHistory")
+    suspend fun scoreHistory(): ScoreHistory
+
     @GET("/api/stats/user")
     suspend fun userStats(): UserStats
 
@@ -790,6 +793,12 @@ interface Api {
             val inbox: InboxCounts = InboxCounts(),
             val settings: Map<String, Any?>? = null,
     )
+
+    @JsonClass(generateAdapter = true)
+    class ScoreHistory(val history: List<Point>) {
+        @JsonClass(generateAdapter = true)
+        class Point(val created: Instant, val score: Int)
+    }
 
     @JsonClass(generateAdapter = true)
     class UserStats(
