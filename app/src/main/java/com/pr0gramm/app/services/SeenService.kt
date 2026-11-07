@@ -96,6 +96,28 @@ class SeenService(context: Context) {
         currentGeneration.value++
     }
 
+    /**
+     * Merges the raw (uncompressed) seen bits of the server into the local bits.
+     */
+    fun merge(other: ByteArray) {
+        val buffer = this.buffer.get() ?: return
+
+        val changed = synchronized(lock) { orInto(buffer, other) }
+        if (changed > 0) {
+            currentGeneration.value++
+        }
+
+        logger.info { "Merged ${other.size} bytes of seen bits, $changed bytes changed" }
+    }
+
+    /**
+     * Bits that are set locally but not in [server], or null if there are none.
+     */
+    fun bitsMissingIn(server: ByteArray): ByteArray? {
+        val buffer = this.buffer.get() ?: return null
+        return synchronized(lock) { missingBits(buffer, server) }
+    }
+
     // Merges the other value into this one. Returns true, if the
     // other value equals the current state and no merging
     // was needed at all.
@@ -191,4 +213,40 @@ class SeenService(context: Context) {
             return raf.channel.map(FileChannel.MapMode.READ_WRITE, 0, size)
         }
     }
+}
+
+/**
+ * Sets all bits of [other] in [target]. Returns the number of bytes that changed.
+ */
+internal fun orInto(target: ByteBuffer, other: ByteArray): Int {
+    var changed = 0
+
+    for (idx in 0 until minOf(other.size, target.limit())) {
+        val value = target.get(idx)
+        val merged = value or other[idx]
+        if (merged != value) {
+            target.put(idx, merged)
+            changed++
+        }
+    }
+
+    return changed
+}
+
+/**
+ * Bits set in [local] but not in [server], cut after the last set byte. Null if there are none.
+ */
+internal fun missingBits(local: ByteBuffer, server: ByteArray): ByteArray? {
+    fun missingAt(idx: Int): Int = local.get(idx).toInt() and server.getOrElse(idx) { 0 }.toInt().inv() and 0xff
+
+    var last = local.limit() - 1
+    while (last >= 0 && missingAt(last) == 0) {
+        last--
+    }
+
+    if (last < 0) {
+        return null
+    }
+
+    return ByteArray(last + 1) { idx -> missingAt(idx).toByte() }
 }
