@@ -460,6 +460,18 @@ interface Api {
             @Body body: RequestBody,
     ): UpdateSeenBitsResponse
 
+    /** Raw, uncompressed seen bits. Answers 304 if the etag still matches, 404 if there is no data yet. */
+    @GET("api/seen/data?compressed=false")
+    suspend fun seenData(@Header("If-None-Match") etag: String?): Response<okhttp3.ResponseBody>
+
+    /** Merges the deflated bits in the body into the seen bits on the server. */
+    @POST("api/seen/update?partial=1")
+    suspend fun seenBitsUpdatePartial(
+            @Header("X-pr0gramm-Nonce") nonce: Nonce?,
+            @Header("X-pr0gramm-Bits-Version") version: Int,
+            @Body body: RequestBody,
+    ): UpdateSeenBitsResponse
+
     @FormUrlEncoded
     @POST("api/user/validate")
     suspend fun userValidate(
@@ -1107,6 +1119,8 @@ interface Api {
             val success: Boolean,
             /** New version of seen bits. */
             val version: Int,
+            /** Etag of the merged seen bits. */
+            val etag: String? = null,
     )
 
     enum class BanMode {
