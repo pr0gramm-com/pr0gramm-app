@@ -133,9 +133,13 @@ open class ApplicationClass : Application(), InjectorAware {
             null
         }
 
-        if (core != null) {
+        val shipper = BuildConfig.LOG_SHIPPER.takeIf { it.isNotEmpty() }?.let { LogShipper(it) }
+
+        if (core != null || shipper != null) {
             Logging.configureLoggingOutput { level, tag, message ->
-                if (level >= Log.INFO) {
+                shipper?.send(level, tag, message)
+
+                if (core != null && level >= Log.INFO) {
                     val levelStr = Logging.levels.getOrNull(level)
                     core.log("$levelStr [$tag]: $message")
                 }

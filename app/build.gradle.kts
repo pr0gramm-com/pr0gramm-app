@@ -26,6 +26,10 @@ android {
 
         vectorDrawables.useSupportLibrary = true
 
+        // local test builds: ./gradlew -PlogShipper=host:port sends all logs over TCP
+        val logShipper = providers.gradleProperty("logShipper").getOrElse("")
+        buildConfigField("String", "LOG_SHIPPER", "\"$logShipper\"")
+
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         ndk {
