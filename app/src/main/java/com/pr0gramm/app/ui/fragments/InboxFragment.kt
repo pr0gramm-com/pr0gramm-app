@@ -127,12 +127,13 @@ abstract class InboxFragment(name: String) : BaseFragment(name, R.layout.fragmen
 
         override fun onCommentClicked(comment: Message) {
             val uri = UriHelper.of(context ?: return).post(FeedType.NEW, comment.itemId, comment.id)
-            open(uri, comment.creationTime)
+            open(uri, comment.creationTime, singlePost = true)
         }
 
-        private fun open(uri: Uri, notificationTime: Instant? = null) {
+        private fun open(uri: Uri, notificationTime: Instant? = null, singlePost: Boolean = false) {
             val intent = Intent(Intent.ACTION_VIEW, uri, context, MainActivity::class.java)
             intent.putExtra("MainActivity.NOTIFICATION_TIME", notificationTime)
+            intent.putExtra(MainActivity.EXTRA_SINGLE_POST, singlePost)
             startActivity(intent)
         }
 
