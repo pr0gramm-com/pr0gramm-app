@@ -1,30 +1,28 @@
 package com.pr0gramm.app.ui
 
-import android.content.Context
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
-import androidx.fragment.app.FragmentPagerAdapter
+import androidx.viewpager2.adapter.FragmentStateAdapter
+import androidx.viewpager2.widget.ViewPager2
+import com.google.android.material.tabs.TabLayout
+import com.google.android.material.tabs.TabLayoutMediator
 
 /**
+ * Tabs with stable ids, so replacing the tabs keeps or recreates the right fragments.
  */
-class TabsStateAdapter : FragmentPagerAdapter {
-    constructor(context: Context, fragment: Fragment) : super(fragment.childFragmentManager, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
-        this.context = context
-    }
+class TabsStateAdapter : FragmentStateAdapter {
+    constructor(fragment: Fragment) : super(fragment)
 
-    constructor(activity: FragmentActivity) : super(activity.supportFragmentManager, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
-        this.context = activity
-    }
+    constructor(activity: FragmentActivity) : super(activity)
 
-    private val context: Context
     private val tabs: MutableList<TabInfo> = mutableListOf()
 
-    fun getItemCount(): Int {
+    override fun getItemCount(): Int {
         return tabs.size
     }
 
-    private fun createFragment(position: Int): Fragment {
+    override fun createFragment(position: Int): Fragment {
         val info = tabs[position]
 
         return info.fragmentConstructor().also { fr ->
@@ -39,33 +37,29 @@ class TabsStateAdapter : FragmentPagerAdapter {
         }
     }
 
-    fun addTab(title: String, args: Bundle? = null, id: Any? = null, fragmentConstructor: () -> Fragment) {
-        addTab(TabInfo(title, fragmentConstructor, args, id))
+    override fun getItemId(position: Int): Long {
+        return tabs[position].itemId
     }
 
-    private fun addTab(tab: TabInfo) {
-        tabs += tab
-        notifyDataSetChanged()
+    override fun containsItem(itemId: Long): Boolean {
+        return tabs.any { it.itemId == itemId }
+    }
+
+    fun addTab(title: String, args: Bundle? = null, id: Any? = null, fragmentConstructor: () -> Fragment) {
+        tabs += TabInfo(title, fragmentConstructor, args, id)
+        notifyItemInserted(tabs.size - 1)
     }
 
     fun updateTabTitle(id: Any, title: String) {
         for ((idx, tab) in tabs.withIndex()) {
             if (tab.id == id && tab.title != title) {
                 tabs[idx] = tab.copy(title = title)
-                notifyDataSetChanged()
+                notifyItemChanged(idx)
             }
         }
     }
 
-    override fun getItem(position: Int): Fragment {
-        return createFragment(position)
-    }
-
-    override fun getCount(): Int {
-        return tabs.size
-    }
-
-    override fun getPageTitle(position: Int): CharSequence {
+    fun getPageTitle(position: Int): CharSequence {
         return tabs[position].title
     }
 
@@ -75,5 +69,16 @@ class TabsStateAdapter : FragmentPagerAdapter {
         notifyDataSetChanged()
     }
 
-    data class TabInfo(val title: String, val fragmentConstructor: () -> Fragment, val args: Bundle? = null, val id: Any? = null)
+    /**
+     * Sets this adapter on the pager and shows the tab titles in the tab layout.
+     */
+    fun attach(tabLayout: TabLayout, pager: ViewPager2) {
+        pager.adapter = this
+        TabLayoutMediator(tabLayout, pager) { tab, position -> tab.text = getPageTitle(position) }.attach()
+    }
+
+    data class TabInfo(val title: String, val fragmentConstructor: () -> Fragment, val args: Bundle? = null, val id: Any? = null) {
+        // shortcut: hash based id, a collision would reuse the wrong fragment. Use real ids if that ever happens.
+        val itemId: Long get() = (id ?: title).hashCode().toLong()
+    }
 }

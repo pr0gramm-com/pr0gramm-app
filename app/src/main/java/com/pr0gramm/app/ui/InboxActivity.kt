@@ -3,7 +3,7 @@ package com.pr0gramm.app.ui
 import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
-import androidx.viewpager.widget.ViewPager
+import androidx.viewpager2.widget.ViewPager2
 import com.pr0gramm.app.R
 import com.pr0gramm.app.databinding.ActivityInboxBinding
 import com.pr0gramm.app.services.InboxService
@@ -109,20 +109,18 @@ class InboxActivity : BaseAppCompatActivity("InboxActivity") {
             }
         }
 
-        views.pager.adapter = tabsAdapter
+        tabsAdapter.attach(views.tabs, views.pager)
         views.pager.offscreenPageLimit = 1
 
-        views.pager.addOnPageChangeListener(object : ViewPager.SimpleOnPageChangeListener() {
+        views.pager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
                 onTabChanged()
             }
         })
 
-        views.tabs.setupWithViewPager(views.pager, true)
-
         // restore previously selected tab
         if (savedInstanceState != null) {
-            views.pager.currentItem = savedInstanceState.getInt("tab")
+            views.pager.setCurrentItem(savedInstanceState.getInt("tab"), false)
         } else {
             handleNewIntent(intent)
         }
@@ -196,7 +194,7 @@ class InboxActivity : BaseAppCompatActivity("InboxActivity") {
 
     private fun showInboxType(type: InboxType?) {
         if (type != null && type.ordinal < tabsAdapter.getItemCount()) {
-            views.pager.currentItem = type.ordinal
+            views.pager.setCurrentItem(type.ordinal, false)
         }
     }
 

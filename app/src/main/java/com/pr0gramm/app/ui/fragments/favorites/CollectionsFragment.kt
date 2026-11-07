@@ -52,7 +52,7 @@ class CollectionsFragment : BaseFragment("CollectionsFragment", R.layout.fragmen
 
         currentFilter = currentFilter.basicWithCollection(model.user, "**ANY", "**ANY")
 
-        val tabsAdapter = TabsStateAdapter(requireContext(), this)
+        val tabsAdapter = TabsStateAdapter(this)
 
         launchInViewScope {
             model.collectionsState.collect { collections ->
@@ -80,10 +80,8 @@ class CollectionsFragment : BaseFragment("CollectionsFragment", R.layout.fragmen
             }
         }
 
-        views.favoritesPager.adapter = tabsAdapter
+        tabsAdapter.attach(views.tabs, views.favoritesPager)
         views.favoritesPager.offscreenPageLimit = 2
-
-        views.tabs.setupWithViewPager(views.favoritesPager)
     }
 
     private fun resetToolbar() {
