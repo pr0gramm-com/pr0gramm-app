@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/Statistics.Change.Block"
+    android:layout_marginTop="8dp">
+
+    <TextView
+        android:id="@+id/stats_block_title"
+        style="@style/Statistics.Change.Block_Title"
+        tools:text="POSTS" />
+
+    <TextView
+        android:id="@+id/stats_block_value"
+        style="@style/Statistics.Change.Block_Value"
+        tools:text="1234" />
+</LinearLayout>
