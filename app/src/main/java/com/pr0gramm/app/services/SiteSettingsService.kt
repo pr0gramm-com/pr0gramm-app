@@ -47,11 +47,7 @@ class SyncSiteSettingsService(
     }
 
     private suspend fun syncToServer(settings: SiteSettings = localSiteSettings()) {
-        userService.storeSiteSettings(
-            MoshiInstance
-                .adapter<SiteSettings>()
-                .toJsonValue(settings) as Map<String, Any?>
-        )
+        userService.storeSiteSettings(settings.toJsonMap())
     }
 }
 
@@ -78,9 +74,7 @@ class SiteSettingsService {
         val currentSettings = localSiteSettings()
 
         // get local settings as a fallback for empty values
-        val fallbackValues = MoshiInstance
-            .adapter<SiteSettings>()
-            .toJsonValue(currentSettings) as Map<String, Any?>
+        val fallbackValues = currentSettings.toJsonMap()
 
         logger.info { "Got fallbackValues=$fallbackValues and remote values $remoteValues" }
 
@@ -130,4 +124,9 @@ private fun themeNameToThemeId(name: String): Int {
 private fun themeIdToThemeName(themeId: Int): String {
     val theme = Themes.values().getOrNull(themeId) ?: Themes.ORANGE
     return theme.name
+}
+
+private fun SiteSettings.toJsonMap(): Map<String, Any?> {
+    val json = MoshiInstance.adapter<SiteSettings>().toJsonValue(this) as Map<*, *>
+    return json.entries.associate { (key, value) -> key as String to value }
 }
