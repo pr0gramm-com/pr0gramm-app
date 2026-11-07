@@ -12,6 +12,8 @@
     <string name="app_name">pr0gramm</string>
     <string name="banned">Du bist bis in %1$s gesperrt. Grund: %2$s</string>
     <string name="cancel">Abbrechen</string>
+    <string name="yes">Ja</string>
+    <string name="no">Nein</string>
     <string name="install_update">Installieren</string>
     <string name="dummy_post_date">3 hours ago</string>
     <string name="dummy_user_name">Mopsalarm</string>
