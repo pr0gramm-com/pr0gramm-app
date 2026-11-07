@@ -1,6 +1,5 @@
 package com.pr0gramm.app.ui
 
-import androidx.core.content.IntentCompat
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -26,6 +25,7 @@ import androidx.appcompat.graphics.drawable.DrawerArrowDrawable
 import androidx.appcompat.view.menu.ActionMenuItem
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.IntentCompat
 import androidx.core.view.GravityCompat
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
