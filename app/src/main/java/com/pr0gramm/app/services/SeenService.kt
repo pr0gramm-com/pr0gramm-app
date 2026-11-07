@@ -2,22 +2,14 @@ package com.pr0gramm.app.services
 
 import android.content.Context
 import com.pr0gramm.app.Logger
-import com.pr0gramm.app.time
 import com.pr0gramm.app.util.doInBackground
-import com.pr0gramm.app.util.readStream
 import com.pr0gramm.app.util.unsigned
 import kotlinx.coroutines.flow.MutableStateFlow
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.RandomAccessFile
 import java.nio.ByteBuffer
-import java.nio.channels.Channels
 import java.nio.channels.FileChannel
 import java.util.concurrent.atomic.AtomicReference
-import java.util.zip.Deflater
-import java.util.zip.DeflaterOutputStream
-import java.util.zip.InflaterInputStream
 import kotlin.experimental.or
 
 
@@ -116,85 +108,6 @@ class SeenService(context: Context) {
     fun bitsMissingIn(server: ByteArray): ByteArray? {
         val buffer = this.buffer.get() ?: return null
         return synchronized(lock) { missingBits(buffer, server) }
-    }
-
-    // Merges the other value into this one. Returns true, if the
-    // other value equals the current state and no merging
-    // was needed at all.
-    fun checkEqualAndMerge(other: ByteArray): Boolean {
-        val buffer = this.buffer.get() ?: return false
-
-        var totalCount = 0
-        var diffCount = 0
-
-        synchronized(lock) {
-            logger.time("Merging values") {
-                ByteArrayInputStream(other).use { bi ->
-                    InflaterInputStream(bi).use { input ->
-                        val source = buffer.duplicate()
-                        val target = buffer.duplicate()
-
-                        readStream(input) { bytes, read ->
-                            val stepSize = read.coerceAtMost(source.remaining())
-
-                            var updatedInStep = 0
-                            for (idx in 0 until stepSize) {
-                                val otherValue = bytes[idx]
-                                val previousValue = source.get()
-
-                                val mergedValue = otherValue or previousValue
-
-                                if (previousValue != mergedValue) {
-                                    bytes[idx] = mergedValue
-                                    updatedInStep++
-                                }
-
-                                if (previousValue != otherValue) {
-                                    // could also be a local change
-                                    diffCount++
-                                }
-                            }
-
-                            if (updatedInStep > 0) {
-                                target.put(bytes, 0, stepSize)
-                            } else {
-                                target.position(target.position() + stepSize)
-                            }
-
-                            totalCount += stepSize
-                        }
-                    }
-                }
-            }
-
-            if (diffCount > 0) {
-                currentGeneration.value++
-            }
-        }
-
-        logger.info { "Changes in $diffCount out of $totalCount bytes in seen cache" }
-        return diffCount == 0 && totalCount == buffer.limit()
-    }
-
-    fun export(): ByteArray {
-        val buffer = this.buffer.get() ?: return byteArrayOf()
-
-        return synchronized(lock) {
-            logger.time("Export values") {
-                ByteArrayOutputStream().use { bo ->
-                    Deflater(Deflater.BEST_COMPRESSION).let { def ->
-                        DeflaterOutputStream(bo, def).use { out ->
-                            // write the buffer to the stream
-                            Channels.newChannel(out).write(buffer.asReadOnlyBuffer())
-                        }
-
-                        def.end()
-                    }
-
-                    bo.toByteArray()
-                }
-            }
-        }
     }
 
     /**
