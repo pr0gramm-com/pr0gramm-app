@@ -131,7 +131,10 @@ class SyncService(private val userService: UserService,
                 return
             }
 
-            if (server !== previous) {
+            if (server === previous) {
+                logger.info { "Seen bits unchanged on server, version ${server.version}" }
+            } else {
+                logger.info { "Fetched ${server.bits.size} bytes of seen bits, version ${server.version}" }
                 seenService.merge(server.bits)
             }
 
@@ -139,8 +142,9 @@ class SyncService(private val userService: UserService,
 
             val missing = seenService.bitsMissingIn(server.bits)
             if (missing != null && !seenUploadRejected) {
-                logger.info { "Uploading ${missing.size} bytes of new seen bits" }
+                logger.info { "Uploading ${missing.sumOf { Integer.bitCount(it.toInt() and 0xff) }} new seen posts" }
                 seenServer = seenApiService.uploadPartial(server, missing)
+                logger.info { "Uploaded seen bits, now version ${seenServer?.version}, etag=${seenServer?.etag != null}" }
             }
 
         } catch (err: SeenApiService.VersionConflictException) {
