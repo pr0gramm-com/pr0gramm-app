@@ -20,6 +20,15 @@ class SyncService(private val userService: UserService,
 
     private val seenSyncLock = AtomicBoolean()
 
+    // last known seen bits of the server, only valid for seenServerUserId
+    @Volatile
+    private var seenServer: SeenApiService.State? = null
+    private var seenServerUserId: Int? = null
+
+    // the server rejected our upload, do not retry until the next app start
+    @Volatile
+    private var seenUploadRejected = false
+
 
     init {
         AsyncScope.launch {
@@ -114,22 +123,44 @@ class SyncService(private val userService: UserService,
         logger.info { "Syncing of seen bits" }
 
         try {
-            seenApiService.update { previous ->
-                // merge the previous state into the current seen service
-                val noChanges = previous != null && seenService.checkEqualAndMerge(previous)
+            if (!userService.isAuthorized) {
+                return
+            }
 
-                if (noChanges) {
-                    logger.info { "No seen bits changed, so wont push now" }
-                    null
-                } else {
-                    logger.info { "Seen bits look dirty, pushing now" }
-                    seenService.export().takeIf { it.isNotEmpty() }
-                }
+            // never mix the seen bits of different users
+            val userId = userService.loginState.id
+            if (seenServerUserId != userId) {
+                seenServer = null
+                seenServerUserId = userId
+            }
+
+            val previous = seenServer
+            val server = seenApiService.fetch(previous)
+
+            if (userService.loginState.id != userId) {
+                logger.info { "User changed during seen sync, dropping result." }
+                return
+            }
+
+            if (server !== previous) {
+                seenService.merge(server.bits)
+            }
+
+            seenServer = server
+
+            val missing = seenService.bitsMissingIn(server.bits)
+            if (missing != null && !seenUploadRejected) {
+                logger.info { "Uploading ${missing.size} bytes of new seen bits" }
+                seenServer = seenApiService.uploadPartial(server, missing)
             }
 
         } catch (err: SeenApiService.VersionConflictException) {
-            // we should just retry.
+            // the next sync fetches the new state and retries.
             logger.warn(err) { "Version conflict during update." }
+
+        } catch (err: SeenApiService.RejectedException) {
+            logger.warn(err) { "Server rejected our seen bits, stop uploading." }
+            seenUploadRejected = true
 
         } catch (err: Exception) {
             Stats().incrementCounter("seen.sync.error")
