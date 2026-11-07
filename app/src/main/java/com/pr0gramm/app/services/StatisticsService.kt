@@ -1,5 +1,6 @@
 package com.pr0gramm.app.services
 
+import com.pr0gramm.app.api.pr0gramm.Api
 import com.pr0gramm.app.feed.ContentType
 import com.pr0gramm.app.feed.FeedFilter
 import com.pr0gramm.app.feed.FeedService
@@ -10,8 +11,11 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
 
 
-class StatisticsService(private val feedService: FeedService) {
+class StatisticsService(private val feedService: FeedService, private val api: Api) {
     class Stats(val counts: Map<ContentType, Int>)
+
+    /** Requires a premium account. */
+    suspend fun userStats(): Api.UserStats = api.userStats()
 
     private val uploadsCountCache = ConcurrentHashMap<Long, Stats>()
 

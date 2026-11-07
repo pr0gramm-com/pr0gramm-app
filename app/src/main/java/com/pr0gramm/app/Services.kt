@@ -213,7 +213,7 @@ fun appInjector(app: Application) = Module.build {
     bind<GifDrawableLoader>() with singleton { GifDrawableLoader(app.cacheDir, instance()) }
     bind<InfoMessageService>() with singleton { InfoMessageService(instance()) }
     bind<InviteService>() with singleton { InviteService(instance()) }
-    bind<StatisticsService>() with singleton { StatisticsService(instance()) }
+    bind<StatisticsService>() with singleton { StatisticsService(instance(), instance()) }
     bind<TagSuggestionService>() with eagerSingleton { TagSuggestionService(instance()) }
     bind<UserClassesService>() with singleton { UserClassesService(instance<ConfigService>()) }
     bind<BenisRecordService>() with singleton { BenisRecordService(instance()) }
