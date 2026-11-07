@@ -461,7 +461,7 @@ class UserService(
     val loginStateWithBenisGraph = run {
         val graphs = loginStates.mapLatest { loginState ->
             if (loginState.authorized) {
-                LoginStateWithScoreGraph(loginState, loadScoreHistoryAsGraph(loginState.id))
+                LoginStateWithScoreGraph(loginState, loadScoreHistoryAsGraph(loginState))
             } else {
                 LoginStateWithScoreGraph(loginState, scoreGraph = null)
             }
@@ -470,12 +470,12 @@ class UserService(
         ticker(Duration.minutes(10)).flatMapLatest { graphs }
     }
 
-    private suspend fun loadScoreHistoryAsGraph(userId: Int): Graph = logger.time("Loading benis graph") {
+    private suspend fun loadScoreHistoryAsGraph(loginState: LoginState): Graph = logger.time("Loading benis graph") {
         val now = Instant.now()
         val start = now - Duration.days(7)
 
         // get the values and transform them
-        val points = benisService.findValuesLaterThan(userId, start).map { record ->
+        val points = benisService.findValuesLaterThan(loginState.id, start, loginState.premium).map { record ->
             val x = record.time.toDouble()
             val y = record.benis.toDouble()
             Graph.Point(x, y)
@@ -488,7 +488,7 @@ class UserService(
      * Loads all benis records for the current user.
      */
     suspend fun loadBenisRecords(after: Instant = Instant(0)): BenisGraphRecords {
-        return BenisGraphRecords(benisService.findValuesLaterThan(loginState.id, after))
+        return BenisGraphRecords(benisService.findValuesLaterThan(loginState.id, after, loginState.premium))
     }
 
     class BenisGraphRecords(val records: List<BenisRecord>)

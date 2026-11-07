@@ -5,16 +5,19 @@ CREATE TABLE scoreRecord (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     score INTEGER AS Int NOT NULL,
     time INTEGER NOT NULL,
-    owner_id INTEGER AS Int NOT NULL
+    owner_id INTEGER AS Int NOT NULL,
+    imported INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE INDEX scoreRecord_time ON scoreRecord(time);
+CREATE UNIQUE INDEX scoreRecord_owner_time ON scoreRecord(owner_id, time);
 
 save:
-INSERT INTO scoreRecord (time, score, owner_id)
-VALUES (?, ?, ?);
+INSERT OR IGNORE INTO scoreRecord (time, score, owner_id, imported)
+VALUES (?, ?, ?, ?);
 
+-- maxImported: 0 = local records only, 1 = also imported records
 list:
 SELECT time, score
 FROM scoreRecord
-WHERE time>? AND owner_id=?;
+WHERE time>? AND owner_id=? AND imported <= :maxImported;

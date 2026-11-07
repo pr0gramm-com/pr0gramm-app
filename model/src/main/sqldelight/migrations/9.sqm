@@ -1,0 +1,5 @@
+ALTER TABLE scoreRecord ADD COLUMN imported INTEGER NOT NULL DEFAULT 0;
+
+DELETE FROM scoreRecord WHERE id NOT IN (SELECT MIN(id) FROM scoreRecord GROUP BY owner_id, time);
+
+CREATE UNIQUE INDEX scoreRecord_owner_time ON scoreRecord(owner_id, time);

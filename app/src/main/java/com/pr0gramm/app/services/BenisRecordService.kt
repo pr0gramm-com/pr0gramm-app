@@ -23,8 +23,8 @@ import kotlinx.coroutines.runInterruptible
 class BenisRecordService(private val db: ScoreRecordQueries) {
     private val logger = Logger("BenisRecordService")
 
-    suspend fun findValuesLaterThan(ownerId: Int, minTime: Instant): List<BenisRecord> {
-        return db.list(minTime.millis, ownerId) { time, score -> BenisRecord(time, score) }
+    suspend fun findValuesLaterThan(ownerId: Int, minTime: Instant, includeImported: Boolean): List<BenisRecord> {
+        return db.list(minTime.millis, ownerId, if (includeImported) 1 else 0) { time, score -> BenisRecord(time, score) }
             .asFlow()
             .mapToList(Dispatchers.IO)
                 .first()
@@ -32,7 +32,18 @@ class BenisRecordService(private val db: ScoreRecordQueries) {
 
     suspend fun storeValue(ownerId: Int, benis: Int) {
         runInterruptible(Dispatchers.IO) {
-            db.save(System.currentTimeMillis(), benis, ownerId)
+            db.save(System.currentTimeMillis(), benis, ownerId, 0)
+        }
+    }
+
+    /**
+     * Adds all records, skipping timestamps that already exist.
+     */
+    suspend fun importHistory(ownerId: Int, records: List<BenisRecord>) {
+        runInterruptible(Dispatchers.IO) {
+            db.transaction {
+                records.forEach { db.save(it.time, it.benis, ownerId, 1) }
+            }
         }
     }
 
@@ -82,7 +93,7 @@ class BenisRecordService(private val db: ScoreRecordQueries) {
                         val ownerId = cursor.getInt(2)
 
                         recordsCount++
-                        db.save(time, score, ownerId)
+                        db.save(time, score, ownerId, 0)
                     }
                 }
             }
