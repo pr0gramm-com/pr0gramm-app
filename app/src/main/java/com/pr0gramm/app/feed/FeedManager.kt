@@ -8,7 +8,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.onSubscription
 import kotlinx.coroutines.launch
 
 class FeedManager(private val scope: CoroutineScope, private val feedService: FeedService, private var feed: Feed) {
@@ -25,7 +25,9 @@ class FeedManager(private val scope: CoroutineScope, private val feedService: Fe
     private val feedType: FeedType get() = feed.feedType
 
     val updates: Flow<Update>
-        get() = subject.onStart { emit(Update.NewFeed(feed)) }
+        // onSubscription, not onStart: updates published while the collector handles
+        // the initial feed (e.g. LoadingStarted from the first restart) must not be dropped.
+        get() = subject.onSubscription { emit(Update.NewFeed(feed)) }
 
     init {
         trace { "<init>(${feed.filter}" }
