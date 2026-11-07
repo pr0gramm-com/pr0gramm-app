@@ -989,7 +989,8 @@ interface Api {
             val mark: Int,
             val name: String,
             val unreadCount: Int,
-            val canReceiveMessages: Boolean = true
+            val canReceiveMessages: Boolean = true,
+            val avatar: String? = null,
     )
 
     @JsonClass(generateAdapter = true)
