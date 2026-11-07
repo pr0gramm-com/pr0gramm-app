@@ -39,12 +39,14 @@ interface AdapterDelegate<E : Any, VH : RecyclerView.ViewHolder> {
 
 abstract class ItemAdapterDelegate<E : T, T : Any, VH : RecyclerView.ViewHolder> : AdapterDelegate<T, VH> {
     final override fun isForViewType(values: List<T>, idx: Int): Boolean {
-        return isForViewType(values[idx] as E)
+        return isForViewType(values[idx])
     }
 
     abstract fun isForViewType(value: T): Boolean
 
     final override fun onBindViewHolder(holder: VH, values: List<T>, idx: Int) {
+        // only called for items accepted by isForViewType
+        @Suppress("UNCHECKED_CAST")
         return onBindViewHolder(holder, values[idx] as E)
     }
 
