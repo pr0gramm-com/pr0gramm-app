@@ -107,7 +107,8 @@ class SeenService(context: Context) {
      */
     fun bitsMissingIn(server: ByteArray): ByteArray? {
         val buffer = this.buffer.get() ?: return null
-        return synchronized(lock) { missingBits(buffer, server) }
+        // no lock: bits are only ever set, one missed during the scan is uploaded next time.
+        return missingBits(buffer, server)
     }
 
     /**
