@@ -133,6 +133,9 @@ interface Api {
             @Query("offset") offset: Long
     ): Sync
 
+    @GET("/api/stats/user")
+    suspend fun userStats(): UserStats
+
     @FormUrlEncoded
     @POST("/api/user/sitesettings")
     suspend fun storeSettings(
@@ -787,6 +790,73 @@ interface Api {
             val inbox: InboxCounts = InboxCounts(),
             val settings: Map<String, Any?>? = null,
     )
+
+    @JsonClass(generateAdapter = true)
+    class UserStats(
+            val score: Scores,
+            val absScore: Scores,
+            val favCount: FavCount,
+            val followers: Followers,
+            val messages: Messages,
+            val blocks: Blocks,
+            val topScoredItems: List<Item> = listOf(),
+            val lowestScoredItems: List<Item> = listOf(),
+            val topCollectedItems: List<Item> = listOf(),
+            val topScoredComments: List<Comment> = listOf(),
+            val lowestScoredComments: List<Comment> = listOf(),
+            val topFavedComments: List<Comment> = listOf(),
+            val topScoredTags: List<Tag> = listOf(),
+            val lowestScoredTags: List<Tag> = listOf(),
+    ) {
+        @JsonClass(generateAdapter = true)
+        class Scores(val items: Int, val comments: Int, val tags: Int)
+
+        @JsonClass(generateAdapter = true)
+        class FavCount(val items: Int, val comments: Int)
+
+        @JsonClass(generateAdapter = true)
+        class Followers(val count: Int, val subscribed: Int)
+
+        @JsonClass(generateAdapter = true)
+        class Messages(val received: Int, val send: Int, val conversations: Int)
+
+        @JsonClass(generateAdapter = true)
+        class Blocks(val blockedUsers: Int, val blockedTags: Int, val blockedByUsers: Int)
+
+        @JsonClass(generateAdapter = true)
+        class Item(
+                val id: Long,
+                val up: Int = 0,
+                val down: Int = 0,
+                val thumb: String = "",
+                val flags: Int = 0,
+                val count: Int? = null,
+        )
+
+        @JsonClass(generateAdapter = true)
+        class Comment(
+                val id: Long,
+                val itemId: Long,
+                val content: String,
+                val up: Int,
+                val down: Int,
+                val thumb: String? = null,
+                val flags: Int = 0,
+                val commentCreated: Instant,
+                val count: Int? = null,
+        )
+
+        @JsonClass(generateAdapter = true)
+        class Tag(
+                val itemId: Long,
+                val tag: String,
+                val up: Int,
+                val down: Int,
+                val thumb: String? = null,
+                val flags: Int = 0,
+                val created: Instant,
+        )
+    }
 
     @JsonClass(generateAdapter = true)
     class InboxCounts(
