@@ -14,7 +14,8 @@ import kotlin.reflect.KProperty
  * Inspired by Jake Wharton, he mentioned it during his IO/17 talk about Kotlin
  */
 private class FragmentArgumentDelegate<T : Any>(val nameOverride: String?, val defaultValue: T?) : ReadWriteProperty<Fragment, T> {
-    @Suppress("UNCHECKED_CAST")
+    // Bundle has no typed getter for an arbitrary T, values are written by setArgumentValue
+    @Suppress("UNCHECKED_CAST", "DEPRECATION")
     override operator fun getValue(thisRef: Fragment, property: KProperty<*>): T {
         val name = nameOverride ?: property.name
         val value = thisRef.arguments?.get(name) as T?
@@ -28,7 +29,8 @@ private class FragmentArgumentDelegate<T : Any>(val nameOverride: String?, val d
 }
 
 private class OptionalFragmentArgumentDelegate<T : Any>(val nameOverride: String?, val default: T?) : ReadWriteProperty<Fragment, T?> {
-    @Suppress("UNCHECKED_CAST")
+    // Bundle has no typed getter for an arbitrary T, values are written by setArgumentValue
+    @Suppress("UNCHECKED_CAST", "DEPRECATION")
     override operator fun getValue(thisRef: Fragment, property: KProperty<*>): T? {
         val name = nameOverride ?: property.name
         val value = thisRef.arguments?.get(name) as T?
