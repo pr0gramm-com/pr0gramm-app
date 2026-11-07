@@ -118,8 +118,8 @@ class SeenService(context: Context) {
      * @param file The file to map into memory
      */
     private fun mapByteBuffer(file: File): ByteBuffer {
-        // space for up to a few million posts
-        val size = (8_000_000 / 8).toLong()
+        // one bit per post, 64 million posts like the web app. Growing keeps the existing bits.
+        val size = 8_000_000L
 
         logger.info { "Mapping cache: $file" }
         RandomAccessFile(file, "rw").use { raf ->
