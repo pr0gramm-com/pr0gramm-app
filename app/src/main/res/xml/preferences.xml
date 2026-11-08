@@ -269,7 +269,7 @@
                 <SwitchPreferenceCompat
                     android:defaultValue="true"
                     android:key="pref_use_tag_as_title"
-                    android:summary="@string/pref_use_tag_as_title_sumary"
+                    android:summary="@string/pref_use_tag_as_title_summary"
                     android:title="@string/pref_use_tag_as_title_title" />
 
                 <SwitchPreferenceCompat
@@ -353,7 +353,7 @@
                 android:defaultValue="true"
                 android:key="pref_sync_backup"
                 android:summary="@string/pref_sync_backup_summary"
-                android:title="@string/perf_sync_backup_title" />
+                android:title="@string/pref_sync_backup_title" />
 
             <SwitchPreferenceCompat
                 android:defaultValue="true"

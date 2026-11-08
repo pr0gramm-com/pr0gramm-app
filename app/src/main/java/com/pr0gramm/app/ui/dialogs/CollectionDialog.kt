@@ -153,7 +153,7 @@ private class PrivacySpinnerAdapter : BaseAdapter() {
         val view: TextView = parent.inflateDetachedChild(R.layout.row_collection_privacy)
 
         val (text, icon) = when (position) {
-            0 -> Pair(R.string.collection_prive, R.drawable.ic_collection_private)
+            0 -> Pair(R.string.collection_private, R.drawable.ic_collection_private)
             else -> Pair(R.string.collection_public, R.drawable.ic_collection_public)
         }
 

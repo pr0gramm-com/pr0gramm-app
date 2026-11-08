@@ -163,7 +163,7 @@ class CollectionsSelectionDialog : BottomSheetDialogFragment(), LazyInjectorAwar
 
             parent.launchWhenCreated {
                 val snackbar = Snackbar
-                        .make(fragmentView, R.string.collecton_adding, Snackbar.LENGTH_LONG)
+                        .make(fragmentView, R.string.collection_adding, Snackbar.LENGTH_LONG)
                         .configureNewStyle()
 
                 // show info that we are currently doing the request
@@ -177,7 +177,7 @@ class CollectionsSelectionDialog : BottomSheetDialogFragment(), LazyInjectorAwar
                         val collection = collectionsService.byId(result.collectionId)
 
                         val messageText: CharSequence = buildSpannedString {
-                            append(context.getString(R.string.collecton_added))
+                            append(context.getString(R.string.collection_added))
 
                             if (collection != null) {
                                 append(" ")
