@@ -1,5 +1,14 @@
 [
   {
+    "version": 208,
+    "changes": [
+      {
+        "type": "Feature",
+        "change": "Neues Design für Benutzerprofile, mit Profilbild und beschrifteten Aktionen."
+      }
+    ]
+  },
+  {
     "version": 207,
     "changes": [
       {
