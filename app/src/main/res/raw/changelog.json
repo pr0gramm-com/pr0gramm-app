@@ -1,5 +1,30 @@
 [
   {
+    "version": 207,
+    "changes": [
+      {
+        "type": "Neu",
+        "change": "pr0mium-Statistiken mit deinen besten Posts, Kommentaren und Tags."
+      },
+      {
+        "type": "Neu",
+        "change": "Der Verlauf deines Benis wird für pr0mium-Nutzer vom pr0gramm übernommen."
+      },
+      {
+        "type": "Neu",
+        "change": "Profilbilder in der Übersicht deiner Unterhaltungen."
+      },
+      {
+        "type": "Feature",
+        "change": "'Gesehen' wird jetzt schneller und sparsamer mit der Webseite synchronisiert."
+      },
+      {
+        "type": "Fix",
+        "change": "Login-Bildschirm mit Tastatur, Ladeanzeige beim ersten Öffnen, Zurück aus einzeln geöffneten Posts und Tippfehler."
+      }
+    ]
+  },
+  {
     "version": 206,
     "changes": [
       {
