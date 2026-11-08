@@ -49,12 +49,11 @@
     <string name="type_nsfw">nsfw</string>
     <string name="type_sfw">sfw</string>
     <string name="type_pol">pol</string>
-    <string name="prefcat_behaviour">Behaviour</string>
     <string name="pref_seen_indicator_style">Mark images as seen</string>
 
     <string name="indicator_none">No indicator</string>
     <string name="indicator_icon">Icon</string>
-    <string name="pref_seen_indicator_style_summary">Choose how already viewed items are marked in the feed</string>
+    <string name="pref_seen_indicator_style_summary">Mark items you have already seen in the feed.</string>
     <string name="error_socket">A network error occurred. Just try again.</string>
     <string name="dummy_tags" translatable="false">würde, Kreiselficker</string>
     <string name="add_new_tag_summary">Type a new tag to add to the post. You can separate multiple tags <b>with a comma.</b></string>
@@ -110,14 +109,10 @@
     <string name="inbox_type_comments_in">Comments</string>
     <string name="inbox_type_comments_out">My Comments</string>
     <string name="action_send">Send</string>
-    <string name="prefcat_visual_title">Visual</string>
+    <string name="prefcat_visual_title">Display</string>
     <string name="prefcat_settings_title">Settings</string>
-    <string name="prefcat_behaviour_summary">Behaviour settings like double tap to vote, notifications and other stuff.</string>
-    <string name="prefcat_visual_summary">Customize how some parts of the app should look.</string>
     <string name="pref_confirm_play_on_mobile_title">Confirm on mobile</string>
     <string name="pref_confirm_play_on_mobile_summary">Confirm playback on mobile to conserve bandwidth.</string>
-    <string name="prefcat_update">Updates</string>
-    <string name="prefcat_update_summary">Configure updates and betas here</string>
     <string name="pref_load_hq_image_in_zoomview_title">High quality in zoom view</string>
     <string name="pref_load_hq_image_in_zoomview_summary">Automatically load hq version of image in zoom view, if available.</string>
     <string name="share">Share</string>
@@ -165,7 +160,6 @@
     <string name="share_direct_link">Link to image</string>
     <string name="share_direct">As file</string>
     <string name="dummy_benis_delta" translatable="false">↑100</string>
-    <string name="prefcat_misc">Miscellaneous</string>
     <string name="action_contact">Contact</string>
     <string name="action_search_image">Search image</string>
     <string name="pref_image_search_engine_title">Image reverse search</string>
@@ -250,7 +244,6 @@
     <string name="reason">Reason</string>
     <string name="action_delete">Delete</string>
     <string name="action_delete_item">Delete item</string>
-    <string name="prefcat_theme">Theme</string>
     <string name="pref_theme_summary">You can select one out of multiple themes. Do you like <i>Bewährtes Orange</i> or do you prefer <i>Angenehmes Grün</i>?</string>
     <string name="pref_theme_title">Select app theme</string>
     <string name="pref_enable_quick_peek_title">Quick preview</string>
@@ -532,7 +525,7 @@
     <string name="error_bookmark">Error processing bookmarks: %s</string>
     <string name="error_invalid_download_directory">The selected directory is not usable. Please select a different directory or storage provider.</string>
     <string name="prefcat_privacy_screen_title">Privacy</string>
-    <string name="prefcat_privacy_screen_summary">Privacy settings</string>
+    <string name="prefcat_privacy_screen_summary">Incognito browser and keyboard, search history and screenshots.</string>
     <string name="action_open_in_admin">Open in Admin</string>
     <string name="old_android_reminder">Your android version is very old. App support will be discontinued soon.</string>
     <string name="pref_colorful_comment_lines_title">Colorful comment lines</string>
@@ -632,7 +625,7 @@
     <string name="action_verify">Verify</string>
     <string name="action_not_now">Not now</string>
     <string name="action_age_verification">Age verification</string>
-    <string name="prefcat_behaviour__sync_title">Sync Settings</string>
+    <string name="prefcat_behaviour__sync_title">Sync</string>
     <string name="pref_sync_site_settings_title">Sync site settings</string>
     <string name="pref_sync_site_settings_summary">Enable to sync some settings between the website and the app.</string>
     <string name="pref_use_secondary_servers_title">Secondary Server</string>
@@ -654,5 +647,14 @@
     <string name="language_picker_subtitle">Please choose one of the available languages.</string>
     <string name="language_picker_dismiss">Dismiss</string>
     <string name="language_picker_confirm">Confirm</string>
+    <string name="prefcat_feed_summary">Start feed, seen markers and categories in the drawer.</string>
+    <string name="prefcat_post_summary">Tap actions, tags, comments and menu items.</string>
+    <string name="prefcat_post__controls">Controls</string>
+    <string name="prefcat_network_title">Data &amp; network</string>
+    <string name="prefcat_network_summary">Data usage, connection, downloads and preloaded files.</string>
+    <string name="prefcat_network__connection">Connection</string>
+    <string name="prefcat_storage">Storage</string>
+    <string name="prefcat_sync_summary">Sync site settings and seen items with your account.</string>
+    <string name="prefcat_about">About &amp; updates</string>
 </resources>
 

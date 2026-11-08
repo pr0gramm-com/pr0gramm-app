@@ -50,8 +50,7 @@
     <string name="indicator_icon">Icon</string>
     <string name="indicator_none">Keine Anzeige</string>
     <string name="pref_seen_indicator_style">Bilder als gesehen markieren</string>
-    <string name="pref_seen_indicator_style_summary">Legt die Art fest, wie Bilder als gesehen markiert werden sollen</string>
-    <string name="prefcat_behaviour">Verhalten</string>
+    <string name="pref_seen_indicator_style_summary">Markiert bereits gesehene Bilder im Feed.</string>
     <string name="error_timeout">Zeitüberschreitung bei einer Anfrage.</string>
     <string name="error_socket">Ein Netzwerkfehler ist aufgetreten. Probiere es nochmal.</string>
     <string name="action_answer">Antworten</string>
@@ -101,15 +100,11 @@
     <string name="inbox_activity_title">Inbox</string>
     <string name="inbox_type_private">Privat</string>
     <string name="inbox_type_unread">Ungelesen</string>
-    <string name="prefcat_behaviour_summary">Verhaltenseinstellungen wie: Doppeltap zum Voten und Benachrichtigungen.</string>
     <string name="prefcat_settings_title">Einstellungen</string>
-    <string name="prefcat_visual_summary">Hier kannst du einstellen, wie die App aussehen soll.</string>
-    <string name="prefcat_visual_title">Visuell</string>
+    <string name="prefcat_visual_title">Darstellung</string>
     <string name="pref_confirm_play_on_mobile_summary">Abspielen bestätigen, wenn du dich nicht im WLAN befindest.</string>
     <string name="pref_confirm_play_on_mobile_title">Bestätigung im Mobilnetz</string>
     <string name="could_not_load_image">Fehler beim Laden\n¯\\_(ツ)_/¯</string>
-    <string name="prefcat_update">Updates</string>
-    <string name="prefcat_update_summary">Konfiguriere Updates und Betas hier</string>
     <string name="inbox_type_comments_in">Kommentare</string>
     <string name="inbox_type_comments_out">Eigene Kommentare</string>
     <string name="pref_load_hq_image_in_zoomview_title">HD in Zoom-Ansicht</string>
@@ -150,7 +145,6 @@
     <string name="share_direct_link">Link zum Bild</string>
     <string name="share_direct">Als Datei</string>
     <string name="share_post">Link zum Post</string>
-    <string name="prefcat_misc">Verschiedenes</string>
     <string name="action_search_image">Bild suchen</string>
     <string name="action_contact">Kontakt</string>
     <string name="pref_image_search_engine_summary">Wähle den Service für die Rückwärtssuche von Bildern aus.</string>
@@ -232,7 +226,6 @@
     <string name="hint_block_user_for">User sperren (Tage)</string>
     <string name="pref_theme_title">Theme auswählen</string>
     <string name="pref_theme_summary">Du kannst zwischen verschiedenen Themes wählen. Gefällt dir <i>Bewährtes Orange</i> oder stehst du eher auf <i>Angenehmes Grün</i>?</string>
-    <string name="prefcat_theme">Theme</string>
     <string name="reason">Grund</string>
     <string name="pref_enable_quick_peek_title">Schnellvorschau</string>
     <string name="pref_enable_quick_peek_summary">Halte den Finger auf ein Bild im Feed gedrückt, um eine Vorschau zu bekommen.</string>
@@ -505,7 +498,7 @@
     <string name="pref_pseudo_restore_bookmarks_summary">Wiederherstellen aller Standard-Lesezeichen vom pr0gramm. Eigene lokale Lesezeichen werden dabei nicht gelöscht.</string>
     <string name="pref_pseudo_restore_bookmarks_title">Lesezeichen wiederherstellen</string>
     <string name="prefcat_privacy_screen_title">Privatsphäre</string>
-    <string name="prefcat_privacy_screen_summary">Einstellungen zur Privatsphäre</string>
+    <string name="prefcat_privacy_screen_summary">Inkognito-Browser und -Tastatur, Suchverlauf und Screenshots.</string>
     <string name="error_invalid_download_directory">Das ausgewählte Verzeichnis kann nicht verwendet werden. Wähle einen anderen Ordner oder einen anderen Storage Provider aus.</string>
     <string name="action_open_in_admin">In Admin öffnen</string>
     <string name="old_android_reminder">Deine Android Version ist sehr alt. Der App Support wird bald eingestellt.</string>
@@ -634,4 +627,13 @@
     <string name="language_picker_subtitle">Bitte wähle eine der verfügbaren Sprachen.</string>
     <string name="language_picker_dismiss">Abbrechen</string>
     <string name="language_picker_confirm">Bestätigen</string>
+    <string name="prefcat_feed_summary">Start-Feed, Gesehen-Markierung und Kategorien im Menü.</string>
+    <string name="prefcat_post_summary">Tap-Aktionen, Tags, Kommentare und Menüeinträge.</string>
+    <string name="prefcat_post__controls">Bedienung</string>
+    <string name="prefcat_network_title">Daten &amp; Netzwerk</string>
+    <string name="prefcat_network_summary">Datenverbrauch, Verbindung, Downloads und vorgeladene Dateien.</string>
+    <string name="prefcat_network__connection">Verbindung</string>
+    <string name="prefcat_storage">Speicher</string>
+    <string name="prefcat_sync_summary">Seiteneinstellungen und gesehene Posts mit deinem Account synchronisieren.</string>
+    <string name="prefcat_about">Info &amp; Updates</string>
 </resources>

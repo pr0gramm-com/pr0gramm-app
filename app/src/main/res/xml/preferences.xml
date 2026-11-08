@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <PreferenceCategory android:title="@string/prefcat_theme">
+    <PreferenceCategory
+        android:key="prefcat_settings"
+        android:title="@string/prefcat_settings_title">
 
         <ListPreference
             android:defaultValue="@string/pref_theme_default"
@@ -11,60 +13,20 @@
             android:key="pref_theme"
             android:summary="@string/pref_theme_summary"
             android:title="@string/pref_theme_title" />
-    </PreferenceCategory>
 
-    <PreferenceCategory
-        android:key="prefcat_settings"
-        android:title="@string/prefcat_settings_title">
+        <Preference
+            android:icon="@drawable/ic_white_translate"
+            android:key="pref_pseudo_language"
+            android:summary="@string/pref_pseudo_language_summary"
+            android:title="@string/pref_pseudo_language_title" />
 
         <PreferenceScreen
-            android:icon="@drawable/ic_settings_behaviour"
-            android:key="prefcat_behaviour"
-            android:summary="@string/prefcat_behaviour_summary"
-            android:title="@string/prefcat_behaviour">
+            android:icon="@drawable/ic_settings_feed"
+            android:key="prefcat_feed"
+            android:summary="@string/prefcat_feed_summary"
+            android:title="@string/prefcat_behaviour__feed_title">
 
-            <PreferenceCategory
-                android:key="prefcat_behaviour__sync"
-                android:title="@string/prefcat_behaviour__sync_title">
-
-                <SwitchPreferenceCompat
-                    android:defaultValue="false"
-                    android:key="pref_sync_site_settings"
-                    android:summary="@string/pref_sync_site_settings_summary"
-                    android:title="@string/pref_sync_site_settings_title" />
-            </PreferenceCategory>
-
-            <PreferenceCategory
-                android:key="prefcat_behaviour__datausage"
-                android:title="@string/prefcat_behaviour__datausage_title">
-
-                <ListPreference
-                    android:defaultValue="@string/pref_confirm_play_on_mobile_default"
-                    android:entries="@array/pref_confirm_play_on_mobile_human"
-                    android:entryValues="@array/pref_confirm_play_on_mobile_values"
-                    android:key="pref_confirm_play_on_mobile_list"
-                    android:summary="@string/pref_confirm_play_on_mobile_summary"
-                    android:title="@string/pref_confirm_play_on_mobile_title" />
-
-                <ListPreference
-                    android:defaultValue="@string/pref_video_quality_default"
-                    android:entries="@array/pref_video_quality_human"
-                    android:entryValues="@array/pref_video_quality_values"
-                    android:key="pref_video_quality_list"
-                    android:summary="@string/pref_video_quality_values_summary"
-                    android:title="@string/pref_video_quality_values_title" />
-
-                <SwitchPreferenceCompat
-                    android:defaultValue="true"
-                    android:key="pref_load_hq_image_in_zoomview"
-                    android:summary="@string/pref_load_hq_image_in_zoomview_summary"
-                    android:title="@string/pref_load_hq_image_in_zoomview_title" />
-            </PreferenceCategory>
-
-
-            <PreferenceCategory
-                android:key="prefcat_behaviour__feed"
-                android:title="@string/prefcat_behaviour__feed_title">
+            <PreferenceCategory android:key="prefcat_feed__start">
 
                 <SwitchPreferenceCompat
                     android:defaultValue="true"
@@ -92,15 +54,43 @@
 
                 <SwitchPreferenceCompat
                     android:defaultValue="true"
-                    android:key="pref_feed_start_at_sfwpol"
                     android:dependency="pref_feed_start_at_sfw"
+                    android:key="pref_feed_start_at_sfwpol"
                     android:summary="@string/pref_feed_start_at_sfwpol_summary"
                     android:title="@string/pref_feed_start_at_sfwpol_title" />
-
             </PreferenceCategory>
 
             <PreferenceCategory
-                android:key="prefcat_behaviour__categories"
+                android:key="prefcat_feed__display"
+                android:title="@string/prefcat_visual_title">
+
+                <SwitchPreferenceCompat
+                    android:defaultValue="true"
+                    android:key="pref_highlight_items_in_feed"
+                    android:summary="@string/pref_highlight_items_in_feed_summary"
+                    android:title="@string/pref_highlight_items_in_feed" />
+
+                <SwitchPreferenceCompat
+                    android:defaultValue="false"
+                    android:key="pref_mark_items_as_seen"
+                    android:summary="@string/pref_seen_indicator_style_summary"
+                    android:title="@string/pref_seen_indicator_style" />
+
+                <SwitchPreferenceCompat
+                    android:defaultValue="false"
+                    android:key="pref_show_content_type_flag_2"
+                    android:summary="@string/pref_show_content_type_flag_summary"
+                    android:title="@string/pref_show_content_type_flag_title" />
+
+                <SwitchPreferenceCompat
+                    android:defaultValue="false"
+                    android:key="pref_always_show_ads"
+                    android:summary="@string/pref_always_show_ads_summary"
+                    android:title="@string/pref_always_show_ads_title" />
+            </PreferenceCategory>
+
+            <PreferenceCategory
+                android:key="prefcat_feed__categories"
                 android:title="@string/prefcat_behaviour__categories_title">
 
                 <SwitchPreferenceCompat
@@ -126,24 +116,18 @@
                     android:key="pref_show_category_junk"
                     android:summary="@string/pref_show_category_junk_summary"
                     android:title="@string/pref_show_category_junk_title" />
-
             </PreferenceCategory>
+        </PreferenceScreen>
+
+        <PreferenceScreen
+            android:icon="@drawable/ic_settings_visual"
+            android:key="prefcat_post"
+            android:summary="@string/prefcat_post_summary"
+            android:title="@string/prefcat_post">
 
             <PreferenceCategory
-                android:key="prefcat_behaviour__post"
-                android:title="@string/prefcat_post">
-
-                <SwitchPreferenceCompat
-                    android:defaultValue="false"
-                    android:key="pref_upvote_on_collect"
-                    android:summary="@string/pref_upvote_on_collect_summary"
-                    android:title="@string/pref_upvote_on_collect_title" />
-
-                <SwitchPreferenceCompat
-                    android:defaultValue="true"
-                    android:key="pref_rotate_in_fullscreen"
-                    android:summary="@string/pref_rotate_in_fullscreen_summary"
-                    android:title="@string/pref_rotate_in_fullscreen_title" />
+                android:key="prefcat_post__controls"
+                android:title="@string/prefcat_post__controls">
 
                 <ListPreference
                     android:defaultValue="NONE"
@@ -163,53 +147,77 @@
 
                 <SwitchPreferenceCompat
                     android:defaultValue="false"
+                    android:key="pref_upvote_on_collect"
+                    android:summary="@string/pref_upvote_on_collect_summary"
+                    android:title="@string/pref_upvote_on_collect_title" />
+
+                <SwitchPreferenceCompat
+                    android:defaultValue="true"
+                    android:key="pref_rotate_in_fullscreen"
+                    android:summary="@string/pref_rotate_in_fullscreen_summary"
+                    android:title="@string/pref_rotate_in_fullscreen_title" />
+
+                <SwitchPreferenceCompat
+                    android:defaultValue="false"
                     android:key="pref_audiofocus_transient"
                     android:summary="@string/pref_audiofocus_transient_summary"
                     android:title="@string/pref_audiofocus_transient_title" />
             </PreferenceCategory>
 
             <PreferenceCategory
-                android:key="prefcat_incognito"
-                android:title="Incognito">
-
-                <SwitchPreferenceCompat
-                    android:defaultValue="false"
-                    android:key="pref_use_incognito_browser"
-                    android:summary="@string/pref_use_incognito_browser_summary"
-                    android:title="@string/pref_use_incognito_browser_title" />
+                android:key="prefcat_post__display"
+                android:title="@string/prefcat_visual_title">
 
                 <SwitchPreferenceCompat
                     android:defaultValue="true"
-                    android:dependency="pref_use_incognito_browser"
-                    android:key="pref_override_youtube_links"
-                    android:summary="@string/pref_override_youtube_links_summary"
-                    android:title="@string/pref_override_youtube_links_title" />
+                    android:key="pref_use_tag_as_title"
+                    android:summary="@string/pref_use_tag_as_title_summary"
+                    android:title="@string/pref_use_tag_as_title_title" />
+
+                <SwitchPreferenceCompat
+                    android:defaultValue="true"
+                    android:key="pref_fancy_scroll_vertical"
+                    android:summary="@string/pref_fancy_scroll_vertical_summary"
+                    android:title="@string/pref_fancy_scroll_vertical" />
+
+                <SwitchPreferenceCompat
+                    android:defaultValue="true"
+                    android:key="pref_fancy_scroll_horizontal"
+                    android:summary="@string/pref_fancy_scroll_horizontal_summary"
+                    android:title="@string/pref_fancy_scroll_horizontal" />
 
                 <SwitchPreferenceCompat
                     android:defaultValue="false"
-                    android:key="pref_private_input"
-                    android:summary="@string/pref_private_input_summary"
-                    android:title="@string/pref_private_input_title" />
+                    android:key="pref_colorful_comment_lines"
+                    android:summary="@string/pref_colorful_comment_lines_summary"
+                    android:title="@string/pref_colorful_comment_lines_title" />
 
-                <Preference
-                    android:key="pref_pseudo_clear_tag_suggestions"
-                    android:persistent="false"
-                    android:summary="@string/pref_pseudo_clear_tag_suggestions_summary"
-                    android:title="@string/pref_pseudo_clear_tag_suggestions_title" />
-
+                <SwitchPreferenceCompat
+                    android:defaultValue="false"
+                    android:key="pref_rotate_vote_view"
+                    android:summary="@string/pref_rotate_vote_view_summary"
+                    android:title="@string/pref_rotate_vote_view_title" />
             </PreferenceCategory>
 
-        </PreferenceScreen>
+            <PreferenceCategory
+                android:key="prefcat_post__tags"
+                android:title="@string/prefcat_visual__tags">
 
-        <PreferenceScreen
-            android:icon="@drawable/ic_settings_visual"
-            android:key="prefcat_visual"
-            android:persistent="true"
-            android:summary="@string/prefcat_visual_summary"
-            android:title="@string/prefcat_visual_title">
+                <SwitchPreferenceCompat
+                    android:defaultValue="false"
+                    android:key="pref_hide_tag_vote_buttons"
+                    android:summary="@string/pref_hide_tag_vote_buttons_summary"
+                    android:title="@string/pref_hide_tag_vote_buttons_title" />
+
+                <SwitchPreferenceCompat
+                    android:defaultValue="false"
+                    android:key="pref_tag_cloud_view"
+                    android:summary="@string/pref_tag_cloud_view_summary"
+                    android:title="@string/pref_tag_cloud_view_title" />
+            </PreferenceCategory>
 
             <PreferenceCategory
-                android:key="prefcat_visual__menu_items"
+                android:key="prefcat_post__menu_items"
                 android:title="@string/prefcat_visual__menu_items_title">
 
                 <SwitchPreferenceCompat
@@ -232,116 +240,74 @@
                     android:summary="@string/pref_image_search_engine_summary"
                     android:title="@string/pref_image_search_engine_title" />
             </PreferenceCategory>
-
-            <PreferenceCategory
-                android:key="prefcat_visual__tags"
-                android:title="@string/prefcat_visual__tags">
-
-                <SwitchPreferenceCompat
-                    android:defaultValue="false"
-                    android:key="pref_hide_tag_vote_buttons"
-                    android:summary="@string/pref_hide_tag_vote_buttons_summary"
-                    android:title="@string/pref_hide_tag_vote_buttons_title" />
-
-                <SwitchPreferenceCompat
-                    android:defaultValue="false"
-                    android:key="pref_tag_cloud_view"
-                    android:summary="@string/pref_tag_cloud_view_summary"
-                    android:title="@string/pref_tag_cloud_view_title" />
-            </PreferenceCategory>
-
-            <PreferenceCategory
-                android:key="prefcat_visual__misc"
-                android:title="@string/prefcat_misc">
-
-                <SwitchPreferenceCompat
-                    android:defaultValue="true"
-                    android:key="pref_highlight_items_in_feed"
-                    android:summary="@string/pref_highlight_items_in_feed_summary"
-                    android:title="@string/pref_highlight_items_in_feed" />
-
-                <SwitchPreferenceCompat
-                    android:defaultValue="false"
-                    android:key="pref_mark_items_as_seen"
-                    android:summary="@string/pref_seen_indicator_style_summary"
-                    android:title="@string/pref_seen_indicator_style" />
-
-                <SwitchPreferenceCompat
-                    android:defaultValue="true"
-                    android:key="pref_use_tag_as_title"
-                    android:summary="@string/pref_use_tag_as_title_summary"
-                    android:title="@string/pref_use_tag_as_title_title" />
-
-                <SwitchPreferenceCompat
-                    android:defaultValue="false"
-                    android:key="pref_colorful_comment_lines"
-                    android:summary="@string/pref_colorful_comment_lines_summary"
-                    android:title="@string/pref_colorful_comment_lines_title" />
-
-                <SwitchPreferenceCompat
-                    android:defaultValue="true"
-                    android:key="pref_fancy_scroll_vertical"
-                    android:summary="@string/pref_fancy_scroll_vertical_summary"
-                    android:title="@string/pref_fancy_scroll_vertical" />
-
-                <SwitchPreferenceCompat
-                    android:defaultValue="true"
-                    android:key="pref_fancy_scroll_horizontal"
-                    android:summary="@string/pref_fancy_scroll_horizontal_summary"
-                    android:title="@string/pref_fancy_scroll_horizontal" />
-
-                <SwitchPreferenceCompat
-                    android:defaultValue="false"
-                    android:key="pref_show_content_type_flag_2"
-                    android:summary="@string/pref_show_content_type_flag_summary"
-                    android:title="@string/pref_show_content_type_flag_title" />
-
-                <SwitchPreferenceCompat
-                    android:defaultValue="false"
-                    android:key="pref_secure_app"
-                    android:summary="@string/pref_secure_app_summary"
-                    android:title="@string/pref_secure_app_title" />
-
-                <SwitchPreferenceCompat
-                    android:defaultValue="false"
-                    android:key="pref_always_show_ads"
-                    android:summary="@string/pref_always_show_ads_summary"
-                    android:title="@string/pref_always_show_ads_title" />
-
-                <SwitchPreferenceCompat
-                    android:defaultValue="false"
-                    android:key="pref_rotate_vote_view"
-                    android:summary="@string/pref_rotate_vote_view_summary"
-                    android:title="@string/pref_rotate_vote_view_title" />
-
-            </PreferenceCategory>
         </PreferenceScreen>
-
-        <Preference
-            android:icon="@drawable/ic_white_action_save"
-            android:key="pref_pseudo_download_target"
-            android:summary="@string/pref_downloadLocation_summary"
-            android:title="@string/pref_downloadLocation_title" />
 
         <PreferenceScreen
-            android:icon="@drawable/ic_settings_update"
-            android:key="prefcat_update"
-            android:summary="@string/prefcat_update_summary"
-            android:title="@string/prefcat_update">
+            android:icon="@drawable/ic_settings_network"
+            android:key="prefcat_network"
+            android:summary="@string/prefcat_network_summary"
+            android:title="@string/prefcat_network_title">
 
-            <Preference
-                android:key="pref_pseudo_update"
-                android:summary="@string/pref_pseudo_update_summary"
-                android:title="@string/pref_pseudo_update" />
+            <PreferenceCategory
+                android:key="prefcat_network__datausage"
+                android:title="@string/prefcat_behaviour__datausage_title">
 
-            <SwitchPreferenceCompat
-                android:defaultValue="false"
-                android:key="pref_use_beta_channel"
-                android:summary="@string/pref_use_beta_channel_summary"
-                android:title="@string/pref_use_beta_channel" />
+                <ListPreference
+                    android:defaultValue="@string/pref_confirm_play_on_mobile_default"
+                    android:entries="@array/pref_confirm_play_on_mobile_human"
+                    android:entryValues="@array/pref_confirm_play_on_mobile_values"
+                    android:key="pref_confirm_play_on_mobile_list"
+                    android:summary="@string/pref_confirm_play_on_mobile_summary"
+                    android:title="@string/pref_confirm_play_on_mobile_title" />
 
+                <ListPreference
+                    android:defaultValue="@string/pref_video_quality_default"
+                    android:entries="@array/pref_video_quality_human"
+                    android:entryValues="@array/pref_video_quality_values"
+                    android:key="pref_video_quality_list"
+                    android:summary="@string/pref_video_quality_values_summary"
+                    android:title="@string/pref_video_quality_values_title" />
+
+                <SwitchPreferenceCompat
+                    android:defaultValue="true"
+                    android:key="pref_load_hq_image_in_zoomview"
+                    android:summary="@string/pref_load_hq_image_in_zoomview_summary"
+                    android:title="@string/pref_load_hq_image_in_zoomview_title" />
+            </PreferenceCategory>
+
+            <PreferenceCategory
+                android:key="prefcat_network__connection"
+                android:title="@string/prefcat_network__connection">
+
+                <SwitchPreferenceCompat
+                    android:defaultValue="true"
+                    android:key="pref_use_doh2"
+                    android:summary="@string/pref_use_doh_summary"
+                    android:title="@string/pref_use_doh_title" />
+
+                <SwitchPreferenceCompat
+                    android:defaultValue="false"
+                    android:key="pref_use_secondary_servers"
+                    android:summary="@string/pref_use_secondary_servers_summary"
+                    android:title="@string/pref_use_secondary_servers_title" />
+            </PreferenceCategory>
+
+            <PreferenceCategory
+                android:key="prefcat_network__storage"
+                android:title="@string/prefcat_storage">
+
+                <Preference
+                    android:key="pref_pseudo_download_target"
+                    android:summary="@string/pref_downloadLocation_summary"
+                    android:title="@string/pref_downloadLocation_title" />
+
+                <Preference
+                    android:key="pref_pseudo_clean_preloaded"
+                    android:persistent="false"
+                    android:summary="@string/pseudo_clean_preloaded_summary"
+                    android:title="@string/pref_pseudo_clean_preloaded_title" />
+            </PreferenceCategory>
         </PreferenceScreen>
-
 
         <PreferenceScreen
             android:icon="@drawable/ic_settings_privacy"
@@ -350,25 +316,55 @@
             android:title="@string/prefcat_privacy_screen_title">
 
             <SwitchPreferenceCompat
+                android:defaultValue="false"
+                android:key="pref_use_incognito_browser"
+                android:summary="@string/pref_use_incognito_browser_summary"
+                android:title="@string/pref_use_incognito_browser_title" />
+
+            <SwitchPreferenceCompat
+                android:defaultValue="true"
+                android:dependency="pref_use_incognito_browser"
+                android:key="pref_override_youtube_links"
+                android:summary="@string/pref_override_youtube_links_summary"
+                android:title="@string/pref_override_youtube_links_title" />
+
+            <SwitchPreferenceCompat
+                android:defaultValue="false"
+                android:key="pref_private_input"
+                android:summary="@string/pref_private_input_summary"
+                android:title="@string/pref_private_input_title" />
+
+            <SwitchPreferenceCompat
+                android:defaultValue="false"
+                android:key="pref_secure_app"
+                android:summary="@string/pref_secure_app_summary"
+                android:title="@string/pref_secure_app_title" />
+
+            <Preference
+                android:key="pref_pseudo_clear_tag_suggestions"
+                android:persistent="false"
+                android:summary="@string/pref_pseudo_clear_tag_suggestions_summary"
+                android:title="@string/pref_pseudo_clear_tag_suggestions_title" />
+        </PreferenceScreen>
+
+        <PreferenceScreen
+            android:icon="@drawable/ic_settings_sync"
+            android:key="prefcat_sync"
+            android:summary="@string/prefcat_sync_summary"
+            android:title="@string/prefcat_behaviour__sync_title">
+
+            <SwitchPreferenceCompat
+                android:defaultValue="false"
+                android:key="pref_sync_site_settings"
+                android:summary="@string/pref_sync_site_settings_summary"
+                android:title="@string/pref_sync_site_settings_title" />
+
+            <SwitchPreferenceCompat
                 android:defaultValue="true"
                 android:key="pref_sync_backup"
                 android:summary="@string/pref_sync_backup_summary"
                 android:title="@string/pref_sync_backup_title" />
-
-            <SwitchPreferenceCompat
-                android:defaultValue="true"
-                android:key="pref_use_doh2"
-                android:summary="@string/pref_use_doh_summary"
-                android:title="@string/pref_use_doh_title" />
-
         </PreferenceScreen>
-
-        <Preference
-            android:icon="@drawable/ic_white_translate"
-            android:key="pref_pseudo_language"
-            android:summary="@string/pref_pseudo_language_summary"
-            android:title="@string/pref_pseudo_language_title" />
-
     </PreferenceCategory>
 
     <!-- This screen is hidden on non debug builds -->
@@ -385,21 +381,26 @@
     </PreferenceScreen>
 
     <PreferenceCategory
-        android:key="prefcat_misc"
-        android:title="@string/prefcat_misc">
+        android:key="prefcat_about"
+        android:title="@string/prefcat_about">
+
+        <Preference
+            android:icon="@drawable/ic_settings_update"
+            android:key="pref_pseudo_update"
+            android:summary="@string/pref_pseudo_update_summary"
+            android:title="@string/pref_pseudo_update" />
+
+        <SwitchPreferenceCompat
+            android:defaultValue="false"
+            android:key="pref_use_beta_channel"
+            android:summary="@string/pref_use_beta_channel_summary"
+            android:title="@string/pref_use_beta_channel" />
 
         <Preference
             android:icon="@drawable/ic_settings_changelog"
             android:key="pref_pseudo_changelog"
             android:summary="@string/pref_pseudo_changelog_summary"
             android:title="@string/pref_pseudo_changelog" />
-
-        <Preference
-            android:icon="@drawable/ic_settings_cleanup"
-            android:key="pref_pseudo_clean_preloaded"
-            android:persistent="false"
-            android:summary="@string/pseudo_clean_preloaded_summary"
-            android:title="@string/pref_pseudo_clean_preloaded_title" />
 
         <Preference
             android:icon="@drawable/ic_settings_welcome"
@@ -419,13 +420,6 @@
             android:persistent="false"
             android:summary="@string/pref_website_summary"
             android:title="@string/pref_website_title" />
-
-        <SwitchPreferenceCompat
-            android:defaultValue="false"
-            android:key="pref_use_secondary_servers"
-            android:summary="@string/pref_use_secondary_servers_summary"
-            android:title="@string/pref_use_secondary_servers_title" />
-
     </PreferenceCategory>
 
 </PreferenceScreen>
