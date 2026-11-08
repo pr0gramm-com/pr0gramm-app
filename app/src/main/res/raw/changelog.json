@@ -19,6 +19,10 @@
         "change": "'Gesehen' wird jetzt schneller und sparsamer mit der Webseite synchronisiert."
       },
       {
+        "type": "Feature",
+        "change": "Die Einstellungen sind übersichtlicher nach Themen sortiert."
+      },
+      {
         "type": "Fix",
         "change": "Login-Bildschirm mit Tastatur, Ladeanzeige beim ersten Öffnen, Zurück aus einzeln geöffneten Posts und Tippfehler."
       }
