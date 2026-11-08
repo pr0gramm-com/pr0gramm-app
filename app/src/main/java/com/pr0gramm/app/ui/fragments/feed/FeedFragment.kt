@@ -394,7 +394,13 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
                     }
 
                 } else {
-                    entries += FeedAdapter.Entry.User(userState.userInfo, isSelfInfo, userActionListener)
+                    val selectedTab = when {
+                        userState.userInfoCommentsOpen -> UserInfoView.Tab.Comments
+                        filter.collection != null -> UserInfoView.Tab.Collected
+                        else -> UserInfoView.Tab.Uploads
+                    }
+
+                    entries += FeedAdapter.Entry.User(userState.userInfo, isSelfInfo, selectedTab, userActionListener)
 
                     if (userState.userInfoCommentsOpen) {
                         val user = userService.name

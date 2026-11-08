@@ -9,6 +9,8 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.text.buildSpannedString
+import androidx.core.text.color
 import androidx.core.view.isNotEmpty
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -28,6 +30,25 @@ import com.squareup.picasso.Picasso
 import java.util.concurrent.TimeUnit
 
 /**
+ * Shows the users avatar, or the generated face if the user has none.
+ */
+internal fun loadAvatar(view: ImageView, name: String, avatar: String?) {
+    view.clipToOutline = true
+
+    val picasso = view.context.injector.instance<Picasso>()
+    val fallback = UserDrawables(view.context).drawable(name)
+
+    val uri = UriHelper.NoPreload.avatarSmall(avatar)
+    if (uri == null) {
+        picasso.cancelRequest(view)
+        view.setImageDrawable(fallback)
+        return
+    }
+
+    picasso.load(uri).placeholder(fallback).error(fallback).fit().centerCrop().into(view)
+}
+
+/**
  */
 @SuppressLint("ViewConstructor")
 class UserInfoView(context: Context) : FrameLayout(context) {
@@ -41,14 +62,16 @@ class UserInfoView(context: Context) : FrameLayout(context) {
     private val comments: TextView = find(R.id.kpi_comments)
     private val tags: TextView = find(R.id.kpi_tags)
     private val uploads: TextView = find(R.id.kpi_uploads)
-    private val extraInfo: TextView = find(R.id.user_extra_info)
+    private val avatar: ImageView = find(R.id.user_avatar)
     private val writeNewMessage: View = find(R.id.action_new_message)
     private val blockUser: View = find(R.id.action_block)
     private val shareUserProfile: View = find(R.id.action_share)
     private val badgesContainer: RecyclerView = find(R.id.badges_container)
     private val userTypeName: TextView = find(R.id.user_type_name)
     private val appLinksContainer: ViewGroup = find(R.id.app_links)
-    private val showCommentsContainer: View = comments.parent as View
+    private val showCommentsContainer: View = find(R.id.kpi_comments_container)
+    private val showUploadsContainer: View = find(R.id.kpi_uploads_container)
+    private val showCollectedContainer: View = find(R.id.kpi_collected_container)
 
     private val picasso = context.injector.instance<Picasso>()
     private val userClassesService = context.injector.instance<UserClassesService>()
@@ -57,8 +80,13 @@ class UserInfoView(context: Context) : FrameLayout(context) {
         info: Api.Info,
         comments: List<Api.UserComments.UserComment>,
         myself: Boolean,
+        selectedTab: Tab,
         actions: UserInfoView.UserActionListener
     ) {
+        showUploadsContainer.isSelected = selectedTab == Tab.Uploads
+        showCollectedContainer.isSelected = selectedTab == Tab.Collected
+        showCommentsContainer.isSelected = selectedTab == Tab.Comments
+
         // user info
         val user = info.user
         username.setUsername(user.name, user.mark)
@@ -69,9 +97,7 @@ class UserInfoView(context: Context) : FrameLayout(context) {
         uploads.text = info.uploadCount.toString()
         this.comments.text = info.commentCount.toString()
 
-        val userClass = userClassesService.get(user.mark)
-        userTypeName.setTextColor(userClass.color)
-        userTypeName.text = userClass.name
+        loadAvatar(avatar, user.name, user.avatar)
 
         showCommentsContainer.isVisible = comments.isNotEmpty()
 
@@ -93,30 +119,21 @@ class UserInfoView(context: Context) : FrameLayout(context) {
             actions.shareUserProfile(user.name)
         }
 
-        this.comments.requireParentView().setOnClickListener {
+        showCommentsContainer.setOnClickListener {
             actions.onShowCommentsClicked()
         }
 
-        uploads.requireParentView().setOnClickListener {
+        showUploadsContainer.setOnClickListener {
             actions.onShowUploadsClicked(user.name)
         }
 
-        if (info.collectedCount > 0 || myself) {
-            collected.text = info.collectedCount.toString()
-
-            collected.parentView?.let { parent ->
-                parent.isVisible = true
-
-                parent.setOnClickListener {
-                    val publicCollections = PostCollection.fromApi(info).filter { it.isPublic }
-                    if (myself || publicCollections.isNotEmpty()) {
-                        actions.onUserViewCollectionsClicked(user.name)
-                    }
-                }
+        showCollectedContainer.isVisible = info.collectedCount > 0 || myself
+        collected.text = info.collectedCount.toString()
+        showCollectedContainer.setOnClickListener {
+            val publicCollections = PostCollection.fromApi(info).filter { it.isPublic }
+            if (myself || publicCollections.isNotEmpty()) {
+                actions.onUserViewCollectionsClicked(user.name)
             }
-
-        } else {
-            collected.parentView?.isVisible = false
         }
 
         val badges = mutableListOf<BadgeInfo>()
@@ -202,19 +219,26 @@ class UserInfoView(context: Context) : FrameLayout(context) {
         }
 
         // info about banned/register date
-        if (user.banned && !user.inactive) {
+        val extraInfo = if (user.banned && !user.inactive) {
             val bannedUntil = user.bannedUntil
             if (bannedUntil == null) {
-                extraInfo.setText(R.string.user_banned_forever)
+                context.getString(R.string.user_banned_forever)
             } else {
                 val durationStr = DurationFormat.timeSpan(context, bannedUntil, short = false)
                 val stringId = if (user.inactive) R.string.user_banned_self else R.string.user_banned
-                extraInfo.text = context.getString(stringId, durationStr)
+                context.getString(stringId, durationStr)
             }
         } else {
             val dateStr = DurationFormat.timeToPointInTime(context, user.registered, short = false)
             val resId = if (user.inactive) R.string.user_registered_inactive else R.string.user_registered
-            extraInfo.text = context.getString(resId, dateStr)
+            context.getString(resId, dateStr)
+        }
+
+        val userClass = userClassesService.get(user.mark)
+        userTypeName.text = buildSpannedString {
+            color(userClass.color) { append(userClass.name) }
+            append(" · ")
+            append(extraInfo)
         }
 
         appLinksContainer.removeAllViews()
@@ -244,6 +268,8 @@ class UserInfoView(context: Context) : FrameLayout(context) {
         }
     }
 
+    enum class Tab { Uploads, Collected, Comments }
+
     interface UserActionListener {
         fun onWriteMessageClicked(name: String)
         fun onUserViewCollectionsClicked(name: String)
@@ -266,7 +292,7 @@ class UserInfoView(context: Context) : FrameLayout(context) {
         }
 
         override fun onBindViewHolder(holder: BadgeViewHolder, idx: Int) {
-            holder.set(badges[idx], idx == 0)
+            holder.set(badges[idx])
         }
 
         override fun getItemCount(): Int {
@@ -278,7 +304,7 @@ class UserInfoView(context: Context) : FrameLayout(context) {
         private val imageView: ImageView = view.find(R.id.image)
         private val textView: TextView = view.find(R.id.text)
 
-        fun set(badge: BadgeInfo, firstItem: Boolean) {
+        fun set(badge: BadgeInfo) {
             if (badge.text == null) {
                 textView.isVisible = false
             } else {
@@ -306,10 +332,6 @@ class UserInfoView(context: Context) : FrameLayout(context) {
                     picasso.load(url).into(imageView)
                 }
             }
-
-            // hack, if it is the first item, we need to add 12dp of left margin
-            val margin = if (firstItem) itemView.context.dp(12) else 0
-            (itemView.layoutParams as? MarginLayoutParams)?.leftMargin = margin
         }
 
         companion object {

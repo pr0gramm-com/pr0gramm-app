@@ -83,7 +83,12 @@ class FeedAdapter(adViewAdapter: AdViewAdapter)
         data class UserLoading(val user: UserAndMark)
             : Entry(idInCategory(1))
 
-        data class User(val user: UserInfo, val myself: Boolean, val actions: UserInfoView.UserActionListener)
+        data class User(
+            val user: UserInfo,
+            val myself: Boolean,
+            val selectedTab: UserInfoView.Tab,
+            val actions: UserInfoView.UserActionListener,
+        )
             : Entry(idInCategory(2))
 
         data class Error(override val errorText: String)
@@ -414,7 +419,7 @@ private object UserEntryAdapter
     }
 
     override fun onBindViewHolder(holder: UserInfoViewHolder, value: FeedAdapter.Entry.User) {
-        holder.view.updateUserInfo(value.user.info, value.user.comments, value.myself, value.actions)
+        holder.view.updateUserInfo(value.user.info, value.user.comments, value.myself, value.selectedTab, value.actions)
     }
 
     class UserInfoViewHolder(val view: UserInfoView) : RecyclerView.ViewHolder(view)
