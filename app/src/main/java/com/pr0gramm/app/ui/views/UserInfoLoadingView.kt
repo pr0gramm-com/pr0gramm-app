@@ -26,6 +26,7 @@ class UserInfoLoadingView(context: Context) : FrameLayout(context) {
 
     fun update(name: String, mark: Int) {
         usernameView.setUsername(name, mark)
+        loadAvatar(find(R.id.user_avatar), name, null)
 
         val userClass = userClassesService.get(mark)
         usermarkView.text = userClass.name
