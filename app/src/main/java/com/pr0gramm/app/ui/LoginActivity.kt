@@ -13,6 +13,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
+import android.widget.ScrollView
 import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
@@ -87,6 +88,17 @@ class LoginActivity : BaseAppCompatActivity("LoginActivity") {
         captchaAnswerView.addTextChangedListener { updateSubmitViewEnabled() }
 
         captchaAspect.setOnClickListener { updateUserCaptcha() }
+
+        // keep the login button visible above the keyboard
+        val scrollView = find<ScrollView>(R.id.scroll)
+        scrollView.addOnLayoutChangeListener { _, _, top, _, bottom, _, oldTop, _, oldBottom ->
+            if (bottom - top < oldBottom - oldTop && currentFocus is EditText) {
+                scrollView.post {
+                    val margin = (16 * resources.displayMetrics.density).toInt()
+                    scrollView.smoothScrollTo(0, submitView.bottom + margin - scrollView.height)
+                }
+            }
+        }
 
         updateSubmitViewEnabled()
 
@@ -164,6 +176,10 @@ class LoginActivity : BaseAppCompatActivity("LoginActivity") {
         val fallbackColor = ContextCompat.getColor(this, primaryColorDark)
         val background = createBackgroundDrawable(drawableId, fallbackColor)
         findViewById<View>(R.id.content).background = background
+
+        // the gradient ends in the dark primary color, continue it below the content
+        window.decorView.setBackgroundColor(fallbackColor)
+        window.navigationBarColor = fallbackColor
     }
 
     private fun createBackgroundDrawable(drawableId: Int, fallbackColor: Int): Drawable {
