@@ -20,7 +20,7 @@ class UserInfoLoadingView(context: Context) : FrameLayout(context) {
         usernameView = find(R.id.username)
         usermarkView = find(R.id.user_type_name)
 
-        find<View>(R.id.kpi_benis).isVisible = false
+        find<View>(R.id.user_benis).isVisible = false
         find<View>(R.id.busy_indicator).isVisible = true
     }
 

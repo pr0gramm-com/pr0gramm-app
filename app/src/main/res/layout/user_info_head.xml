@@ -7,13 +7,25 @@
     android:orientation="horizontal"
     tools:showIn="@layout/user_info_cell_v2">
 
-    <ImageView
-        android:id="@+id/user_avatar"
+    <FrameLayout
         android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:background="@drawable/bg_avatar"
-        android:importantForAccessibility="no"
-        android:scaleType="centerCrop" />
+        android:layout_height="48dp">
+
+        <ImageView
+            android:id="@+id/user_avatar"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/bg_avatar"
+            android:importantForAccessibility="no"
+            android:scaleType="centerCrop" />
+
+        <com.pr0gramm.app.ui.views.BusyIndicator
+            android:id="@+id/busy_indicator"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="center"
+            android:visibility="gone" />
+    </FrameLayout>
 
     <LinearLayout
         android:layout_width="0dp"
@@ -42,6 +54,7 @@
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/user_benis"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:gravity="end"
@@ -55,13 +68,6 @@
             android:textSize="22sp"
             android:textStyle="bold"
             tools:text="14854" />
-
-        <com.pr0gramm.app.ui.views.BusyIndicator
-            android:id="@+id/busy_indicator"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:layout_margin="4dp"
-            android:visibility="gone" />
 
         <TextView
             android:layout_width="wrap_content"
