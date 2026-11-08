@@ -180,11 +180,13 @@
     <string name="warn_show_post_anyways">Show anyway</string>
     <string name="error_ssl_error">Could not perform ssl handshake.</string>
     <string name="share_using">Share using</string>
-    <string name="kpi_desc_uploads">UPLOADS</string>
-    <string name="kpi_desc_collected">COLLECTED</string>
-    <string name="kpi_desc_comments">COMMENTS</string>
-    <string name="kpi_desc_tags">TAGS</string>
-    <string name="upper_benis">BENIS</string>
+    <string name="kpi_desc_uploads">Uploads</string>
+    <string name="kpi_desc_collected">Collected</string>
+    <string name="kpi_desc_comments">Comments</string>
+    <string name="kpi_desc_tags">Tags</string>
+    <string name="user_info_benis">Benis</string>
+    <string name="user_action_message">Message</string>
+    <string name="user_action_block">Block</string>
     <string name="write_message_placeholder">Message</string>
     <string name="write_message_title">To %s</string>
     <string name="write_message_send">SEND</string>
@@ -425,7 +427,6 @@
     <string name="dt_since_label_past">%s ago</string>
 
     <string name="add_tags_opinion_hint">Please be aware that tags are not a place to voice your opinion but rather to describe the image.</string>
-    <string name="action_actions">ACTIONS</string>
     <string name="delete_comment_soft">Soft delete (replace with <i>[gelöscht]</i>)</string>
     <string name="benisgraph_empty">There is not yet enough data to\ngenerate a real graph.</string>
     <string name="error_feed_not_public__item">This collection of %s is not public. Do you want to open the post in /new?</string>

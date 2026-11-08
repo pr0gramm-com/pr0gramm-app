@@ -165,11 +165,13 @@
     <string name="warn_post_can_not_be_viewed">Dieser Post ist aufgrund deiner Filtereinstellungen nicht sichtbar.</string>
     <string name="error_ssl_error">SSL Handschlag konnte nicht durchgeführt werden.</string>
     <string name="share_using">Teilen mit</string>
-    <string name="kpi_desc_comments">KOMMENTARE</string>
-    <string name="kpi_desc_collected">GESAMMELT</string>
-    <string name="kpi_desc_tags">TAGS</string>
-    <string name="kpi_desc_uploads">UPLOADS</string>
-    <string name="upper_benis">BENIS</string>
+    <string name="kpi_desc_comments">Kommentare</string>
+    <string name="kpi_desc_collected">Gesammelt</string>
+    <string name="kpi_desc_tags">Tags</string>
+    <string name="kpi_desc_uploads">Uploads</string>
+    <string name="user_info_benis">Benis</string>
+    <string name="user_action_message">Nachricht</string>
+    <string name="user_action_block">Blockieren</string>
     <string name="action_preload">Vorladen</string>
     <string name="pref_pseudo_clean_preloaded_title">Vorgeladene Dateien löschen</string>
     <string name="pseudo_clean_preloaded_summary">Drücke hier, um alle vorgeladenen Dateien zu löschen</string>
@@ -396,7 +398,6 @@
     <string name="badge_premium_gift">Hat %d mal pr0mium verschenkt</string>
 
     <string name="add_tags_opinion_hint">Bedenke: Tags sind nicht als Ort für deine Meinung, sondern zur Beschreibung des Bildes gedacht.</string>
-    <string name="action_actions">AKTIONEN</string>
     <string name="delete_comment_soft">Durch <i>[gelöscht]</i> ersetzen</string>
     <string name="benisgraph_empty">Es sind noch nicht genügend Daten verfügbar,\num deinen Graphen anzuzeigen.</string>
     <string name="could_not_load_feed_content_type__change">Möchtest du %s in deinen Filter mit aufnehmen?</string>
