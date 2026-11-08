@@ -54,7 +54,7 @@
 
     <string name="indicator_none">No indicator</string>
     <string name="indicator_icon">Icon</string>
-    <string name="pref_seen_indicator_style_summary">Specifies the style how already viewed items are marked in the feed</string>
+    <string name="pref_seen_indicator_style_summary">Choose how already viewed items are marked in the feed</string>
     <string name="error_socket">A network error occurred. Just try again.</string>
     <string name="dummy_tags" translatable="false">würde, Kreiselficker</string>
     <string name="add_new_tag_summary">Type a new tag to add to the post. You can separate multiple tags <b>with a comma.</b></string>
@@ -68,7 +68,7 @@
     <string name="action_download">Download</string>
     <string name="error_could_not_create_download_directory">Could not create download directory.</string>
     <string name="logout">Logout</string>
-    <string name="are_you_sure_to_logout">Are you sure to logout on this device?</string>
+    <string name="are_you_sure_to_logout">Are you sure you want to log out on this device?</string>
     <string name="benis_graph_explanation">This is your personal benis graph. It shows the changes in your benis in the past seven days.</string>
 
     <string name="zoom">Zoom</string>
@@ -134,7 +134,7 @@
     <string name="upload_title">Upload</string>
     <string name="upload_tags">Tags, comma-separated</string>
 
-    <string name="upload_small_print_footer" translatable="false">Unfähigkeit, diese Regeln zu befolgen, wird mit einer Sperrung Deines Accounts honoriert. Diskussionen um die Sperrung werden die Sperrung verlängern.</string>
+    <string name="upload_small_print_footer" translatable="false">Unfähigkeit, diese Regeln zu befolgen, wird mit einer Sperrung deines Accounts honoriert. Diskussionen um die Sperrung werden die Sperrung verlängern.</string>
     <string name="upload_small_print_header" translatable="false">DAS KLEINGEDRUCKTE – LIES ES!</string>
     <string name="upload_checking_if_upload_is_allowed">Checking if upload is allowed</string>
     <string name="upload_not_allowed">Upload not allowed</string>
@@ -280,8 +280,8 @@
     <string name="pref_use_incognito_browser_summary">Open links from comments in firefox focus browser with no history.</string>
     <string name="action_invite">Invites</string>
     <string name="invites_title">Invites</string>
-    <string name="invite_description" translatable="false">Wenn Du keine Neuschwuchtel oder Fliesentischbesitzer bist und ein paar Invites übrig hast, kannst du hier Deine Freunde zu pr0gramm einladen.</string>
-    <string name="invite_description_warning" translatable="false">Beachte, dass Du für jeden eingeladenen Benutzer bürgst und automatisch bei jedem Ban für die halbe Zeit mit gesperrt wirst!</string>
+    <string name="invite_description" translatable="false">Wenn du keine Neuschwuchtel oder Fliesentischbesitzer bist und ein paar Invites übrig hast, kannst du hier deine Freunde zu pr0gramm einladen.</string>
+    <string name="invite_description_warning" translatable="false">Beachte, dass du für jeden eingeladenen Benutzer bürgst und automatisch bei jedem Ban für die halbe Zeit mit gesperrt wirst!</string>
     <string name="invite_send">Send invite</string>
     <string name="invite_email_hint" translatable="false">gamb@pr0gramm.com</string>
     <string name="error_email">Must be a valid email</string>
@@ -322,7 +322,7 @@
     <string name="error_cloudflare">Looks like cloudflare is blocking your ip address.</string>
     <string name="error_blocked">Looks like your provider is blocking pr0gramm. Are you using some kind of free wifi?</string>
     <string name="error_proxy_timeout">A timeout occurred while accessing the pr0gramm servers.</string>
-    <string name="feedback_delete_post_hint" translatable="false">Bei Löschanfragen bitte die exakte Adresse (URL), sowie ausreichende Beweise angeben, dass Du der Urheber des Bildes bist oder in seinem Auftrag handelst. Ist es dein eigener Upload, kannst du ihn auch selbst löschen, schaue dafür in die FAQ: https://pr0gramm.com/faq:delete</string>
+    <string name="feedback_delete_post_hint" translatable="false">Bei Löschanfragen bitte die exakte Adresse (URL), sowie ausreichende Beweise angeben, dass du der Urheber des Bildes bist oder in seinem Auftrag handelst. Ist es dein eigener Upload, kannst du ihn auch selbst löschen, schaue dafür in die FAQ: https://pr0gramm.com/faq:delete</string>
     <string name="login_password_recovery">Forgot password</string>
     <string name="hint_email">Email address</string>
     <string name="submit">Submit</string>

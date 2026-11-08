@@ -60,7 +60,7 @@
     <string name="action_logout">Abmelden</string>
     <string name="action_settings">Einstellungen</string>
     <string name="add_new_tag_summary">Mehrere Tags können <b>mit Komma</b> voneinander getrennt werden.</string>
-    <string name="are_you_sure_to_logout">Bist du sicher, dass du Dich auf diesem Gerät abmelden möchtest?</string>
+    <string name="are_you_sure_to_logout">Bist du sicher, dass du dich auf diesem Gerät abmelden möchtest?</string>
     <string name="benis">Benis: %d</string>
     <string name="comment_hint">Kommentar…</string>
     <string name="error_could_not_create_download_directory">Downloadordner konnte nicht angelegt werden.</string>
@@ -74,9 +74,9 @@
     <string name="pref_fancy_scroll_horizontal">Horizontales parallaxes Scrollen</string>
     <string name="pref_fancy_scroll_horizontal_summary">Fügt dem Wechsel zwischen Posts einen Übergangseffekt hinzu.</string>
     <string name="pref_pseudo_changelog">Changelog</string>
-    <string name="pref_pseudo_changelog_summary">Drücke hier um das Changelog anzuzeigen</string>
+    <string name="pref_pseudo_changelog_summary">Drücke hier, um das Changelog anzuzeigen</string>
     <string name="pref_pseudo_update">Jetzt Updates prüfen</string>
-    <string name="pref_pseudo_update_summary">Drücke hier um auf Updates für die App zu prüfen</string>
+    <string name="pref_pseudo_update_summary">Drücke hier, um auf Updates für die App zu prüfen</string>
     <string name="zoom">Zoomfunktion</string>
     <string name="action_pin">Lesezeichen</string>
     <string name="bookmark_editor_title">Lesezeichen bearbeiten</string>
@@ -93,7 +93,7 @@
     <string name="pref_show_refresh_button_summary">Wenn aktiviert, wird ein zusätzlicher Aktualisieren-Button angezeigt.</string>
     <string name="nothing_there">Nichts gefunden\n¯\\_(ツ)_/¯</string>
     <string name="action_feed_type_premium">Stelz</string>
-    <string name="error_login_required_exception">Schaut so aus, als wäre deine Sitzung abgelaufen. Hast du Dich vielleicht im Browser abgemeldet?</string>
+    <string name="error_login_required_exception">Schaut so aus, als wäre deine Sitzung abgelaufen. Hast du dich vielleicht im Browser abgemeldet?</string>
     <string name="feedback_reminder">Dies ist eine Betaversion. Bei Problemen sende bitte Feedback.</string>
     <string name="filter_format_premium">Stelz</string>
     <string name="action_inbox">Nachrichten</string>
@@ -105,7 +105,7 @@
     <string name="prefcat_settings_title">Einstellungen</string>
     <string name="prefcat_visual_summary">Hier kannst du einstellen, wie die App aussehen soll.</string>
     <string name="prefcat_visual_title">Visuell</string>
-    <string name="pref_confirm_play_on_mobile_summary">Abspielen bestätigen, wenn du Dich nicht im WLAN befindest.</string>
+    <string name="pref_confirm_play_on_mobile_summary">Abspielen bestätigen, wenn du dich nicht im WLAN befindest.</string>
     <string name="pref_confirm_play_on_mobile_title">Bestätigung im Mobilnetz</string>
     <string name="could_not_load_image">Fehler beim Laden\n¯\\_(ツ)_/¯</string>
     <string name="prefcat_update">Updates</string>
@@ -138,7 +138,7 @@
     <string name="upload_error_invalid">Das Bild oder Video ist ungültig. Vielleicht ist es zu groß oder hat das falsche Format?</string>
     <string name="upload_error_unknown">Ein unbekannter Fehler ist beim Upload aufgetreten.</string>
     <string name="upload_just_try_again">Am besten probierst du es jetzt einfach nochmal.</string>
-    <string name="upload_something_went_wrong">Irgendwas ist schief gelaufen.</string>
+    <string name="upload_something_went_wrong">Irgendwas ist schiefgelaufen.</string>
     <string name="action_new_message">Neue Nachricht</string>
     <string name="receiver">Empfänger</string>
     <string name="user_not_found">Nicht gefunden</string>
@@ -178,8 +178,8 @@
     <string name="upper_benis">BENIS</string>
     <string name="action_preload">Vorladen</string>
     <string name="pref_pseudo_clean_preloaded_title">Vorgeladene Dateien löschen</string>
-    <string name="pseudo_clean_preloaded_summary">Drücke hier um alle vorgeladenen Dateien zu löschen</string>
-    <string name="pseudo_clean_preloaded_summary_with_size">Drücke hier um alle vorgeladenen Dateien (%1.2fmb) zu löschen</string>
+    <string name="pseudo_clean_preloaded_summary">Drücke hier, um alle vorgeladenen Dateien zu löschen</string>
+    <string name="pseudo_clean_preloaded_summary_with_size">Drücke hier, um alle vorgeladenen Dateien (%1.2fmb) zu löschen</string>
     <string name="write_message_placeholder">Nachricht</string>
     <string name="write_message_send">ABSCHICKEN</string>
     <string name="write_message_title">An %s</string>
@@ -219,7 +219,7 @@
     <string name="hint_user_search_dialog">Gib den Namen des Benutzers ein, den du suchst. Wenn es sich um einen aktiven Benutzer handelt, hilft dir eventuell die Autovervollständigung.</string>
     <string name="could_not_load_feed_json">Feed konnte nicht geladen werden. Es sieht so aus, als wärst du in einem WLAN ohne Internetzugang.</string>
     <string name="error_json">Die Antwort des pr0gramms konnte nicht verarbeitet werden.</string>
-    <string name="pref_pseudo_clear_tag_suggestions_summary">Klicke hier um alle Vorschläge für die Suche zu löschen</string>
+    <string name="pref_pseudo_clear_tag_suggestions_summary">Klicke hier, um alle Vorschläge für die Suche zu löschen</string>
     <string name="pref_pseudo_clear_tag_suggestions_title">Suchverlauf löschen</string>
     <string name="pref_pseudo_clear_tag_suggestions_notification">Suchverlauf gelöscht</string>
     <string name="action_faq">FAQ</string>
@@ -235,10 +235,10 @@
     <string name="prefcat_theme">Theme</string>
     <string name="reason">Grund</string>
     <string name="pref_enable_quick_peek_title">Schnellvorschau</string>
-    <string name="pref_enable_quick_peek_summary">Halte den Finger auf ein Bild im Feed gedrückt um eine Vorschau zu bekommen.</string>
+    <string name="pref_enable_quick_peek_summary">Halte den Finger auf ein Bild im Feed gedrückt, um eine Vorschau zu bekommen.</string>
     <string name="please_wait_update_hint">Bitte warte, während das Update heruntergeladen wird.</string>
     <string name="down_size">Verkleinern</string>
-    <string name="hint_image_too_large">Das Bild, das du versuchst hochzuladen, ist zu groß. Soll die App es für Dich verkleinern?</string>
+    <string name="hint_image_too_large">Das Bild, das du versuchst hochzuladen, ist zu groß. Soll die App es für dich verkleinern?</string>
     <string name="hint_shrank_successful">Bildgröße ist nun okay.</string>
     <string name="hint_upload_something_happen_try_again">Irgendwas komisches ist passiert, bitte probiere es nochmal.</string>
     <string name="hint_choose_media_type">Was möchtest du hochladen?</string>
@@ -246,7 +246,7 @@
     <string name="media_type_video">Video</string>
     <string name="upload_error_invalid_type">Diese Art von Datei wird nicht unterstützt. Bitte wähle eine jpeg, png, gif, mp4 oder webm Datei aus.</string>
     <string name="upload_hint_too_large">Die Datei ist zu groß.</string>
-    <string name="hint_similar_image">Wir haben einen ähnlichen Hochlad gefunden. Bitte überprüfe deinen Hochlad noch einmal um einen Repost zu verhindern.</string>
+    <string name="hint_similar_image">Wir haben einen ähnlichen Hochlad gefunden. Bitte überprüfe deinen Hochlad noch einmal, um einen Repost zu verhindern.</string>
     <string name="hint_upload">Upload…</string>
     <string name="error_protocol_exception">Eine Netzwerkverbindung ist unerwartet abgebrochen. Das kann mal passieren.</string>
     <string name="copied_to_clipboard">In die Zwischenablage kopiert</string>
@@ -292,15 +292,15 @@
     <string name="error_cloudflare">Die Anfrage ist fehlgeschlagen, da Cloudflare scheinbar deine Adresse gesperrt hat.</string>
     <string name="error_proxy_timeout">Ein Timeout ist beim Kontaktieren des pr0gramms aufgetreten.</string>
     <string name="feedback_appfeedback">Feedback zur App</string>
-    <string name="feedback_email">E-Mail Adresse</string>
+    <string name="feedback_email">E-Mail-Adresse</string>
     <string name="feedback_general">Normaler pr0gramm Support</string>
     <string name="feedback_name">Name</string>
     <string name="feedback_subject">Betreff</string>
     <string name="action_change">Ändern</string>
-    <string name="hint_email">E-Mail Adresse</string>
+    <string name="hint_email">E-Mail-Adresse</string>
     <string name="login_password_recovery">Passwort vergessen</string>
     <string name="password_recovery_error">Passwort konnte nicht geändert werden. Link ungültig?</string>
-    <string name="password_recovery_success">Passwort wurde erfolgreich geändert. Versuche Dich jetzt anzumelden.</string>
+    <string name="password_recovery_success">Passwort wurde erfolgreich geändert. Versuche dich jetzt anzumelden.</string>
     <string name="request_password_recovery_popup_hint">Eine E-Mail mit einem Link zum Ändern des Passwortes wurde an die angegebene Adresse gesendet.</string>
     <string name="request_password_recovery_title">Passwort zurücksetzen</string>
     <string name="submit">Abschicken</string>
@@ -454,7 +454,7 @@
     <string name="notification_channel_update">Update verfügbar</string>
     <string name="notification_channel_preload">Vorladen</string>
     <string name="pref_audiofocus_transient_title">Musik fortsetzen</string>
-    <string name="pref_audiofocus_transient_summary">"Ist diese Option aktiviert, werden Musik und Töne anderer Apps, die durch das pr0gramm unterbrochen wurden, automatisch fortgesetzt.\n "</string>
+    <string name="pref_audiofocus_transient_summary">"Ist diese Option aktiviert, werden Musik und Töne anderer Apps, die durch das pr0gramm unterbrochen wurden, automatisch fortgesetzt."</string>
     <string name="play_store">Zum PlayStore</string>
     <string name="hint_use_firefox_focus">Bitte installiere dir den von der pr0gramm App unterstützten Firefox Klar oder deaktiviere die Einstellung \'Inkognito Browser\'.</string>
     <string name="pref_secure_app_title">Verstecke die App im Appwechsler</string>
@@ -485,7 +485,7 @@
     <string name="error_item_was_deleted">Kommentare deaktiviert, Hochlad wurde vom Nutzer gelöscht.</string>
     <string name="badge_deleted_comments">Hat %d eigene Kommentare löschen lassen</string>
     <string name="badge_deleted_items">Hat %d eigene Hochlads löschen lassen</string>
-    <string name="error_no_comments_without_account">Du benötigst einen Account um die Kommentare auf pr0gramm zu sehen.</string>
+    <string name="error_no_comments_without_account">Du benötigst einen Account, um die Kommentare auf pr0gramm zu sehen.</string>
     <string name="pref_private_input_title">Inkognito Keyboard</string>
     <string name="pref_private_input_summary">Aktiviert den Inkognito Modus deiner Tastatur, z.B. vom gboard. Erfordert möglicherweise einen Neustart der App.</string>
     <string name="authors_hint">Benachrichtige die Verfasser von einem oder mehreren Elternkommentaren.</string>
@@ -510,7 +510,7 @@
     <string name="action_open_in_admin">In Admin öffnen</string>
     <string name="old_android_reminder">Deine Android Version ist sehr alt. Der App Support wird bald eingestellt.</string>
     <string name="pref_colorful_comment_lines_title">Farbige Kommentarlinien</string>
-    <string name="pref_colorful_comment_lines_summary">Färbt die Kommentarlinien unterschiedlich ein um die jeweilige Tiefe und den Elternkommentar hervorzuheben.</string>
+    <string name="pref_colorful_comment_lines_summary">Färbt die Kommentarlinien unterschiedlich ein, um die jeweilige Tiefe und den Elternkommentar hervorzuheben.</string>
     <string name="action_shortcut">Verknüpfung</string>
     <string name="hint_edit_bookmark">Du kannst einem Lesezeichen einen kurzen Titel geben. Dieser wird auch verwendet, wenn du für das Lesezeichen eine Verknüpfung in deinem Launcher erstellst.</string>
     <string name="hint_bookmark_onload">Dieses Lesezeichen beim Starten der App anstelle von Neu oder Beliebt verwenden.</string>
@@ -556,9 +556,9 @@
     <string name="notification_channel_new_notification">Systemnotifizierungen</string>
     <string name="notify_new_stalk_post">Neuer Hochlad von %s</string>
     <string name="notify_new_system_notification">Neue Systemnotifizierung</string>
-    <string name="notify_hint_tap_to_open_post">Tap um den Hochlad zu sehen</string>
+    <string name="notify_hint_tap_to_open_post">Tap, um den Hochlad zu sehen</string>
     <string name="notify_to_inbox">Inbox öffnen</string>
-    <string name="hint_no_file_manager_available">Es wurde kein Dateimanager gefunden um einen Ordner auszuwählen.</string>
+    <string name="hint_no_file_manager_available">Es wurde kein Dateimanager gefunden, um einen Ordner auszuwählen.</string>
     <string name="filter_format_collection_of">\'%1$s\' von %2$s</string>
     <string name="collections_save_to">Zu Sammlung hinzufügen…</string>
     <string name="collections_new">+ Neu</string>
@@ -603,7 +603,7 @@
     <string name="action_scroll_seen">Nächster gesehener Hochlad</string>
     <string name="error_max_scroll_reached">Maximale Scrollweite erreicht. Probiere es einfach nochmal.</string>
     <string name="changelog">Changelog</string>
-    <string name="user_is_not_verified">Dein Altersnachweis ist noch nicht abgeschlossen. Um nicht jugendfreie Inhalte anzusehen, musst Du dein Alter bestätigen.</string>
+    <string name="user_is_not_verified">Dein Altersnachweis ist noch nicht abgeschlossen. Um nicht jugendfreie Inhalte anzusehen, musst du dein Alter bestätigen.</string>
     <string name="action_age_verification">Altersnachweis</string>
     <string name="action_verify">Verifizieren</string>
     <string name="action_not_now">Nicht jetzt</string>
@@ -612,7 +612,7 @@
     <string name="pref_sync_site_settings_title">Einstellungen synchronisieren</string>
     <string name="pref_sync_site_settings_summary">Wenn ausgewählt, werden bestimmte Einstellungen zwischen App und der Website synchronisiert.</string>
     <string name="pref_use_secondary_servers_title">Ausweichserver</string>
-    <string name="pref_use_secondary_servers_summary">Verwendet den Ausweichserver um auf das pr0gramm zuzugreifen. Dies kann helfen, wenn die Verbindung oft unerklärlich langsam ist. Telekom Kunden sind davon aktuell stärker betroffen.</string>
+    <string name="pref_use_secondary_servers_summary">Verwendet den Ausweichserver, um auf das pr0gramm zuzugreifen. Dies kann helfen, wenn die Verbindung oft unerklärlich langsam ist. Telekom-Kunden sind davon aktuell stärker betroffen.</string>
     <string name="pref_rotate_vote_view_title">Blussi drehen</string>
     <string name="pref_rotate_vote_view_summary">Nur pr0mium: Diese Option bringt das Drehen des Blussi und des Minus Buttons zurück.</string>
 
@@ -624,9 +624,9 @@
 
     <string name="user_validate_success">Dein Alter wurde verifiziert</string>
     <string name="user_validate_failed">Ungültiges Token.</string>
-    <string name="pref_show_category_junk_summary">Aktiviere diese Option um die \'Müll\' Kategorie in der Navigation zu zeigen.</string>
+    <string name="pref_show_category_junk_summary">Aktiviere diese Option, um die \'Müll\' Kategorie in der Navigation zu zeigen.</string>
     <string name="pref_feed_hide_junk_in_new_title">Mülltrennung</string>
-    <string name="pref_feed_hide_junk_in_new_summary">Deaktiviere diese Option um \'Müll\' auch in \'Neu\' anzuzeigen.</string>
+    <string name="pref_feed_hide_junk_in_new_summary">Deaktiviere diese Option, um \'Müll\' auch in \'Neu\' anzuzeigen.</string>
 
     <string name="pref_pseudo_language_title">Sprache</string>
     <string name="pref_pseudo_language_summary">Ändere die Sprache der App unabhängig deiner Systemsprache</string>
