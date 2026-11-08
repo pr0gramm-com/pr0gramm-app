@@ -617,7 +617,8 @@ interface Api {
                 val inactive: Boolean = false,
                 @Json(name = "commentDelete") val commentDeleteCount: Int,
                 @Json(name = "itemDelete") val itemDeleteCount: Int,
-                val canReceiveMessages: Boolean = true
+                val canReceiveMessages: Boolean = true,
+                val avatar: String? = null
         )
 
         @JsonClass(generateAdapter = true)
