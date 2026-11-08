@@ -156,7 +156,7 @@
     <string name="pref_image_search_engine_summary">Wähle den Service für die Rückwärtssuche von Bildern aus.</string>
     <string name="pref_image_search_engine_title">Rückwärtssuche für Bilder</string>
     <string name="prefcat_behaviour__datausage_title">Datenverbrauch</string>
-    <string name="prefcat_visual__menu_items_title">Menueinträge</string>
+    <string name="prefcat_visual__menu_items_title">Menüeinträge</string>
     <string name="prefcat_visual__tags">Tags</string>
     <string name="pref_website_summary">Empfehle https://app.pr0gramm.com/ deinen Freunden</string>
     <string name="pref_website_title">Webseite</string>
@@ -168,7 +168,7 @@
     <string name="pref_single_tap_for_fullscreen_summary">Auf ein Bild klicken für Vollbild</string>
     <string name="prefcat_post">Postansicht</string>
     <string name="warn_show_post_anyways">Trotzdem zeigen</string>
-    <string name="warn_post_can_not_be_viewed">Dieser Post ist aufgrund deiner  Filtereinstellungen nicht sichtbar.</string>
+    <string name="warn_post_can_not_be_viewed">Dieser Post ist aufgrund deiner Filtereinstellungen nicht sichtbar.</string>
     <string name="error_ssl_error">SSL Handschlag konnte nicht durchgeführt werden.</string>
     <string name="share_using">Teilen mit</string>
     <string name="kpi_desc_comments">KOMMENTARE</string>
@@ -216,9 +216,9 @@
     <string name="notification_update_available_text">Ein neues Update für die pr0gramm App auf Version %s ist verfügbar.</string>
     <string name="update">Update</string>
     <string name="action_kfav">KOMMENTARE</string>
-    <string name="hint_user_search_dialog">Gib den Namen des Benutzer ein, den du suchst. Wenn es sich um einen aktiven Benutzer handelt, hilft dir eventuell die Autovervollständigung.</string>
+    <string name="hint_user_search_dialog">Gib den Namen des Benutzers ein, den du suchst. Wenn es sich um einen aktiven Benutzer handelt, hilft dir eventuell die Autovervollständigung.</string>
     <string name="could_not_load_feed_json">Feed konnte nicht geladen werden. Es sieht so aus, als wärst du in einem WLAN ohne Internetzugang.</string>
-    <string name="error_json">Die Antwort des pr0gramm konnte nicht verarbeitet werden.</string>
+    <string name="error_json">Die Antwort des pr0gramms konnte nicht verarbeitet werden.</string>
     <string name="pref_pseudo_clear_tag_suggestions_summary">Klicke hier um alle Vorschläge für die Suche zu löschen</string>
     <string name="pref_pseudo_clear_tag_suggestions_title">Suchverlauf löschen</string>
     <string name="pref_pseudo_clear_tag_suggestions_notification">Suchverlauf gelöscht</string>
@@ -234,11 +234,11 @@
     <string name="pref_theme_summary">Du kannst zwischen verschiedenen Themes wählen. Gefällt dir <i>Bewährtes Orange</i> oder stehst du eher auf <i>Angenehmes Grün</i>?</string>
     <string name="prefcat_theme">Theme</string>
     <string name="reason">Grund</string>
-    <string name="pref_enable_quick_peek_title">Schnell Vorschau</string>
+    <string name="pref_enable_quick_peek_title">Schnellvorschau</string>
     <string name="pref_enable_quick_peek_summary">Halte den Finger auf ein Bild im Feed gedrückt um eine Vorschau zu bekommen.</string>
     <string name="please_wait_update_hint">Bitte warte, während das Update heruntergeladen wird.</string>
     <string name="down_size">Verkleinern</string>
-    <string name="hint_image_too_large">Das Bild, dass du versuchst hochzuladen, ist zu groß. Soll die App es für Dich verkleinern?</string>
+    <string name="hint_image_too_large">Das Bild, das du versuchst hochzuladen, ist zu groß. Soll die App es für Dich verkleinern?</string>
     <string name="hint_shrank_successful">Bildgröße ist nun okay.</string>
     <string name="hint_upload_something_happen_try_again">Irgendwas komisches ist passiert, bitte probiere es nochmal.</string>
     <string name="hint_choose_media_type">Was möchtest du hochladen?</string>
@@ -383,7 +383,7 @@
     <string name="dt_since_n_days">$d Tagen</string>
     <string name="dt_since_one_week">einer Woche</string>
     <string name="dt_since_one_week_1_days">einer Woche und einem Tag</string>
-    <string name="dt_since_one_week_n_days">einer Woche und $r Tage</string>
+    <string name="dt_since_one_week_n_days">einer Woche und $r Tagen</string>
     <string name="dt_since_n_weeks">$d Wochen</string>
     <string name="dt_since_one_month">einem Monat</string>
     <string name="dt_since_one_month_1_weeks">einem Monat und einer Woche</string>
@@ -409,7 +409,7 @@
     <string name="could_not_load_feed_content_type__change">Möchtest du %s in deinen Filter mit aufnehmen?</string>
     <string name="could_not_load_feed_content_type__signin">Um Beiträge in %s zu sehen, musst du dich anmelden.</string>
     <string name="error_feed_not_public__item">Diese Sammlung von %s ist nicht öffentlich. Möchtest du den Post in \'neu\' öffnen?</string>
-    <string name="error_feed_not_public__general">Diese Sammlungn von %s ist nicht öffentlich.</string>
+    <string name="error_feed_not_public__general">Diese Sammlung von %s ist nicht öffentlich.</string>
     <string name="stats_title_uploads_favs">Uploads</string>
     <string name="stats_title_votes">Voteverhalten</string>
     <string name="stats_day">TAG</string>
@@ -456,7 +456,7 @@
     <string name="pref_audiofocus_transient_title">Musik fortsetzen</string>
     <string name="pref_audiofocus_transient_summary">"Ist diese Option aktiviert, werden Musik und Töne anderer Apps, die durch das pr0gramm unterbrochen wurden, automatisch fortgesetzt.\n "</string>
     <string name="play_store">Zum PlayStore</string>
-    <string name="hint_use_firefox_focus">Bitte installiere dir den von der pr0gramm App unterstützen Firefox Klar oder deaktiviere die Einstellung \'Inkognito Browser\'.</string>
+    <string name="hint_use_firefox_focus">Bitte installiere dir den von der pr0gramm App unterstützten Firefox Klar oder deaktiviere die Einstellung \'Inkognito Browser\'.</string>
     <string name="pref_secure_app_title">Verstecke die App im Appwechsler</string>
     <string name="pref_secure_app_summary">Versteckt den Inhalt der App in der \'zuletzt verwendete Apps\' Liste und verhindert das Erstellen von Screenshots.</string>
     <string name="error_feed_not_found">Der angefragte Post existiert nicht mehr.</string>
@@ -502,7 +502,7 @@
     <string name="bookmark_hint_delete">Zum Löschen Lesezeichen lange drücken.</string>
     <string name="error_bookmark">Fehler beim Verarbeiten des Lesezeichens: %s</string>
     <string name="hint_edit_bookmarks_premium">Lesezeichen können mit pr0mium bearbeitet werden.</string>
-    <string name="pref_pseudo_restore_bookmarks_summary">Wiederherstellen aller Standard Lesenzeichen vom pr0gramm. Eigene lokale Lesezeichen werden dabei nicht gelöscht.</string>
+    <string name="pref_pseudo_restore_bookmarks_summary">Wiederherstellen aller Standard-Lesezeichen vom pr0gramm. Eigene lokale Lesezeichen werden dabei nicht gelöscht.</string>
     <string name="pref_pseudo_restore_bookmarks_title">Lesezeichen wiederherstellen</string>
     <string name="prefcat_privacy_screen_title">Privatsphäre</string>
     <string name="prefcat_privacy_screen_summary">Einstellungen zur Privatsphäre</string>
@@ -514,7 +514,7 @@
     <string name="action_shortcut">Verknüpfung</string>
     <string name="hint_edit_bookmark">Du kannst einem Lesezeichen einen kurzen Titel geben. Dieser wird auch verwendet, wenn du für das Lesezeichen eine Verknüpfung in deinem Launcher erstellst.</string>
     <string name="hint_bookmark_onload">Dieses Lesezeichen beim Starten der App anstelle von Neu oder Beliebt verwenden.</string>
-    <string name="action_rename">Umnennen</string>
+    <string name="action_rename">Umbenennen</string>
     <string name="hint_captcha">Captcha</string>
     <string name="hint_no_email">Benutzername, nicht E-Mail</string>
     <string name="pref_use_tag_as_title_title">Top Tag als Titel</string>
@@ -536,13 +536,13 @@
     <string name="pref_tap_action_collect">Sammeln</string>
     <string name="pref_tap_action_fullscreen">Vollbild</string>
 
-    <string name="pref_single_tap_action_title">Einfach Tap Aktion</string>
+    <string name="pref_single_tap_action_title">Einfach-Tap-Aktion</string>
     <string name="pref_single_tap_action_summary">Wähle eine Aktion fürs einfache Tappen auf ein Bild aus.</string>
     <string name="pref_double_tap_action_title">Doppel-Tap Aktion</string>
-    <string name="pref_double_tap_action_summary">Wähle eine Aktion fürs zweifaches Tappen auf ein Bild oder Video aus.</string>
+    <string name="pref_double_tap_action_summary">Wähle eine Aktion fürs zweifache Tappen auf ein Bild oder Video aus.</string>
     <string name="download_manually">Herunterladen</string>
     <string name="new_update_download">Anscheinend ist das Update fehlgeschlagen - du kannst das Update selbst herunterladen und installieren.</string>
-    <string name="hint_select_download_directory">Bitte wähle ein Downloadverzeichnis auf dem Internen Speicher oder einer Speicherkarte.</string>
+    <string name="hint_select_download_directory">Bitte wähle ein Downloadverzeichnis auf dem internen Speicher oder einer Speicherkarte.</string>
     <string name="inbox_type_all">Alle</string>
     <string name="inbox_type_stalk">Stelz-Abos</string>
     <string name="inbox_type_digests">Highlights</string>
@@ -588,12 +588,12 @@
     <string name="uploads_in">Hochlads in %s</string>
     <string name="uploads_of">Hochlads von %s</string>
     <string name="uploads">Hochlads</string>
-    <string name="collection_x_of_user">%s von %s</string>
+    <string name="collection_x_of_user">%1$s von %2$s</string>
     <string name="pref_upvote_on_collect_title">Blussi beim Sammeln</string>
     <string name="pref_upvote_on_collect_summary">Es wird automatisch ein Blussi vergeben, wenn du einen Post in eine Sammlung hinzufügst. Du kannst das Blussi nachträglich wieder entfernen.</string>
     <string name="hint_upvote_on_collect">Möchtest du beim Sammeln automatisch ein Blussi dalassen? Du kannst es jederzeit nachträglich wieder entfernen.</string>
-    <string name="pref_use_doh_summary">DNS über HTTPS via Cloudflare</string>
-    <string name="pref_use_doh_title">Verwendet DNS über HTTPS mit Cloudflares 1.1.1.1 Server. Dies kann helfen, wenn deine FIrma oder dein Internetanbieter den Zugang zum pr0gramm sperrt.</string>
+    <string name="pref_use_doh_summary">Verwendet DNS über HTTPS mit Cloudflares 1.1.1.1 Server. Dies kann helfen, wenn deine Firma oder dein Internetanbieter den Zugang zum pr0gramm sperrt.</string>
+    <string name="pref_use_doh_title">DNS über HTTPS via Cloudflare</string>
     <string name="bookmark_inverse_title">Ohne %s</string>
     <string name="hint_exclude_tag">Diesen Tag von den Ergebnissen ausschließen</string>
     <string name="hint_shrink_image">Das ausgewählte Bild ist zu groß. Die App kann es für dich verkleinern.</string>
@@ -610,7 +610,7 @@
     <string name="badge_tags">Mehr als %sk Tags</string>
     <string name="prefcat_behaviour__sync_title">Synchronisation</string>
     <string name="pref_sync_site_settings_title">Einstellungen synchronisieren</string>
-    <string name="pref_sync_site_settings_summary">Wenn ausgewählt werden bestimmte Einstellungen zwischen App und der Website synchronisiert.</string>
+    <string name="pref_sync_site_settings_summary">Wenn ausgewählt, werden bestimmte Einstellungen zwischen App und der Website synchronisiert.</string>
     <string name="pref_use_secondary_servers_title">Ausweichserver</string>
     <string name="pref_use_secondary_servers_summary">Verwendet den Ausweichserver um auf das pr0gramm zuzugreifen. Dies kann helfen, wenn die Verbindung oft unerklärlich langsam ist. Telekom Kunden sind davon aktuell stärker betroffen.</string>
     <string name="pref_rotate_vote_view_title">Blussi drehen</string>
@@ -619,7 +619,7 @@
     <string name="pref_video_quality_human__adaptive">Adaptiv</string>
     <string name="pref_video_quality_human__high">Hohe Qualität</string>
     <string name="pref_video_quality_human__extrahigh">Extra hohe Qualität (nur wenige Videos)</string>
-    <string name="pref_video_quality_values_summary">Adaptiv verringert das Datenvolumen im Mobilfunk, sonst equivalent zu "Hohe Qualität"</string>
+    <string name="pref_video_quality_values_summary">Adaptiv verringert das Datenvolumen im Mobilfunk, sonst äquivalent zu "Hohe Qualität"</string>
     <string name="pref_video_quality_values_title">Video Qualität</string>
 
     <string name="user_validate_success">Dein Alter wurde verifiziert</string>

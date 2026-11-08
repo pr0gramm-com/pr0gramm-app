@@ -22,11 +22,11 @@
     <string name="error_connect_exception_https">Could not connect to host via https: %s</string>
     <string name="error_conversion">An error occurred while decoding the api response</string>
     <string name="error_exception_of_type">No message provided, type of error was %s</string>
-    <string name="error_host_not_found">A hostname could not be resolved. Please check your connectivty.</string>
+    <string name="error_host_not_found">A hostname could not be resolved. Please check your connectivity.</string>
     <string name="error_not_authorized">Looks like you are not signed in (or banned)</string>
     <string name="error_not_found">The request returned not found (404)</string>
     <string name="error_nullpointer">A programming error occurred. I am very sorry.</string>
-    <string name="error_oom">The app ran of memory. This might be your old smartphone or a bug in the app.</string>
+    <string name="error_oom">The app ran out of memory. This might be your old smartphone or a bug in the app.</string>
     <string name="error_timeout">A timeout occurred during a network request.</string>
     <string name="error_service_unavailable">Looks like pr0gramm is not available right now. Please check https://twitter.com/pr0gramm if this error persists.</string>
     <string name="hint_password">Password</string>
@@ -113,7 +113,7 @@
     <string name="prefcat_visual_title">Visual</string>
     <string name="prefcat_settings_title">Settings</string>
     <string name="prefcat_behaviour_summary">Behaviour settings like double tap to vote, notifications and other stuff.</string>
-    <string name="prefcat_visual_summary">Customize how some parts of the app should look like.</string>
+    <string name="prefcat_visual_summary">Customize how some parts of the app should look.</string>
     <string name="pref_confirm_play_on_mobile_title">Confirm on mobile</string>
     <string name="pref_confirm_play_on_mobile_summary">Confirm playback on mobile to conserve bandwidth.</string>
     <string name="prefcat_update">Updates</string>
@@ -139,7 +139,7 @@
     <string name="upload_checking_if_upload_is_allowed">Checking if upload is allowed</string>
     <string name="upload_not_allowed">Upload not allowed</string>
     <string name="upload_not_allowed_description">Limit for today is reached. You need to wait until you are allowed to do another upload (a longer benis is required alternatively!)</string>
-    <string name="user_info_uploads">Goto uploads</string>
+    <string name="user_info_uploads">Go to uploads</string>
     <string name="dialog_action_add">Add</string>
     <string name="upload_error_blacklisted">This image is blacklisted from pr0gramm.</string>
     <string name="upload_error_internal">Internal server error. This will probably resolve itself within hours.</string>
@@ -183,7 +183,7 @@
     <string name="pref_single_tap_for_fullscreen_summary">Tap on the image for fullscreen.</string>
     <string name="prefcat_post">Post view</string>
     <string name="warn_post_can_not_be_viewed">This post is not visible with your current filter settings.</string>
-    <string name="warn_show_post_anyways">Show anyways</string>
+    <string name="warn_show_post_anyways">Show anyway</string>
     <string name="error_ssl_error">Could not perform ssl handshake.</string>
     <string name="share_using">Share using</string>
     <string name="kpi_desc_uploads">UPLOADS</string>
@@ -206,7 +206,7 @@
     <string name="pref_confirm_play_on_mobile_human__video_only"><![CDATA[Video & gif only]]></string>
     <string name="share_with">Share with…</string>
     <string name="preload_info_hint">Preloading started. The app will automatically remove preloaded files older than one day when you press the preload button. You can clean preloaded files in the settings.</string>
-    <string name="preload_not_on_mobile">You are currently not on wifi - preloading might drain your data volume. Would you like to continue anyways?</string>
+    <string name="preload_not_on_mobile">You are currently not on wifi - preloading might drain your data volume. Would you like to continue anyway?</string>
     <string name="action_feed_type_random">Random</string>
     <string name="filter_format_random">Random</string>
     <string name="action_feed_type_controversial">Controversial</string>
@@ -237,7 +237,7 @@
     <string name="notification_update_available_text">A new update for the pr0gramm app to version %s is available.</string>
     <string name="hint_user_search_dialog">Enter the name of the user you want to search. If it is an active user, auto completion might help you.</string>
     <string name="error_json">Could not parse the response from the pr0gramm server.</string>
-    <string name="could_not_load_feed_json">Could not load feed. The response looks a bit like as if you are in some wifi that does not allow internet access.</string>
+    <string name="could_not_load_feed_json">Could not load feed. The response looks as if you are in some wifi that does not allow internet access.</string>
     <string name="pref_pseudo_clear_tag_suggestions_title">Clear search history</string>
     <string name="pref_pseudo_clear_tag_suggestions_summary">Clear your search history.</string>
     <string name="pref_pseudo_clear_tag_suggestions_notification">Search history cleared</string>
@@ -296,21 +296,21 @@
     <string name="action_unfollow">Unfollow</string>
     <string name="pref_override_youtube_links_summary">Show youtube links in YouTube app even if incognito browser is activated.</string>
     <string name="pref_override_youtube_links_title">YouTube App</string>
-    <string name="error_rate_limited">Oops, this operation can not be executed. You are currently ratelimited. Maybe you are voting too much too fast?</string>
+    <string name="error_rate_limited">Oops, this operation can not be executed. You are currently rate limited. Maybe you are voting too much too fast?</string>
     <string name="error_json_mapping">The api response could not be parsed: %s</string>
     <string name="error_origin_timeout_ddos">Looks like pr0gramm is currently not available, maybe DDoS?</string>
     <string name="collections_of">Collections of %s</string>
     <string name="media_exo_error">Could not play video. Error is: %s.</string>
     <string name="media_exo_error_io">A network failure occurred (%s).</string>
     <string name="report_video_summary">Size: %1$dx%2$d, format %3$s, duration: %4$f</string>
-    <string name="report_video_stream">Stream, typ: %1$s, codec: %2$s</string>
+    <string name="report_video_stream">Stream, type: %1$s, codec: %2$s</string>
     <string name="media_exo_error_topbit">This video has an invalid format and can not be played by your device.</string>
     <string name="upload_error_video_too_small">Video resolution too small (must be at least 0.09 megapixel).</string>
-    <string name="upload_error_video_too_large">Video resolution too large (must not be more than 16.7 megapixel)-</string>
+    <string name="upload_error_video_too_large">Video resolution too large (must not be more than 16.7 megapixel).</string>
     <string name="upload_error_video_too_long">Video duration is too long, must be at most 180sec.</string>
     <string name="upload_error_video_codec">Invalid codec - vp8 or h264 for video and aac, vorbis or opus for audio allowed.</string>
     <string name="upload_error_video_streams">Invalid streams - must contain exactly one video stream and at most one audio stream.</string>
-    <string name="upload_error_video_container">Invalid container/codec combination, like vp8 in an mp4 codec.</string>
+    <string name="upload_error_video_container">Invalid container/codec combination, like vp8 in an mp4 container.</string>
     <string name="upload_error_video">Reason:</string>
     <string name="dialog_dont_show_again">Don\'t show again</string>
     <string name="login_register">New account</string>
@@ -327,7 +327,7 @@
     <string name="hint_email">Email address</string>
     <string name="submit">Submit</string>
     <string name="request_password_recovery_title">Password recovery</string>
-    <string name="request_password_recovery_popup_hint">A mail containing a link to change recover the password was sent to the provided address.</string>
+    <string name="request_password_recovery_popup_hint">A mail containing a link to recover the password was sent to the provided address.</string>
     <string name="action_change">Change</string>
     <string name="password_recovery_success">Password was changed successfully. You can now try to log in using the new password.</string>
     <string name="password_recovery_error">Failed to change password.</string>
@@ -375,7 +375,7 @@
     <string name="badge_deleted_items">Requested deletion of %d of his own items</string>
     <string name="badge_deleted_comments">Requested deletion of %d of his own comments</string>
     <string name="badge_time">More than %s years on pr0gramm</string>
-    <string name="badge_premium">Supported us with more than %d month of pr0mium</string>
+    <string name="badge_premium">Supported us with more than %d months of pr0mium</string>
     <string name="badge_premium_gift">Gave pr0mium %d times to other users</string>
 
     <string name="dt_for_few_second">a few seconds</string>
@@ -383,7 +383,7 @@
     <string name="dt_for_one_minute">1 minute</string>
     <string name="dt_for_n_minutes">$d minutes</string>
     <string name="dt_for_one_hour">1 hour</string>
-    <string name="dt_for_one_hour_1_minutes">1 hour and 1 minutes</string>
+    <string name="dt_for_one_hour_1_minutes">1 hour and 1 minute</string>
     <string name="dt_for_one_hour_n_minutes">1 hour and $r minutes</string>
     <string name="dt_for_n_hours">$d hours</string>
     <string name="dt_for_one_day">1 day</string>
@@ -396,7 +396,7 @@
     <string name="dt_for_n_weeks">$d weeks</string>
     <string name="dt_for_one_month">1 month</string>
     <string name="dt_for_one_month_1_weeks">1 month and 1 week</string>
-    <string name="dt_for_one_month_n_weeks">1 month and 1 week</string>
+    <string name="dt_for_one_month_n_weeks">1 month and $r weeks</string>
     <string name="dt_for_n_month">$d months</string>
     <string name="dt_for_one_year">1 year</string>
     <string name="dt_for_one_year_1_month">1 year and 1 month</string>
@@ -522,7 +522,7 @@
     <string name="conversation_empty">No messages yet\n¯\\_(ツ)_/¯</string>
     <string name="conversation_load_error">Could not load conversation.</string>
     <string name="error_senderIsRecipient">Can not send message to yourself.</string>
-    <string name="action_profile">Goto profile</string>
+    <string name="action_profile">Go to profile</string>
     <string name="notification_hint_unread">%d unread</string>
     <string name="add_tags_hint">Add tags to your upload to describe the image or video and to make it searchable. Multiple tags must be separated by commas.</string>
     <string name="bookmark_hint_delete">Long press bookmark to delete.</string>
@@ -544,7 +544,7 @@
     <string name="hint_captcha">Captcha</string>
     <string name="hint_no_email">Username, not Email</string>
     <string name="pref_use_tag_as_title_title">Top tag as title</string>
-    <string name="pref_use_tag_as_title_summary">Use the top tag of a post as the post views title.</string>
+    <string name="pref_use_tag_as_title_summary">Use the top tag of a post as the title of the post view.</string>
     <string name="action_follow_off">Don\'t follow</string>
     <string name="action_follow_normal">Follow in \'stelz\'</string>
     <string name="action_follow_full">Notify on new post</string>
@@ -617,8 +617,8 @@
     <string name="pref_upvote_on_collect_title"><![CDATA[Collect & Upvote]]></string>
     <string name="pref_upvote_on_collect_summary">Automatically upvote collected items</string>
     <string name="hint_upvote_on_collect">Do you want to automatically upvote a post when you add it to a collection?</string>
-    <string name="pref_use_doh_summary">Use DNS over HTTPS via cloudflare</string>
-    <string name="pref_use_doh_title">Uses encrypted DNS over HTTPS using the Cloudflare server 1.1.1.1. This might help if your company or ISP tries to block access to pr0gramm via dns.</string>
+    <string name="pref_use_doh_summary">Uses encrypted DNS over HTTPS using the Cloudflare server 1.1.1.1. This might help if your company or ISP tries to block access to pr0gramm via dns.</string>
+    <string name="pref_use_doh_title">Use DNS over HTTPS via cloudflare</string>
     <string name="bookmark_inverse_title">No %s</string>
     <string name="hint_exclude_tag">Exclude this tag</string>
     <string name="hint_shrink_image">The image you\'ve selected is too large. Let the app shrink the image for you.</string>
@@ -636,13 +636,13 @@
     <string name="pref_sync_site_settings_title">Sync site settings</string>
     <string name="pref_sync_site_settings_summary">Enable to sync some settings between the website and the app.</string>
     <string name="pref_use_secondary_servers_title">Secondary Server</string>
-    <string name="pref_use_secondary_servers_summary">Uses a second set of servers to access pr0gramm. This might help if you encounter a very slow connection using the default servers - might help for Telekom Customers.</string>
+    <string name="pref_use_secondary_servers_summary">Uses a second set of servers to access pr0gramm. This might help if you encounter a very slow connection using the default servers - might help for Telekom customers.</string>
     <string name="pref_rotate_vote_view_title">Rotate blussi/minus buttons</string>
     <string name="pref_rotate_vote_view_summary">pr0mium only: This option brings the rotation of the blussi and minus buttons back.</string>
     <string name="user_validate_success">You are now age verified</string>
     <string name="user_validate_failed">Validation failed, token is invalid.</string>
     <string name="uploads_of">Uploads of %s</string>
-    <string name="collection_x_of_user">%s of %s</string>
+    <string name="collection_x_of_user">%1$s of %2$s</string>
     <string name="pref_video_quality_values_summary">Adaptive reduces the data usage on mobile networks.</string>
     <string name="pref_video_quality_values_title">Video quality</string>
     <string name="action_feed_type_junk">Junk</string>
