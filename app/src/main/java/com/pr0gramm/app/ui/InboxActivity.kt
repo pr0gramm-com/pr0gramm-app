@@ -10,12 +10,10 @@ import com.pr0gramm.app.services.InboxService
 import com.pr0gramm.app.services.ThemeHelper
 import com.pr0gramm.app.services.Track
 import com.pr0gramm.app.services.UserService
-import com.pr0gramm.app.services.config.ConfigService
 import com.pr0gramm.app.ui.base.BaseAppCompatActivity
 import com.pr0gramm.app.ui.base.bindViews
 import com.pr0gramm.app.ui.base.launchWhenCreated
 import com.pr0gramm.app.ui.fragments.ConversationsFragment
-import com.pr0gramm.app.ui.fragments.DigestsFragment
 import com.pr0gramm.app.ui.fragments.GenericInboxFragment
 import com.pr0gramm.app.ui.fragments.WrittenCommentsFragment
 import com.pr0gramm.app.util.di.instance
@@ -28,7 +26,6 @@ import com.pr0gramm.app.util.startActivity
 class InboxActivity : BaseAppCompatActivity("InboxActivity") {
     private val userService: UserService by instance()
     private val inboxService: InboxService by instance()
-    private val configService: ConfigService by instance()
 
     private val views by bindViews(ActivityInboxBinding::inflate)
 
@@ -54,7 +51,6 @@ class InboxActivity : BaseAppCompatActivity("InboxActivity") {
 
         tabsAdapter = TabsStateAdapter(this)
 
-        val config = configService.config()
         InboxType.entries.forEach { type ->
             when (type) {
                 InboxType.PRIVATE -> tabsAdapter.addTab(
@@ -91,20 +87,6 @@ class InboxActivity : BaseAppCompatActivity("InboxActivity") {
                         id = InboxType.NOTIFICATIONS
                 ) {
                     GenericInboxFragment(GenericInboxFragment.MessageTypeNotifications)
-                }
-
-                InboxType.DIGESTS -> {
-                    val show = config.showDigestsInInbox ||
-                            (userService.userIsAdmin && config.showDigestsInInboxForAdmin)
-
-                    if (show) {
-                        tabsAdapter.addTab(
-                                getString(R.string.inbox_type_digests),
-                                id = InboxType.DIGESTS
-                        ) {
-                            DigestsFragment()
-                        }
-                    }
                 }
             }
         }
@@ -143,9 +125,7 @@ class InboxActivity : BaseAppCompatActivity("InboxActivity") {
                 tabsAdapter.updateTabTitle(
                         InboxType.ALL,
 
-                        // digests are not part of the 'All' tab, so we remove them from the total
-                        // count of unread messages
-                        titleOf(R.string.inbox_type_all, counts.total - counts.digests),
+                        titleOf(R.string.inbox_type_all, counts.inbox),
                 )
 
                 tabsAdapter.updateTabTitle(InboxType.PRIVATE, titleOf(R.string.inbox_type_private, counts.messages))
@@ -157,10 +137,6 @@ class InboxActivity : BaseAppCompatActivity("InboxActivity") {
                 tabsAdapter.updateTabTitle(
                         InboxType.COMMENTS_IN,
                         titleOf(R.string.inbox_type_comments_in, counts.comments)
-                )
-                tabsAdapter.updateTabTitle(
-                        InboxType.DIGESTS,
-                        titleOf(R.string.inbox_type_digests, counts.digests)
                 )
             }
         }

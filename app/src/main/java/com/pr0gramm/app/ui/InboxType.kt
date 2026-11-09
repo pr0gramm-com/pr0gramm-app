@@ -12,7 +12,6 @@ enum class InboxType {
     COMMENTS_OUT,
     STALK,
     NOTIFICATIONS,
-    DIGESTS,
     ;
 
     companion object {
