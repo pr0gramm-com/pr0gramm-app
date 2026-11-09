@@ -13,6 +13,18 @@
       {
         "type": "Feature",
         "change": "Highlights sind jetzt ein eigener Menüpunkt unter Sammlungen statt ein Tab in den Nachrichten."
+      },
+      {
+        "type": "Feature",
+        "change": "Posts aus den Highlights öffnen sich in einer Ansicht, in der man nur durch die Posts dieses Highlights blättert."
+      },
+      {
+        "type": "Feature",
+        "change": "Der Feed läuft jetzt bis unter die Navigationsleiste, und die Vorschaubilder haben gleichmäßige Abstände ohne Rand."
+      },
+      {
+        "type": "Fix",
+        "change": "Gedrehte Videos im Vollbild sind auf Handys mit Kamera-Aussparung wieder mittig."
       }
     ]
   },
