@@ -11,6 +11,7 @@ import android.view.View
 import android.view.animation.DecelerateInterpolator
 import android.widget.ImageView
 import androidx.core.view.isVisible
+import androidx.core.view.updatePadding
 import androidx.core.view.MenuProvider
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModel
@@ -99,6 +100,7 @@ import com.pr0gramm.app.util.di.instance
 import com.pr0gramm.app.util.dp
 import com.pr0gramm.app.util.equalsIgnoreCase
 import com.pr0gramm.app.util.fragmentArgumentWithDefault
+import com.pr0gramm.app.util.onSystemBarInsets
 import com.pr0gramm.app.util.hideSoftKeyboard
 import com.pr0gramm.app.util.maybeShow
 import com.pr0gramm.app.util.trace
@@ -265,6 +267,10 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
         })
 
         activity.configureRecyclerView("Feed", views.recyclerView)
+
+        views.recyclerView.clipToPadding = false
+        views.recyclerView.onSystemBarInsets { v, insets -> v.updatePadding(bottom = insets.bottom) }
+        views.searchContainer.onSystemBarInsets { v, insets -> v.updatePadding(bottom = insets.bottom) }
 
         views.recyclerView.addOnScrollListener(onScrollListener)
 

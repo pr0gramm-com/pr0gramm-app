@@ -6,6 +6,7 @@
     tools:context=".ui.MainActivity">
 
     <FrameLayout
+        android:id="@+id/main_content"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -26,7 +27,6 @@
             android:layout_height="wrap_content"
             android:background="?colorPrimary"
             android:elevation="8dp"
-            android:fitsSystemWindows="true"
             tools:context=".ui.MainActivity"
             tools:showIn="@layout/activity_main">
 

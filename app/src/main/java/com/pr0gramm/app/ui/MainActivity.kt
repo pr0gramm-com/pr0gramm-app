@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.graphics.Color
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -27,6 +28,8 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.IntentCompat
 import androidx.core.view.GravityCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.updatePadding
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
@@ -114,7 +117,16 @@ class MainActivity : BaseAppCompatActivity("MainActivity"),
             window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         }
 
+        // draw below the navigation bar, the views keep their content out of it
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        window.navigationBarColor = Color.TRANSPARENT
+
         setContentView(views)
+
+        views.toolbarContainer.onSystemBarInsets { v, insets -> v.updatePadding(top = insets.top) }
+        views.mainContent.onSystemBarInsets { v, insets ->
+            v.updatePadding(left = insets.left, right = insets.right)
+        }
 
         // registered after the FragmentManager's callback, so it runs first.
         onBackPressedDispatcher.addCallback(this, backPressedCallback)
@@ -123,8 +135,7 @@ class MainActivity : BaseAppCompatActivity("MainActivity"),
         setSupportActionBar(views.toolbar)
 
         // and hide it away on scrolling
-        val toolbarContainer = findViewById<View?>(R.id.toolbar_container)
-        scrollHideToolbarListener = ScrollHideToolbarListener(toolbarContainer ?: views.toolbar)
+        scrollHideToolbarListener = ScrollHideToolbarListener(views.toolbarContainer)
 
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 

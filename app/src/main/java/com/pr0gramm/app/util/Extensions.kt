@@ -33,7 +33,11 @@ import androidx.annotation.LayoutRes
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.collection.LruCache
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.Insets
 import androidx.core.text.PrecomputedTextCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.doOnAttach
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
@@ -719,6 +723,20 @@ inline fun <T> Boolean.then(block: () -> T): T? = if (this) block() else null
 
 fun Drawable.withInsets(left: Int = 0, top: Int = 0, right: Int = 0, bottom: Int = 0): InsetDrawable {
     return InsetDrawable(this, left, top, right, bottom)
+}
+
+/**
+ * Calls [apply] with the system bar insets whenever they change, so a view
+ * drawn below the system bars can keep its content out of them.
+ */
+fun View.onSystemBarInsets(apply: (View, Insets) -> Unit) {
+    ViewCompat.setOnApplyWindowInsetsListener(this) { v, insets ->
+        apply(v, insets.getInsets(WindowInsetsCompat.Type.systemBars()))
+        insets
+    }
+
+    // views added after the first insets pass do not get them otherwise
+    doOnAttach { ViewCompat.requestApplyInsets(it) }
 }
 
 fun Number.formatSize() = "%1.3fkb".format(Locale.ROOT, toDouble() / 1024.0)

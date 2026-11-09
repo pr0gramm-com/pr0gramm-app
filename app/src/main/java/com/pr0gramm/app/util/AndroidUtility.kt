@@ -231,14 +231,12 @@ object AndroidUtility {
         val window = activity.window
         val controller = WindowCompat.getInsetsController(window, window.decorView)
 
+        // the activity always draws below the bars, see MainActivity
         if (fullscreen) {
-            // draw below the bars, so the content does not resize when they hide
-            WindowCompat.setDecorFitsSystemWindows(window, false)
             controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
             controller.hide(WindowInsetsCompat.Type.systemBars())
         } else {
             controller.show(WindowInsetsCompat.Type.systemBars())
-            WindowCompat.setDecorFitsSystemWindows(window, true)
         }
     }
 

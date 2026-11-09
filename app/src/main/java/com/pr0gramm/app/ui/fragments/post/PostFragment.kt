@@ -18,6 +18,8 @@ import android.view.ViewGroup.LayoutParams
 import android.widget.FrameLayout
 import androidx.core.animation.doOnEnd
 import androidx.core.view.isVisible
+import androidx.core.view.marginBottom
+import androidx.core.view.updateLayoutParams
 import androidx.core.view.updatePadding
 import androidx.core.view.MenuProvider
 import androidx.lifecycle.Lifecycle
@@ -96,6 +98,7 @@ import com.pr0gramm.app.ui.views.viewer.MediaViews
 import com.pr0gramm.app.ui.views.viewer.VolumeController
 import com.pr0gramm.app.util.AndroidUtility
 import com.pr0gramm.app.util.Linkify
+import com.pr0gramm.app.util.onSystemBarInsets
 import com.pr0gramm.app.util.arguments
 import com.pr0gramm.app.util.debugOnly
 import com.pr0gramm.app.util.di.instance
@@ -238,6 +241,9 @@ class PostFragment : BaseFragment("PostFragment"), NewTagDialogFragment.OnAddNew
 
         views.recyclerView.primaryScrollListener = ScrollHandler()
 
+        val paddingBottom = views.recyclerView.paddingBottom
+        views.recyclerView.onSystemBarInsets { v, insets -> v.updatePadding(bottom = paddingBottom + insets.bottom) }
+
         views.recyclerView.itemAnimator = null
         views.recyclerView.layoutManager = views.recyclerView.LinearLayoutManager(getActivity())
         views.recyclerView.adapter = PostAdapter()
@@ -315,6 +321,11 @@ class PostFragment : BaseFragment("PostFragment"), NewTagDialogFragment.OnAddNew
         views.fab.inflate(R.menu.menu_post_dial)
 
         views.fab.overlayLayout = requireView().find(R.id.fab_overlay)
+
+        val fabMargin = views.fab.marginBottom
+        views.fab.onSystemBarInsets { v, insets ->
+            v.updateLayoutParams<ViewGroup.MarginLayoutParams> { bottomMargin = fabMargin + insets.bottom }
+        }
 
         views.fab.setOnActionSelectedListener { actionItem ->
             when (actionItem.id) {
