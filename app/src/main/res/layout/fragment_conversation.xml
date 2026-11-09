@@ -11,41 +11,45 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
+        android:clipToPadding="false"
+        android:paddingBottom="8dp"
         tools:listitem="@layout/item_message_sent" />
 
-    <FrameLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
         android:background="#222"
-        android:elevation="8dp">
+        android:elevation="8dp"
+        android:gravity="bottom"
+        android:orientation="horizontal"
+        android:padding="8dp">
 
         <com.pr0gramm.app.ui.views.PlainEditText
             android:id="@+id/message_input"
             style="@style/Widget.AppCompat.EditText"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_marginEnd="48dp"
-            android:background="@android:color/transparent"
+            android:layout_weight="1"
+            android:background="@drawable/bg_message_input"
             android:gravity="center_vertical"
             android:hint="@string/write_message_placeholder"
             android:maxLines="6"
+            android:minHeight="40dp"
             android:paddingStart="16dp"
-            android:paddingLeft="16dp"
             android:paddingTop="8dp"
             android:paddingEnd="16dp"
-            android:paddingRight="16dp"
             android:paddingBottom="8dp" />
 
         <ImageButton
             android:id="@+id/action_send"
-            style="@style/Base.Widget.AppCompat.Button.Borderless"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_gravity="top|end"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/bg_message_send_button"
+            android:contentDescription="@string/action_send"
+            android:enabled="false"
             app:srcCompat="@drawable/ic_action_send"
-            app:tint="#888" />
-    </FrameLayout>
+            app:tint="#fff" />
+    </LinearLayout>
 
 </LinearLayout>
