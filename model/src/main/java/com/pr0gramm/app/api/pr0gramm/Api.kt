@@ -880,6 +880,9 @@ interface Api {
             val digests: Int = 0
     ) {
         val total: Int get() = comments + mentions + messages + notifications + follows + digests
+
+        // digests (highlights) are not part of the inbox
+        val inbox: Int get() = total - digests
     }
 
     @JsonClass(generateAdapter = true)

@@ -346,11 +346,15 @@ private class NavigationDelegateAdapter(
             value.customAction()
         }
 
-        if (value.action === NavigationProvider.ActionType.MESSAGES) {
-            holder.unread?.apply {
-                text = value.unreadCount.total.toString()
-                isVisible = value.unreadCount.total > 0
-            }
+        val unreadCount = when (value.action) {
+            NavigationProvider.ActionType.MESSAGES -> value.unreadCount.inbox
+            NavigationProvider.ActionType.HIGHLIGHTS -> value.unreadCount.digests
+            else -> 0
+        }
+
+        holder.unread?.apply {
+            text = unreadCount.toString()
+            isVisible = unreadCount > 0
         }
     }
 
@@ -373,6 +377,11 @@ private class NavigationDelegateAdapter(
 
             NavigationProvider.ActionType.MESSAGES -> {
                 showInboxActivity()
+                callback.onOtherNavigationItemClicked()
+            }
+
+            NavigationProvider.ActionType.HIGHLIGHTS -> {
+                activity.startActivity<DigestsActivity>()
                 callback.onOtherNavigationItemClicked()
             }
 

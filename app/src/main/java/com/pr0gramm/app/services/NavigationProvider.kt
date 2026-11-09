@@ -65,6 +65,7 @@ class NavigationProvider(
     private val iconFeedTypePromoted by drawable(R.drawable.ic_action_promoted)
     private val iconFeedTypeRandom by drawable(R.drawable.ic_action_random)
     private val iconInbox by drawable(R.drawable.ic_action_email)
+    private val iconHighlights by drawable(R.drawable.ic_action_highlights)
     private val iconUpload by drawable(R.drawable.ic_action_upload)
     private val iconAgeVerify by drawable(R.drawable.ic_action_verify)
 
@@ -97,8 +98,8 @@ class NavigationProvider(
 
                 ageVerificationItem(loginState),
 
-                currentSelection.map { selection ->
-                    categoryNavigationItems(selection, loginState.name)
+                currentSelection.combine(inboxService.unreadMessagesCount()) { selection, counts ->
+                    categoryNavigationItems(selection, loginState.name, counts)
                 },
 
                 remoteConfigItems(loginState, upper = false),
@@ -175,7 +176,11 @@ class NavigationProvider(
     /**
      * Adds the default "fixed" items to the menu
      */
-    private fun categoryNavigationItems(selection: FeedFilter?, username: String?): List<NavigationItem> {
+    private fun categoryNavigationItems(
+        selection: FeedFilter?,
+        username: String?,
+        unreadCounts: Api.InboxCounts,
+    ): List<NavigationItem> {
         fun makeItem(title: String, icon: Drawable, filter: FeedFilter, action: ActionType = ActionType.FILTER) =
             NavigationItem(
                 action = action, title = title, icon = icon, filter = filter, isSelected = filter == selection
@@ -242,6 +247,17 @@ class NavigationProvider(
                     .withFeedType(FeedType.NEW)
                     .basicWithCollection(username, "**ANY", "**ANY")
             )
+
+            val config = configService.config()
+            if (config.showDigestsInInbox || (userService.userIsAdmin && config.showDigestsInInboxForAdmin)) {
+                items += NavigationItem(
+                    action = ActionType.HIGHLIGHTS,
+                    title = getString(R.string.inbox_type_digests),
+                    icon = iconHighlights,
+                    layout = R.layout.left_drawer_nav_item_inbox,
+                    unreadCount = unreadCounts,
+                )
+            }
         }
 
         return items
@@ -485,7 +501,7 @@ class NavigationProvider(
     }
 
     enum class ActionType {
-        HINT, FILTER, BOOKMARK, MESSAGES, UPLOAD, COLLECTIONS, URI,
+        HINT, FILTER, BOOKMARK, MESSAGES, UPLOAD, COLLECTIONS, HIGHLIGHTS, URI,
         DIVIDER,
         SETTINGS, CONTACT, INVITES, FAQ, PRIVACY, IMPRINT, PREMIUM, LOGIN, LOGOUT,
         AGE_VERIFICATION,
