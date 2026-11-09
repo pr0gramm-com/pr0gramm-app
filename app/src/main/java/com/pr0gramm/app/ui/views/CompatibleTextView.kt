@@ -1,6 +1,7 @@
 package com.pr0gramm.app.ui.views
 
 import android.content.Context
+import android.graphics.Rect
 import android.os.Build
 import android.text.PrecomputedText
 import android.text.SpannedString
@@ -40,6 +41,22 @@ class CompatibleTextView @JvmOverloads constructor(
         }
 
         return super.dispatchTouchEvent(event)
+    }
+
+    /**
+     * True while focus changes. View.onFocusChanged then asks to show the whole view on
+     * screen, which scrolls a list to the start of a long comment. See StatefulRecyclerView.
+     */
+    var inFocusChange = false
+        private set
+
+    override fun onFocusChanged(focused: Boolean, direction: Int, previouslyFocusedRect: Rect?) {
+        inFocusChange = true
+        try {
+            super.onFocusChanged(focused, direction, previouslyFocusedRect)
+        } finally {
+            inFocusChange = false
+        }
     }
 
     private fun dispatchMotionEventAgain(event: MotionEvent) {

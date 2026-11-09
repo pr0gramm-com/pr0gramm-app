@@ -1,12 +1,15 @@
 package com.pr0gramm.app.ui
 
 import android.content.Context
+import android.graphics.Rect
 import android.os.Bundle
 import android.os.Parcelable
 import android.util.AttributeSet
 import android.util.SparseArray
+import android.view.View
 import androidx.core.os.BundleCompat
 import androidx.recyclerview.widget.RecyclerView
+import com.pr0gramm.app.ui.views.CompatibleTextView
 import com.pr0gramm.app.ui.views.TagsView
 import com.pr0gramm.app.util.observeChangeEx
 
@@ -107,6 +110,21 @@ class StatefulRecyclerView @JvmOverloads constructor(
             }
 
             savedHierarchyState = null
+        }
+
+        override fun onRequestChildFocus(parent: RecyclerView, state: State, child: View, focused: View?): Boolean {
+            // Tapping selectable comment text focuses it, and the default behaviour then
+            // scrolls the whole item into view, which jumps to the start of long comments.
+            return focused is CompatibleTextView || super.onRequestChildFocus(parent, state, child, focused)
+        }
+
+        override fun requestChildRectangleOnScreen(parent: RecyclerView, child: View, rect: Rect, immediate: Boolean, focusedChildVisible: Boolean): Boolean {
+            // Same jump, caused by the text view itself while it gains focus.
+            if ((child.findFocus() as? CompatibleTextView)?.inFocusChange == true) {
+                return false
+            }
+
+            return super.requestChildRectangleOnScreen(parent, child, rect, immediate, focusedChildVisible)
         }
     }
 
