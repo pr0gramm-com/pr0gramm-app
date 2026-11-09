@@ -5,6 +5,10 @@
       {
         "type": "Feature",
         "change": "Neues Design für Benutzerprofile, mit Profilbild und beschrifteten Aktionen."
+      },
+      {
+        "type": "Feature",
+        "change": "Neues Design für private Nachrichten, mit Sprechblasen, gruppierten Nachrichten und Heute/Gestern als Datum."
       }
     ]
   },
