@@ -9,6 +9,7 @@ import android.graphics.Point
 import android.graphics.drawable.Drawable
 import android.net.ConnectivityManager
 import android.os.Build
+import android.view.WindowManager
 import android.os.Looper
 import android.text.SpannableStringBuilder
 import android.text.style.BulletSpan
@@ -230,6 +231,18 @@ object AndroidUtility {
     fun applyWindowFullscreen(activity: Activity, fullscreen: Boolean) {
         val window = activity.window
         val controller = WindowCompat.getInsetsController(window, window.decorView)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            // without this the window moves below the cutout once the status bar hides,
+            // but ViewerFullscreenParameters centers the viewer on the full screen.
+            window.attributes = window.attributes.apply {
+                layoutInDisplayCutoutMode = if (fullscreen) {
+                    WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+                } else {
+                    WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT
+                }
+            }
+        }
 
         // the activity always draws below the bars, see MainActivity
         if (fullscreen) {
