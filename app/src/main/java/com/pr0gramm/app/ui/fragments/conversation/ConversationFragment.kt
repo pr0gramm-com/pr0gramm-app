@@ -45,6 +45,7 @@ import com.pr0gramm.app.util.inflateDetachedChild
 import com.pr0gramm.app.util.startActivity
 import kotlinx.coroutines.flow.collectLatest
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Locale
 
 /**
@@ -169,12 +170,28 @@ class ConversationFragment : BaseFragment("ConversationFragment", R.layout.fragm
     private suspend fun updateConversation(pg: PagingData<Api.ConversationMessage>) {
         val fmt = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
 
+        val calendar = Calendar.getInstance()
+        val today = fmt.format(calendar.time)
+        calendar.add(Calendar.DAY_OF_YEAR, -1)
+        val yesterday = fmt.format(calendar.time)
+
+        val todayText = getString(R.string.conversation_today)
+        val yesterdayText = getString(R.string.conversation_yesterday)
+
         val messages = pg.map { ConversationItem.Message(it) }
 
         val divided = messages.insertSeparators<ConversationItem.Message, ConversationItem> { prev, next ->
             val prevStr = prev?.message?.creationTime?.toString(fmt)
             val nextStr = next?.message?.creationTime?.toString(fmt)
-            if (nextStr != null && prevStr != nextStr) ConversationItem.Divider(nextStr) else null
+            if (nextStr == null || prevStr == nextStr) return@insertSeparators null
+
+            ConversationItem.Divider(
+                when (nextStr) {
+                    today -> todayText
+                    yesterday -> yesterdayText
+                    else -> nextStr
+                },
+            )
         }
 
         conversationAdapter.submitData(divided)

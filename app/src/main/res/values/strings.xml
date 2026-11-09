@@ -188,6 +188,8 @@
     <string name="user_action_message">Message</string>
     <string name="user_action_block">Block</string>
     <string name="write_message_placeholder">Message</string>
+    <string name="conversation_today">Today</string>
+    <string name="conversation_yesterday">Yesterday</string>
     <string name="write_message_title">To %s</string>
     <string name="write_message_send">SEND</string>
     <string name="write_message_cannot_receive_messages">%s cannot receive messages</string>
