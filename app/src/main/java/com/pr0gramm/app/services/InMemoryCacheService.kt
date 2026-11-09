@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicReference
 class InMemoryCacheService {
     private val tagsCache = LruCache<Long, ExpiringValue<List<Api.Tag>>>(256)
     private val userInfoCache = LruCache<String, ExpiringValue<UserInfo>>(24)
+    private val itemCache = LruCache<Long, ExpiringValue<Api.Feed.Item>>(256)
     private val repostCache = AtomicReference(LongSparseArray<Unit>())
 
     /**
@@ -30,6 +31,18 @@ class InMemoryCacheService {
     fun invalidate() {
         tagsCache.evictAll()
         userInfoCache.evictAll()
+        itemCache.evictAll()
+    }
+
+    /**
+     * Stores a loaded item for a few minutes, e.g. to open highlights without loading them again.
+     */
+    fun cacheItem(item: Api.Feed.Item) {
+        itemCache.put(item.id, ExpiringValue(item, 10, TimeUnit.MINUTES))
+    }
+
+    fun getItem(itemId: Long): Api.Feed.Item? {
+        return itemCache[itemId]?.value
     }
 
     /**
