@@ -145,6 +145,7 @@ data class Feed(
             dest.write(feed.filter)
             dest.writeInt(ContentType.combine(feed.contentType))
             dest.writeBooleanCompat(feed.isAtStart)
+            dest.writeBooleanCompat(feed.isAtEnd)
             dest.write(feed.created)
 
             // only serialize non placeholder items
@@ -174,6 +175,7 @@ data class Feed(
                     filter = read(FeedFilter),
                     contentType = ContentType.decompose(readInt()),
                     isAtStart = readBooleanCompat(),
+                    isAtEnd = readBooleanCompat(),
                     created = read(Instant),
                     items = listOf(),
                 )
