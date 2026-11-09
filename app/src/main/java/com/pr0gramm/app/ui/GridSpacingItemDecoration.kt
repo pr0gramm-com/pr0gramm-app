@@ -33,5 +33,15 @@ class GridSpacingItemDecoration(
         outRect.left = lp.spanIndex * spacing / spanCount
         outRect.right = spacing - (lp.spanIndex + lp.spanSize) * spacing / spanCount
         outRect.bottom = spacing
+
+        // the first row of a grid block also gets a gap above it
+        var rowStart = position
+        while (rowStart > 0 && lm.spanSizeLookup.getSpanIndex(rowStart, spanCount) > 0) {
+            rowStart--
+        }
+
+        if (rowStart == 0 || !isGridItem(rowStart - 1)) {
+            outRect.top = spacing
+        }
     }
 }
