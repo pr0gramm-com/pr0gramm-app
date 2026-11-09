@@ -170,6 +170,20 @@ class InboxService(private val api: Api, private val preferences: SharedPreferen
     }
 
     /**
+     * Clears the unread highlights count locally, until the next sync brings the server value.
+     */
+    fun clearUnreadDigestsCount() {
+        val c = unreadMessagesCount.value
+        unreadMessagesCount.value = Api.InboxCounts(
+            comments = c.comments,
+            mentions = c.mentions,
+            notifications = c.notifications,
+            follows = c.follows,
+            messages = c.messages,
+        )
+    }
+
+    /**
      * Sends a private message to a receiver
      */
     suspend fun send(receiverId: Long, message: String) {

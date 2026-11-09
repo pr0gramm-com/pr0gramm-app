@@ -201,7 +201,9 @@ interface Api {
     @GET("/api/inbox/digests")
     suspend fun inboxDigests(
             @Query("older")
-            older: Long?
+            older: Long?,
+            @Query("markAsRead")
+            markAsRead: Boolean? = null,
     ): DigestsInbox
 
     @GET("/api/profile/comments")
