@@ -3,33 +3,51 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:orientation="vertical"
     android:paddingLeft="16dp"
+    android:paddingTop="32dp"
     android:paddingRight="16dp"
-    android:paddingBottom="16dp"
-    android:paddingTop="24dp"
-    android:orientation="vertical">
+    android:paddingBottom="12dp">
+
+    <TextView
+        android:id="@+id/date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_date_chip"
+        android:paddingStart="12dp"
+        android:paddingTop="4dp"
+        android:paddingEnd="12dp"
+        android:paddingBottom="4dp"
+        android:textAppearance="@style/TextAppearance.AppCompat.Caption"
+        android:textColor="?colorAccent"
+        tools:text="Heute" />
 
     <TextView
         android:id="@+id/title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textAppearance="@style/TextAppearance.AppCompat.Headline"
-        tools:text="foobar" />
+        android:layout_marginTop="8dp"
+        android:fontFamily="sans-serif-medium"
+        android:textColor="?android:textColorPrimary"
+        android:textSize="20sp"
+        tools:text="Die letzten 24 Stunden im Überblick" />
 
     <TextView
         android:id="@+id/body"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="4dp"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-        tools:text="foobar" />
+        android:textColor="?android:textColorSecondary"
+        tools:text="Deine Highlights der letzten 24 Stunden · 12 Posts" />
 
     <TextView
         android:id="@+id/extra_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="4dp"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+        android:textColor="?android:textColorSecondary"
         tools:text="foobar" />
 
 </LinearLayout>

@@ -569,6 +569,10 @@
     <string name="inbox_type_all">All</string>
     <string name="inbox_type_stalk">Stalk</string>
     <string name="inbox_type_digests">Highlights</string>
+    <plurals name="digest_post_count">
+        <item quantity="one">%d post</item>
+        <item quantity="other">%d posts</item>
+    </plurals>
     <string name="inbox_type_notifications">Notifications</string>
     <string name="action_to_conversation">Open conversation</string>
     <string name="message_type_comment">Comment</string>

@@ -542,6 +542,10 @@
     <string name="inbox_type_all">Alle</string>
     <string name="inbox_type_stalk">Stelz-Abos</string>
     <string name="inbox_type_digests">Highlights</string>
+    <plurals name="digest_post_count">
+        <item quantity="one">%d Post</item>
+        <item quantity="other">%d Posts</item>
+    </plurals>
     <string name="inbox_type_notifications">Notifizierungen</string>
     <string name="action_to_conversation">Zur Unterhaltung</string>
     <string name="message_type_comment">Neuer Kommentar</string>

@@ -3,9 +3,11 @@ package com.pr0gramm.app.ui.fragments
 import android.graphics.Bitmap
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.text.format.DateUtils
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
+import androidx.core.view.updatePadding
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -35,6 +37,7 @@ import com.pr0gramm.app.ui.base.bindViews
 import com.pr0gramm.app.ui.base.launchWhenCreated
 import com.pr0gramm.app.util.di.injector
 import com.pr0gramm.app.util.di.instance
+import com.pr0gramm.app.util.dp
 import com.pr0gramm.app.util.layoutInflater
 import com.pr0gramm.app.util.observeChange
 import com.squareup.picasso.Picasso
@@ -45,6 +48,8 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
+import java.text.SimpleDateFormat
+import java.util.Locale
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.min
 
@@ -77,6 +82,8 @@ class DigestsFragment : BaseFragment("DigestsFragment", R.layout.fragment_inbox)
         layoutManager.spanSizeLookup = adapter.SpanSizeLookup(spanCount)
 
         views.messages.itemAnimator = null
+        views.messages.clipToPadding = false
+        views.messages.updatePadding(bottom = requireContext().dp(12))
         views.messages.layoutManager = layoutManager
         views.messages.adapter = adapter
 
@@ -219,12 +226,26 @@ private class DigestHeaderDelegate :
         return DigestsHeaderViewHolder(views)
     }
 
+    private val dateFormat = SimpleDateFormat(
+        android.text.format.DateFormat.getBestDateTimePattern(Locale.getDefault(), "EEEdMMM"),
+        Locale.getDefault(),
+    )
+
     override fun onBindViewHolder(holder: DigestsHeaderViewHolder, value: Api.DigestsInbox.Digest) {
+        val context = holder.itemView.context
+        val millis = value.creationTime.millis
+
+        holder.views.date.text = when {
+            DateUtils.isToday(millis) -> context.getString(R.string.conversation_today)
+            DateUtils.isToday(millis + DateUtils.DAY_IN_MILLIS) -> context.getString(R.string.conversation_yesterday)
+            else -> value.creationTime.toString(dateFormat)
+        }
+
         holder.views.title.isVisible = value.pushNotification.title.isNotBlank()
         holder.views.title.text = value.pushNotification.title
 
-        holder.views.body.isVisible = value.message.isNotBlank()
-        holder.views.body.text = value.message
+        val count = context.resources.getQuantityString(R.plurals.digest_post_count, value.items.size, value.items.size)
+        holder.views.body.text = listOf(value.message, count).filter { it.isNotBlank() }.joinToString(" · ")
 
         holder.views.extraText.isVisible = !value.notice.isNullOrBlank()
         holder.views.extraText.text = value.notice ?: ""
