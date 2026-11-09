@@ -43,6 +43,7 @@ import com.pr0gramm.app.*
 import com.pr0gramm.app.Duration.Companion.seconds
 import com.pr0gramm.app.api.pr0gramm.MessageType
 import com.pr0gramm.app.databinding.ActivityMainBinding
+import com.pr0gramm.app.feed.Feed
 import com.pr0gramm.app.feed.FeedFilter
 import com.pr0gramm.app.feed.FeedType
 import com.pr0gramm.app.model.config.Config
@@ -859,6 +860,25 @@ class MainActivity : BaseAppCompatActivity("MainActivity"),
             }
         }
 
+        val feedParcel = IntentCompat.getParcelableExtra(intent, EXTRA_FEED, Feed.FeedParcel::class.java)
+        if (feedParcel != null) {
+            val feed = feedParcel.feed
+            val idx = feed.indexById(intent.getLongExtra(EXTRA_FEED_START, 0)) ?: 0
+
+            // back from the pager closes the activity if there is nothing below it
+            singlePostDepth = if (supportFragmentManager.backStackEntryCount == 0) 1 else 0
+
+            val title = intent.getStringExtra(EXTRA_FEED_TITLE)
+            val fragment = PostPagerFragment.newInstance(feed, idx, null, title, null)
+
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.content_container, fragment)
+                .addToBackStack(null)
+                .commit()
+
+            return
+        }
+
         val notificationTime: Instant? = IntentCompat.getParcelableExtra(intent, "MainActivity.NOTIFICATION_TIME", Instant::class.java)
 
         val result = FilterParser.parse(uri, notificationTime)
@@ -907,6 +927,10 @@ class MainActivity : BaseAppCompatActivity("MainActivity"),
         // open only the post: back from it skips the feed it was opened in
         const val EXTRA_SINGLE_POST = "MainActivity.EXTRA_SINGLE_POST"
 
+        private const val EXTRA_FEED = "MainActivity.EXTRA_FEED"
+        private const val EXTRA_FEED_START = "MainActivity.EXTRA_FEED_START"
+        private const val EXTRA_FEED_TITLE = "MainActivity.EXTRA_FEED_TITLE"
+
         // we use this to propagate a fake-home event to the fragments.
         const val ID_FAKE_HOME = android.R.id.list
 
@@ -924,6 +948,17 @@ class MainActivity : BaseAppCompatActivity("MainActivity"),
 
             return Intent(Intent.ACTION_VIEW, uri, context, MainActivity::class.java)
                 .putExtra(EXTRA_SINGLE_POST, true)
+        }
+
+        /**
+         * Opens the post pager with exactly the items of the given feed.
+         */
+        fun openFeedIntent(context: Context, feed: Feed, itemId: Long, title: String?): Intent {
+            return openItemIntent(context, itemId)
+                // parcel all items, not just a window around the start item
+                .putExtra(EXTRA_FEED, Feed.FeedParcel(feed, feed.items))
+                .putExtra(EXTRA_FEED_START, itemId)
+                .putExtra(EXTRA_FEED_TITLE, title)
         }
     }
 }

@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.pr0gramm.app.R
@@ -13,9 +14,16 @@ import com.pr0gramm.app.api.pr0gramm.Api
 import com.pr0gramm.app.api.pr0gramm.Message
 import com.pr0gramm.app.api.pr0gramm.Thumbnail
 import com.pr0gramm.app.databinding.DigestsHeaderBinding
-import com.pr0gramm.app.databinding.FeedItemViewBinding
+import com.pr0gramm.app.databinding.DigestsItemBinding
 import com.pr0gramm.app.databinding.FragmentInboxBinding
+import com.pr0gramm.app.feed.ContentType
+import com.pr0gramm.app.feed.Feed
+import com.pr0gramm.app.feed.FeedFilter
+import com.pr0gramm.app.feed.FeedItem
+import com.pr0gramm.app.feed.FeedService
+import com.pr0gramm.app.feed.FeedType
 import com.pr0gramm.app.services.DigestsService
+import com.pr0gramm.app.services.InMemoryCacheService
 import com.pr0gramm.app.services.ThemeHelper
 import com.pr0gramm.app.services.UriHelper
 import com.pr0gramm.app.ui.DelegateAdapter
@@ -30,6 +38,14 @@ import com.pr0gramm.app.util.di.instance
 import com.pr0gramm.app.util.layoutInflater
 import com.pr0gramm.app.util.observeChange
 import com.squareup.picasso.Picasso
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.min
 
 /**
@@ -37,9 +53,16 @@ import kotlin.math.min
 class DigestsFragment : BaseFragment("DigestsFragment", R.layout.fragment_inbox) {
     private val views by bindViews(FragmentInboxBinding::bind)
     private val digestsService: DigestsService by instance()
+    private val feedService: FeedService by instance()
+    private val inMemoryCacheService: InMemoryCacheService by instance()
 
     private var state by observeChange(State()) { updateAdapterValues() }
-    private val adapter = DigestsAdapter { itemId -> itemClicked(itemId) }
+    private val adapter = DigestsAdapter { item, busyIndicator -> itemClicked(item, busyIndicator) }
+
+    // loads of full items, preloaded so a click can open the block right away
+    private val itemLoads = ConcurrentHashMap<Long, Deferred<Api.Feed.Item?>>()
+    private val loadPermits = Semaphore(4)
+    private var openJob: Job? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -69,14 +92,71 @@ class DigestsFragment : BaseFragment("DigestsFragment", R.layout.fragment_inbox)
             val digests = digestsService.digests()
             state = state.copy(digests = digests, loading = false)
 
+            digests.forEach { digest -> digest.items.forEach { item -> itemAsync(item.id) } }
+
             // not refreshing anymore
             views.refresh.isRefreshing = false
         }
     }
 
-    private fun itemClicked(itemId: Long) {
-        // open the post
-        startActivity(MainActivity.openItemIntent(requireContext(), itemId))
+    private fun itemClicked(item: Api.DigestsInbox.ItemHighlight, busyIndicator: View) {
+        val digest = state.digests.firstOrNull { digest -> item in digest.items } ?: return
+
+        openJob?.cancel()
+        openJob = launchWhenCreated {
+            busyIndicator.isVisible = true
+
+            val items = try {
+                digest.items.map { highlight -> itemAsync(highlight.id) }.awaitAll()
+            } finally {
+                busyIndicator.isVisible = false
+            }
+
+            val feed = Feed(
+                filter = FeedFilter().withFeedType(FeedType.NEW),
+                contentType = ContentType.AllSet,
+                items = items.filterNotNull().map { FeedItem(it) },
+                isAtStart = true,
+                isAtEnd = true,
+            )
+
+            val intent = if (item.id in feed) {
+                MainActivity.openFeedIntent(requireContext(), feed, item.id, digest.pushNotification.title.ifBlank { null })
+            } else {
+                MainActivity.openItemIntent(requireContext(), item.id)
+            }
+
+            startActivity(intent)
+        }
+    }
+
+    /**
+     * Highlights have no image info, so we load the full item. Loaded items go to the
+     * in-memory cache, failed loads are retried on the next call.
+     */
+    private fun itemAsync(itemId: Long): Deferred<Api.Feed.Item?> {
+        inMemoryCacheService.getItem(itemId)?.let { return CompletableDeferred(it) }
+        itemLoads[itemId]?.let { return it }
+
+        val deferred = lifecycleScope.async { loadPermits.withPermit { loadItem(itemId) } }
+        itemLoads[itemId] = deferred
+
+        deferred.invokeOnCompletion { itemLoads.remove(itemId, deferred) }
+
+        return deferred
+    }
+
+    private suspend fun loadItem(itemId: Long): Api.Feed.Item? {
+        val query = FeedService.FeedQuery(
+            filter = FeedFilter().withFeedType(FeedType.NEW),
+            contentTypes = ContentType.AllSet,
+            around = itemId,
+        )
+
+        // deleted posts are missing in the response
+        val item = feedService.load(query).items.firstOrNull { it.id == itemId }
+        item?.let(inMemoryCacheService::cacheItem)
+        return item
     }
 
     /**
@@ -108,7 +188,7 @@ class DigestsFragment : BaseFragment("DigestsFragment", R.layout.fragment_inbox)
     )
 }
 
-private class DigestsAdapter(itemClicked: (id: Long) -> Unit) : DelegateAdapter<Any>() {
+private class DigestsAdapter(itemClicked: ItemClicked) : DelegateAdapter<Any>() {
     init {
         delegates += DigestHeaderDelegate()
         delegates += FeedItemDelegate(itemClicked)
@@ -151,17 +231,20 @@ private class DigestHeaderDelegate :
     }
 }
 
-private class FeedItemDelegate(private val itemClicked: (id: Long) -> Unit) :
+private typealias ItemClicked = (Api.DigestsInbox.ItemHighlight, busyIndicator: View) -> Unit
+
+private class FeedItemDelegate(private val itemClicked: ItemClicked) :
     ListItemTypeAdapterDelegate<Api.DigestsInbox.ItemHighlight, Any, DigestsItemViewHolder>(Api.DigestsInbox.ItemHighlight::class) {
     override fun onCreateViewHolder(parent: ViewGroup): DigestsItemViewHolder {
-        val views = FeedItemViewBinding.inflate(parent.layoutInflater)
+        val views = DigestsItemBinding.inflate(parent.layoutInflater)
         return DigestsItemViewHolder(views)
     }
 
     override fun onBindViewHolder(holder: DigestsItemViewHolder, value: Api.DigestsInbox.ItemHighlight) {
         val imageView = holder.views.image
 
-        imageView.setOnClickListener { itemClicked(value.id) }
+        holder.views.busyIndicator.isVisible = false
+        imageView.setOnClickListener { itemClicked(value, holder.views.busyIndicator) }
 
         val thumbnail = Thumbnail(value.id, value.thumbnail)
         val imageUri = UriHelper.of(imageView.context).thumbnail(thumbnail)
@@ -176,4 +259,4 @@ private class FeedItemDelegate(private val itemClicked: (id: Long) -> Unit) :
 }
 
 private class DigestsHeaderViewHolder(val views: DigestsHeaderBinding) : RecyclerView.ViewHolder(views.root)
-private class DigestsItemViewHolder(val views: FeedItemViewBinding) : RecyclerView.ViewHolder(views.root)
+private class DigestsItemViewHolder(val views: DigestsItemBinding) : RecyclerView.ViewHolder(views.root)
