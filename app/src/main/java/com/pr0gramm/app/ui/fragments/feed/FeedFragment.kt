@@ -54,6 +54,7 @@ import com.pr0gramm.app.time
 import com.pr0gramm.app.ui.ContentTypeDrawable
 import com.pr0gramm.app.ui.ConversationActivity
 import com.pr0gramm.app.ui.DetectTapTouchListener
+import com.pr0gramm.app.ui.GridSpacingItemDecoration
 import com.pr0gramm.app.ui.FancyExifThumbnailGenerator
 import com.pr0gramm.app.ui.FeedFilterFormatter
 import com.pr0gramm.app.ui.FilterFragment
@@ -257,6 +258,11 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
         views.recyclerView.layoutManager = InternalGridLayoutManager(activity, spanCount).apply {
             spanSizeLookup = feedAdapter.SpanSizeLookup(spanCount)
         }
+
+        views.recyclerView.addItemDecoration(GridSpacingItemDecoration(spacingDp = 4) { position ->
+            val entry = feedAdapter.getItem(position)
+            entry is FeedAdapter.Entry.Item || entry is FeedAdapter.Entry.PlaceholderItem
+        })
 
         activity.configureRecyclerView("Feed", views.recyclerView)
 

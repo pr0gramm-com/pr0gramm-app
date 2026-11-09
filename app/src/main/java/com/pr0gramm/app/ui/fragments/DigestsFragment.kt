@@ -29,6 +29,7 @@ import com.pr0gramm.app.services.InMemoryCacheService
 import com.pr0gramm.app.services.ThemeHelper
 import com.pr0gramm.app.services.UriHelper
 import com.pr0gramm.app.ui.DelegateAdapter
+import com.pr0gramm.app.ui.GridSpacingItemDecoration
 import com.pr0gramm.app.ui.ListItemTypeAdapterDelegate
 import com.pr0gramm.app.ui.MainActivity
 import com.pr0gramm.app.ui.Pagination
@@ -85,6 +86,9 @@ class DigestsFragment : BaseFragment("DigestsFragment", R.layout.fragment_inbox)
         views.messages.clipToPadding = false
         views.messages.updatePadding(bottom = requireContext().dp(12))
         views.messages.layoutManager = layoutManager
+        views.messages.addItemDecoration(GridSpacingItemDecoration(spacingDp = 4) { position ->
+            adapter.getItem(position) is Api.DigestsInbox.ItemHighlight
+        })
         views.messages.adapter = adapter
 
         views.refresh.setOnRefreshListener { reloadInboxContent() }
