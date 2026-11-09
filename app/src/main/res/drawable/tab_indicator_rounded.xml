@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Material 3 tab indicator: 3dp line with rounded top corners. Tinted by tabIndicatorColor. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <size android:height="3dp" />
+    <corners
+        android:topLeftRadius="3dp"
+        android:topRightRadius="3dp" />
+    <solid android:color="@android:color/white" />
+</shape>

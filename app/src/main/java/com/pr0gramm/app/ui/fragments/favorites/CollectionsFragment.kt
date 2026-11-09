@@ -36,6 +36,8 @@ class CollectionsFragment : BaseFragment("CollectionsFragment", R.layout.fragmen
 
     override var title: TitleFragment.Title? = null
 
+    private var toolbarElevation: Float? = null
+
     override var currentFilter = FeedFilter().withFeedType(FeedType.NEW)
         private set
 
@@ -44,6 +46,12 @@ class CollectionsFragment : BaseFragment("CollectionsFragment", R.layout.fragmen
 
         fixViewTopOffset(view)
         resetToolbar()
+
+        // toolbar and tabs form one surface, only the tabs cast the shadow onto the feed
+        activity?.findViewById<View>(R.id.toolbar_container)?.let { toolbar ->
+            toolbarElevation = toolbar.elevation
+            toolbar.elevation = 0f
+        }
 
         title = TitleFragment.Title(
                 title = getString(R.string.action_collections),
@@ -82,6 +90,11 @@ class CollectionsFragment : BaseFragment("CollectionsFragment", R.layout.fragmen
 
         tabsAdapter.attach(views.tabs, views.favoritesPager)
         views.favoritesPager.offscreenPageLimit = 2
+    }
+
+    override fun onDestroyView() {
+        toolbarElevation?.let { activity?.findViewById<View>(R.id.toolbar_container)?.elevation = it }
+        super.onDestroyView()
     }
 
     private fun resetToolbar() {

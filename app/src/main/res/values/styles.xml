@@ -27,6 +27,27 @@
 
         <item name="colorControlNormal">?android:textColorPrimary</item>
         <item name="colorOnSecondary">?android:textColorPrimary</item>
+
+        <item name="tabStyle">@style/Tabs</item>
+    </style>
+
+    <!-- tabs that blend into the toolbar above them -->
+    <style name="Tabs" parent="Widget.Design.TabLayout">
+        <item name="android:background">?colorPrimary</item>
+        <item name="tabMode">scrollable</item>
+        <item name="tabIndicator">@drawable/tab_indicator_rounded</item>
+        <item name="tabIndicatorColor">@color/white</item>
+        <item name="tabIndicatorFullWidth">false</item>
+        <item name="tabTextColor">#b3ffffff</item>
+        <item name="tabSelectedTextColor">@color/white</item>
+        <item name="tabTextAppearance">@style/Tabs.TextAppearance</item>
+    </style>
+
+    <style name="Tabs.TextAppearance" parent="TextAppearance.Design.Tab">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="textAllCaps">false</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
     </style>
 
     <style name="AppTheme.Orange">
