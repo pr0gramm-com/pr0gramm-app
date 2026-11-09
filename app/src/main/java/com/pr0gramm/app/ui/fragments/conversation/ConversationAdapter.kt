@@ -1,6 +1,7 @@
 package com.pr0gramm.app.ui.fragments.conversation
 
 import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.LayerDrawable
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
@@ -129,7 +130,13 @@ fun conversationItemMessageViewHolder(forSent: Boolean): AdapterDelegate<Convers
                 floatArrayOf(top, top, large, large, large, large, small, small)
             }
 
-            (holder.bubble.background.mutate() as GradientDrawable).cornerRadii = corners
+            when (val background = holder.bubble.background.mutate()) {
+                is LayerDrawable -> repeat(background.numberOfLayers) { idx ->
+                    (background.getDrawable(idx) as GradientDrawable).cornerRadii = corners
+                }
+
+                else -> (background as GradientDrawable).cornerRadii = corners
+            }
 
             val text = buildSpannedString {
                 append(Linkify.linkify(context, message.messageText))

@@ -3,7 +3,7 @@
     android:color="?colorControlHighlight">
     <item>
         <shape android:shape="oval">
-            <solid android:color="@color/message_send_button" />
+            <solid android:color="?colorAccent" />
         </shape>
     </item>
 </ripple>

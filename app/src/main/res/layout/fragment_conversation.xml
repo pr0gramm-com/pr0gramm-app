@@ -34,7 +34,7 @@
             android:gravity="center_vertical"
             android:hint="@string/write_message_placeholder"
             android:maxLines="6"
-            android:minHeight="40dp"
+            android:minHeight="48dp"
             android:paddingStart="16dp"
             android:paddingTop="8dp"
             android:paddingEnd="16dp"
@@ -42,8 +42,8 @@
 
         <ImageButton
             android:id="@+id/action_send"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:layout_marginStart="8dp"
             android:background="@drawable/bg_message_send_button"
             android:contentDescription="@string/action_send"
