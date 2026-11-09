@@ -2,7 +2,7 @@
 <shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
     <shortcut
         android:enabled="true"
-        android:icon="@drawable/ic_action_promoted"
+        android:icon="@drawable/shortcut_top"
         android:shortcutDisabledMessage="@string/action_feed_type_promoted"
         android:shortcutId="top"
         android:shortcutLongLabel="@string/action_feed_type_promoted"
@@ -16,7 +16,7 @@
 
     <shortcut
         android:enabled="true"
-        android:icon="@drawable/ic_action_new"
+        android:icon="@drawable/shortcut_new"
         android:shortcutDisabledMessage="@string/action_feed_type_new"
         android:shortcutId="new"
         android:shortcutLongLabel="@string/action_feed_type_new"
@@ -30,7 +30,7 @@
 
     <shortcut
         android:enabled="true"
-        android:icon="@drawable/ic_action_email"
+        android:icon="@drawable/shortcut_messages"
         android:shortcutDisabledMessage="@string/action_inbox"
         android:shortcutId="messages"
         android:shortcutLongLabel="@string/action_inbox"
