@@ -9,6 +9,10 @@
       {
         "type": "Feature",
         "change": "Neues Design für private Nachrichten, mit Sprechblasen, gruppierten Nachrichten und Heute/Gestern als Datum."
+      },
+      {
+        "type": "Feature",
+        "change": "Highlights sind jetzt ein eigener Menüpunkt unter Sammlungen statt ein Tab in den Nachrichten."
       }
     ]
   },
