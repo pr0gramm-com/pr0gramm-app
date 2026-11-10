@@ -186,6 +186,9 @@
                     android:host="pr0gramm.com"
                     android:pathPrefix="/inbox"
                     android:scheme="https" />
+
+                <!-- data tags of one filter combine, so all paths above also match the new domain -->
+                <data android:host="pr0.app" />
             </intent-filter>
 
             <meta-data
