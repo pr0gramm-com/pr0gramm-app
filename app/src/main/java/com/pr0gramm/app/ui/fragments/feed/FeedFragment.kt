@@ -49,7 +49,6 @@ import com.pr0gramm.app.services.RecentSearchesServices
 import com.pr0gramm.app.services.ShareService
 import com.pr0gramm.app.services.SingleShotService
 import com.pr0gramm.app.services.ThemeHelper
-import com.pr0gramm.app.services.Track
 import com.pr0gramm.app.services.UserService
 import com.pr0gramm.app.services.preloading.PreloadService
 import com.pr0gramm.app.time
@@ -650,8 +649,6 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
     override fun onResume() {
         super.onResume()
 
-        Track.openFeed(currentFilter)
-
         // check if we should show the pin button or not.
         if (Settings.showPinButton) {
             val bookmarkable = bookmarkService.isBookmarkable(currentFilter)
@@ -1022,8 +1019,6 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
 
         // start preloading now
         PreloadService.preload(activity, feed, allowOnMobile)
-
-        Track.preloadCurrentFeed(feed.size)
 
         singleShotService.doOnce("preload_info_hint") {
             showDialog(this) {

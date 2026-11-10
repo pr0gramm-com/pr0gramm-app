@@ -7,7 +7,6 @@ import com.google.android.gms.ads.FullScreenContentCallback
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.interstitial.InterstitialAd
 import com.pr0gramm.app.Logger
-import com.pr0gramm.app.services.Track
 import com.pr0gramm.app.util.Holder
 import com.pr0gramm.app.util.di.injector
 
@@ -33,7 +32,6 @@ class InterstitialAdler(private val activity: Activity) {
         // schedule a handler in case the ad can not be shown
         val onAdNotShown = Runnable {
             logger.warn { "Watchdog timer hit, ad was not shown after calling 'show'." }
-            Track.adEvent("i_watchdog")
             block()
         }
 

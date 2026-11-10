@@ -24,9 +24,6 @@ class InboxNotificationCanceledReceiver : BroadcastReceiver() {
 
         // now mark message as read
         inboxService.markAsRead(unreadId, timestamp)
-
-        // track this action
-        Track.inboxNotificationClosed("swiped")
     }
 
     companion object {

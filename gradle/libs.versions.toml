@@ -39,7 +39,6 @@ namedregex = "1.1.0"
 materialishProgress = "1.7"
 proguardAnnotations = "1.0.2"
 subsamplingImageView = "3.10.0-1"
-dogstatsdClient = "2.0.16"
 shortcutbadger = "1.1.22"
 speeddial = "3.3.0"
 workRuntimeKtx = "2.12.0"
@@ -91,7 +90,6 @@ namedregex = { group = "com.github.tony19", name = "named-regexp", version.ref =
 materialishprogress = { group = "com.pnikosis", name = "materialish-progress", version.ref = "materialishProgress" }
 proguard-annotations = { group = "com.github.yongjhih", name = "proguard-annotations", version.ref = "proguardAnnotations" }
 subsamplingimageview = { group = "com.github.mopsalarm", name = "subsampling-scale-image-view", version.ref = "subsamplingImageView" }
-dogstadClient = { group = "com.indeed", name = "java-dogstatsd-client", version.ref = "dogstatsdClient" }
 shortcutbadger = { group = "me.leolin", name = "ShortcutBadger", version.ref = "shortcutbadger" }
 speeddial = { group = "com.leinardi.android", name = "speed-dial", version.ref = "speeddial" }
 androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "workRuntimeKtx" }

@@ -5,7 +5,6 @@ import android.net.Uri
 import androidx.core.net.toFile
 import com.pr0gramm.app.Duration.Companion.seconds
 import com.pr0gramm.app.Logger
-import com.pr0gramm.app.Stats
 import com.pr0gramm.app.util.doInBackground
 import com.pr0gramm.app.util.isLocalFile
 import com.pr0gramm.app.util.runEvery
@@ -136,11 +135,6 @@ class Cache(private val context: Application, private val httpClient: OkHttpClie
                 forgetEntryForFile(file)
             }
         }
-
-        // do some tracking of cache sizes
-        Stats().histogram("cache.maxSize", maxCacheSize)
-        Stats().histogram("cache.usedSize", usedSpace)
-        Stats().histogram("cache.usage", usedSpace.toDouble() / maxCacheSize)
     }
 
     /**

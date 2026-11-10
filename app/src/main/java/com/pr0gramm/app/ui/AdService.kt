@@ -18,7 +18,6 @@ import com.pr0gramm.app.Instant
 import com.pr0gramm.app.Logger
 import com.pr0gramm.app.Settings
 import com.pr0gramm.app.model.config.Config
-import com.pr0gramm.app.services.Track
 import com.pr0gramm.app.services.UserService
 import com.pr0gramm.app.services.config.ConfigService
 import com.pr0gramm.app.time
@@ -57,7 +56,7 @@ class AdService(
         }
 
         return channelFlow {
-            view.adListener = object : TrackingAdListener("AdListener") {
+            view.adListener = object : AdListener() {
                 override fun onAdLoaded() {
                     super.onAdLoaded()
                     this@channelFlow.trySend(AdLoadState.SUCCESS)
@@ -164,8 +163,6 @@ class AdService(
 
             logger.info { "Installer package is '$name'" }
 
-            Track.installer(name)
-
             name.isNullOrBlank() || name in listOf(
                 "com.android.packageinstaller",
                 "com.google.android.packageinstaller",
@@ -226,16 +223,6 @@ class AdService(
 
     enum class AdLoadState {
         SUCCESS, FAILURE, CLOSED
-    }
-
-    open class TrackingAdListener(private val prefix: String) : AdListener() {
-        override fun onAdImpression() {
-            Track.adEvent("${prefix}_impression")
-        }
-
-        override fun onAdOpened() {
-            Track.adEvent("${prefix}_opened")
-        }
     }
 
 }

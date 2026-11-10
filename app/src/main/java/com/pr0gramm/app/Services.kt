@@ -544,8 +544,6 @@ private class CustomDNS(appContext: Application) : Dns {
                     .filterNot { it.isMCOrgLocal }
 
                 if (addresses.isNotEmpty()) {
-                    Stats().increment("dns.okay", "resolver:$name")
-
                     logger.debug { "Resolver $name for $hostname returned $addresses" }
                     return addresses
                 }

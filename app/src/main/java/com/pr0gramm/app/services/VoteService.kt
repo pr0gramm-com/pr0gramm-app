@@ -49,7 +49,6 @@ class VoteService(
     @JvmName("voteByItemId")
     suspend fun vote(itemId: Long, vote: Vote) {
         logger.info { "Voting feed item $itemId $vote" }
-        Track.votePost(vote)
 
         doInBackground { storeVoteValueInTx(CachedVote.Type.ITEM, itemId, vote) }
         api.vote(null, itemId, vote.voteValue)
@@ -57,7 +56,6 @@ class VoteService(
 
     suspend fun vote(comment: Api.Comment, vote: Vote) {
         logger.info { "Voting comment ${comment.id} $vote" }
-        Track.voteComment(vote)
 
         doInBackground { storeVoteValueInTx(CachedVote.Type.COMMENT, comment.id, vote) }
         api.voteComment(null, comment.id, vote.voteValue)
@@ -65,7 +63,6 @@ class VoteService(
 
     suspend fun vote(tag: Api.Tag, vote: Vote) {
         logger.info { "Voting tag ${tag.id} $vote" }
-        Track.voteTag(vote)
 
         doInBackground { storeVoteValueInTx(CachedVote.Type.TAG, tag.id, vote) }
         api.voteTag(null, tag.id, vote.voteValue)

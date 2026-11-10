@@ -34,7 +34,6 @@ import com.pr0gramm.app.parcel.readValues
 import com.pr0gramm.app.parcel.writeValues
 import com.pr0gramm.app.services.InboxService
 import com.pr0gramm.app.services.ThemeHelper
-import com.pr0gramm.app.services.Track
 import com.pr0gramm.app.services.UserService
 import com.pr0gramm.app.services.UserSuggestionService
 import com.pr0gramm.app.services.VoteService
@@ -223,9 +222,6 @@ class WriteMessageActivity : BaseAppCompatActivity("WriteMessageActivity") {
                     finishAfterSending()
                 }
             }
-
-            Track.writeComment(root = parentCommentId == 0L)
-
         } else {
             launchUntilDestroy(busyIndicator = true) {
                 withViewDisabled(views.submit) {
@@ -237,7 +233,6 @@ class WriteMessageActivity : BaseAppCompatActivity("WriteMessageActivity") {
                 }
             }
 
-            Track.writeMessage()
         }
     }
 

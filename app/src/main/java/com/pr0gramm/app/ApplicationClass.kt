@@ -12,13 +12,11 @@ import com.google.firebase.FirebaseApp
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.firebase.crashlytics.internal.common.CrashlyticsCore
 import com.pr0gramm.app.services.ThemeHelper
-import com.pr0gramm.app.services.Track
 import com.pr0gramm.app.sync.SyncStatsWorker
 import com.pr0gramm.app.sync.SyncWorker
 import com.pr0gramm.app.ui.ActivityErrorHandler
 import com.pr0gramm.app.ui.dialogs.ErrorDialogFragment.Companion.GlobalErrorDialogHandler
 import com.pr0gramm.app.util.AndroidUtility
-import com.pr0gramm.app.util.AndroidUtility.buildVersionCode
 import com.pr0gramm.app.util.ExceptionHandler
 import com.pr0gramm.app.util.debugOnly
 import com.pr0gramm.app.util.di.InjectorAware
@@ -72,10 +70,7 @@ open class ApplicationClass : Application(), InjectorAware {
             }
         }
 
-        Stats.init(buildVersionCode())
-
         Settings.initialize(this)
-        Track.initialize(this)
 
         logger.time("Initializing WorkManager") {
             WorkManager.initialize(this, Configuration.Builder()
@@ -111,8 +106,6 @@ open class ApplicationClass : Application(), InjectorAware {
         }
 
         logger.info { "App booted in $bootupWatch" }
-
-        Stats().histogram("app.boot.time", bootupWatch.elapsed().inMillis)
     }
 
     private fun initializeFirebase() {

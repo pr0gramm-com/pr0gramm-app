@@ -79,9 +79,6 @@ class UserService(
 
         logger.debug { "LoginState is now: $state" }
 
-        // update the current 'auth' state for tracking
-        Track.updateUserState(Track.AuthState(state.authorized, state.premium))
-
         this.loginStateSubject.value = state
     }
 

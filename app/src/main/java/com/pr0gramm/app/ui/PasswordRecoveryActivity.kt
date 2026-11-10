@@ -6,7 +6,6 @@ import android.widget.EditText
 import com.google.code.regexp.Pattern
 import com.pr0gramm.app.R
 import com.pr0gramm.app.services.ThemeHelper
-import com.pr0gramm.app.services.Track
 import com.pr0gramm.app.services.UserService
 import com.pr0gramm.app.ui.base.BaseAppCompatActivity
 import com.pr0gramm.app.ui.base.launchUntilDestroy
@@ -64,8 +63,6 @@ class PasswordRecoveryActivity : BaseAppCompatActivity("PasswordRecoveryActivity
     }
 
     private fun requestCompleted(success: Boolean) {
-        Track.passwordChanged()
-
         showDialog(this) {
             content(if (success) R.string.password_recovery_success else R.string.password_recovery_error)
             positive(R.string.okay) { finish() }

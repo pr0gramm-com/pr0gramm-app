@@ -370,7 +370,6 @@ class MainActivity : BaseAppCompatActivity("MainActivity"),
                     configureNewStyle()
 
                     setAction("pr0mium") {
-                        Track.registerLinkClicked()
                         val uri = Uri.parse("https://$Pr0Domain/pr0mium/iap?iap=true")
                         BrowserHelper.openCustomTab(this@MainActivity, uri)
                     }
@@ -388,7 +387,6 @@ class MainActivity : BaseAppCompatActivity("MainActivity"),
             configureNewStyle()
 
             setAction("pr0mium") {
-                Track.registerLinkClicked()
                 val uri = Uri.parse("https://$Pr0Domain/pr0mium/iap?iap=true")
                 BrowserHelper.openCustomTab(this@MainActivity, uri)
             }
@@ -683,8 +681,6 @@ class MainActivity : BaseAppCompatActivity("MainActivity"),
 
     override fun onLogoutClicked() {
         views.drawerLayout.closeDrawers()
-
-        Track.logout()
 
         launchUntilDestroy(busyIndicator = true) {
             userService.logout()

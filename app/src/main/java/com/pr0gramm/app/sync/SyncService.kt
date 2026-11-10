@@ -8,7 +8,6 @@ import com.pr0gramm.app.util.unless
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.system.measureTimeMillis
 
 class SyncService(private val userService: UserService,
                   private val notificationService: NotificationService,
@@ -41,8 +40,6 @@ class SyncService(private val userService: UserService,
     }
 
     suspend fun dailySync() {
-        Stats().incrementCounter("jobs.sync-stats")
-
         catchAll {
             UpdateChecker().queryAll().let { response ->
                 if (response is UpdateChecker.Response.UpdateAvailable) {
@@ -53,31 +50,27 @@ class SyncService(private val userService: UserService,
     }
 
     suspend fun sync() {
-        Stats().time("jobs.sync.time", measureTimeMillis {
-            Stats().incrementCounter("jobs.sync")
+        if (!userService.isAuthorized) {
+            logger.info { "Will not sync now - user is not signed in." }
+            return
+        }
 
-            if (!userService.isAuthorized) {
-                logger.info { "Will not sync now - user is not signed in." }
-                return
+        logger.info { "Performing a sync operation now" }
+
+        logger.time("Sync operation") {
+            catchAll {
+                syncCachedUserInfo()
             }
 
-            logger.info { "Performing a sync operation now" }
-
-            logger.time("Sync operation") {
-                catchAll {
-                    syncCachedUserInfo()
-                }
-
-                catchAll {
-                    syncUserState()
-                }
-
-                catchAll {
-                    // cheap: the server answers 304 if nothing changed.
-                    performSyncSeenService()
-                }
+            catchAll {
+                syncUserState()
             }
-        })
+
+            catchAll {
+                // cheap: the server answers 304 if nothing changed.
+                performSyncSeenService()
+            }
+        }
     }
 
     private suspend fun syncCachedUserInfo() {
@@ -156,7 +149,6 @@ class SyncService(private val userService: UserService,
             seenUploadRejected = true
 
         } catch (err: Exception) {
-            Stats().incrementCounter("seen.sync.error")
             throw err
 
         } finally {

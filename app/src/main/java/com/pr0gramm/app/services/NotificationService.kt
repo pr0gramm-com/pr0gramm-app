@@ -217,7 +217,6 @@ class NotificationService(
             inboxNotificationCache.add(NotificationId(notifyConfig.type.channel, notifyConfig.notificationId))
         }
 
-        Track.inboxNotificationShown()
     }
 
     fun showSendSuccessfulNotification(receiver: String, isMessage: Boolean, notificationId: Int) {
@@ -460,7 +459,6 @@ class NotificationHelperService(val context: Context) {
         val intent = Intent(context, InboxActivity::class.java)
         intent.data = Uri.parse("inbox://${inboxType}/${conversationName}")
         intent.putExtra(InboxActivity.EXTRA_INBOX_TYPE, inboxType.ordinal)
-        intent.putExtra(InboxActivity.EXTRA_FROM_NOTIFICATION, true)
 
         if (conversationName != null) {
             intent.putExtra(InboxActivity.EXTRA_CONVERSATION_NAME, conversationName)

@@ -22,7 +22,6 @@ import com.pr0gramm.app.feed.FeedItem
 import com.pr0gramm.app.io.Cache
 import com.pr0gramm.app.parcel.getExtraParcelableOrThrow
 import com.pr0gramm.app.services.ThemeHelper
-import com.pr0gramm.app.services.Track
 import com.pr0gramm.app.services.UriHelper
 import com.pr0gramm.app.ui.base.BaseAppCompatActivity
 import com.pr0gramm.app.util.decoders.Decoders
@@ -55,8 +54,6 @@ class ZoomViewActivity : BaseAppCompatActivity("ZoomViewActivity") {
 
         // normal content view
         setContentView(R.layout.activity_zoom_view)
-
-        Track.openZoomView(item.id)
 
         imageView.setMaxTileSize(2048)
         imageView.setDebug(BuildConfig.DEBUG)

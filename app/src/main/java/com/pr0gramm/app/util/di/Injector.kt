@@ -4,7 +4,6 @@ import android.content.Context
 import android.view.View
 import com.pr0gramm.app.ApplicationClass
 import com.pr0gramm.app.Logger
-import com.pr0gramm.app.services.Track.injector
 import com.pr0gramm.app.time
 import com.pr0gramm.app.ui.base.AsyncScope
 import kotlinx.coroutines.CompletableDeferred
@@ -184,7 +183,7 @@ class Injector(private val providers: Map<Injector.Key, Provider<*>>) {
             // initialize everything once in debug mode
             providers.keys.forEach { key ->
                 logger.debug { "Now getting instance for key $key" }
-                injector.instance(key)
+                instance<Any>(key)
             }
         }
     }

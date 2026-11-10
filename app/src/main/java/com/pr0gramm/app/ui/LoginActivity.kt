@@ -26,7 +26,6 @@ import com.pr0gramm.app.api.pr0gramm.Api
 import com.pr0gramm.app.decodeBase64
 import com.pr0gramm.app.services.ThemeHelper
 import com.pr0gramm.app.services.ThemeHelper.primaryColorDark
-import com.pr0gramm.app.services.Track
 import com.pr0gramm.app.services.UserService
 import com.pr0gramm.app.sync.SyncWorker
 import com.pr0gramm.app.ui.base.BaseAppCompatActivity
@@ -213,8 +212,6 @@ class LoginActivity : BaseAppCompatActivity("LoginActivity") {
         // store last username
         prefs.edit().putString(PREF_USERNAME, username).apply()
 
-        Track.loginStarted()
-
         launchUntilDestroy(busyIndicator = true) {
             withViewDisabled(usernameView, passwordView, submitView) {
                 val result = userService.login(username, password, token, captchaAnswer)
@@ -229,7 +226,6 @@ class LoginActivity : BaseAppCompatActivity("LoginActivity") {
         when (response) {
             is UserService.LoginResult.Success -> {
                 SyncWorker.scheduleNextSync(this, sourceTag = "Login")
-                Track.loginSuccessful()
 
                 // signal success
                 setResult(Activity.RESULT_OK)
@@ -237,8 +233,6 @@ class LoginActivity : BaseAppCompatActivity("LoginActivity") {
             }
 
             is UserService.LoginResult.Banned -> {
-                Track.loginFailed("ban")
-
                 val date = response.ban.endTime?.let { date ->
                     DurationFormat.timeToPointInTime(this, date, short = false)
                 }
@@ -256,8 +250,6 @@ class LoginActivity : BaseAppCompatActivity("LoginActivity") {
             }
 
             is UserService.LoginResult.FailureLogin -> {
-                Track.loginFailed("generic")
-
                 val msg = getString(R.string.login_not_successful_login)
                 showErrorString(supportFragmentManager, msg)
 
@@ -265,8 +257,6 @@ class LoginActivity : BaseAppCompatActivity("LoginActivity") {
             }
 
             is UserService.LoginResult.FailureCaptcha -> {
-                Track.loginFailed("captcha")
-
                 val msg = getString(R.string.login_not_successful_captcha)
                 showErrorString(supportFragmentManager, msg)
 
@@ -274,8 +264,6 @@ class LoginActivity : BaseAppCompatActivity("LoginActivity") {
             }
 
             else -> {
-                Track.loginFailed("error")
-
                 val msg = getString(R.string.login_not_successful_error)
                 showErrorString(supportFragmentManager, msg)
 
@@ -285,8 +273,6 @@ class LoginActivity : BaseAppCompatActivity("LoginActivity") {
     }
 
     private fun onRegisterClicked() {
-        Track.registerLinkClicked()
-
         val uri = Uri.parse("https://$Pr0Domain/pr0mium/iap?iap=true")
         BrowserHelper.openCustomTab(this, uri)
     }

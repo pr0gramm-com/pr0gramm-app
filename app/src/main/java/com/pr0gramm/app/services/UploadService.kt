@@ -146,9 +146,6 @@ class UploadService(
             // upload the actual file
             val response = api.upload(body)
             send(State.Uploaded(response.key))
-
-            // track the uploaded file
-            Track.upload(size = file.length())
         }
 
         return states.buffer(16).flowOn(Dispatchers.IO)

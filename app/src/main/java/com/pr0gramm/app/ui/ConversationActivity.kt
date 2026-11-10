@@ -8,7 +8,6 @@ import androidx.fragment.app.commit
 import com.pr0gramm.app.R
 import com.pr0gramm.app.databinding.ActivityConversationBinding
 import com.pr0gramm.app.services.ThemeHelper
-import com.pr0gramm.app.services.Track
 import com.pr0gramm.app.ui.base.BaseAppCompatActivity
 import com.pr0gramm.app.ui.base.bindViews
 import com.pr0gramm.app.ui.fragments.conversation.ConversationFragment
@@ -36,11 +35,6 @@ class ConversationActivity : BaseAppCompatActivity("ConversationActivity") {
         // restore previously selected tab
         if (savedInstanceState == null) {
             handleNewIntent(intent)
-        }
-
-        // track if we've clicked the notification!
-        if (intent.getBooleanExtra(EXTRA_FROM_NOTIFICATION, false)) {
-            Track.inboxNotificationClosed("clicked")
         }
 
         // inboxService.markAsRead(intent.getLongExtra(EXTRA_MESSAGE_TIMESTAMP, 0))
@@ -71,7 +65,6 @@ class ConversationActivity : BaseAppCompatActivity("ConversationActivity") {
     }
 
     companion object {
-        const val EXTRA_FROM_NOTIFICATION = "ConversationActivity.fromNotification"
         const val EXTRA_CONVERSATION_NAME = "ConversationActivity.name"
 
         fun start(context: Context, name: String, skipInbox: Boolean = false) {

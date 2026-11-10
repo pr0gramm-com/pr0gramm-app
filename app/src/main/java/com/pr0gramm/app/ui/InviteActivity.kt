@@ -12,7 +12,6 @@ import com.pr0gramm.app.databinding.ActivityInviteBinding
 import com.pr0gramm.app.databinding.RowInviteBinding
 import com.pr0gramm.app.services.InviteService
 import com.pr0gramm.app.services.ThemeHelper
-import com.pr0gramm.app.services.Track
 import com.pr0gramm.app.services.UriHelper
 import com.pr0gramm.app.ui.base.BaseAppCompatActivity
 import com.pr0gramm.app.ui.base.bindViews
@@ -113,8 +112,6 @@ class InviteActivity : BaseAppCompatActivity("InviteActivity") {
     }
 
     private fun onInviteSent() {
-        Track.inviteSent()
-
         Snackbar.make(views.mail, R.string.invite_hint_success, Snackbar.LENGTH_SHORT)
                 .configureNewStyle()
                 .setAction(R.string.okay, {})
