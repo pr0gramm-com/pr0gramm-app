@@ -53,6 +53,11 @@ class MarginDividerItemDecoration(context: Context, marginLeftDp: Int = 0, margi
 
         for (i in 0 until parent.childCount - 1) {
             val child = parent.getChildAt(i)
+
+            // date chips separate on their own, no lines around them
+            if (child.tag == NO_DIVIDER || parent.getChildAt(i + 1).tag == NO_DIVIDER) {
+                continue
+            }
             parent.getDecoratedBoundsWithMargins(child, bounds)
 
             val bottom = bounds.bottom + Math.round(child.translationY)
@@ -60,5 +65,12 @@ class MarginDividerItemDecoration(context: Context, marginLeftDp: Int = 0, margi
             divider.setBounds(left, top, right, bottom)
             divider.draw(canvas)
         }
+    }
+
+    companion object {
+        /**
+         * Views with this tag get no divider above or below.
+         */
+        const val NO_DIVIDER = "no-divider"
     }
 }
