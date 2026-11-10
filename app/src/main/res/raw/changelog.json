@@ -3,6 +3,18 @@
     "version": 208,
     "changes": [
       {
+        "type": "Neu",
+        "change": "pr0mium-Statistiken mit deinen besten Posts, Kommentaren und Tags."
+      },
+      {
+        "type": "Neu",
+        "change": "Der Verlauf deines Benis wird für pr0mium-Nutzer vom pr0gramm übernommen."
+      },
+      {
+        "type": "Neu",
+        "change": "Profilbilder in der Übersicht deiner Unterhaltungen."
+      },
+      {
         "type": "Feature",
         "change": "Neues Design für Benutzerprofile, mit Profilbild und beschrifteten Aktionen."
       },
@@ -31,33 +43,16 @@
         "change": "Best of fängt jetzt schon bei 1000+ an statt bei 2000+."
       },
       {
-        "type": "Fix",
-        "change": "Gedrehte Videos im Vollbild sind auf Handys mit Kamera-Aussparung wieder mittig."
-      }
-    ]
-  },
-  {
-    "version": 207,
-    "changes": [
-      {
-        "type": "Neu",
-        "change": "pr0mium-Statistiken mit deinen besten Posts, Kommentaren und Tags."
-      },
-      {
-        "type": "Neu",
-        "change": "Der Verlauf deines Benis wird für pr0mium-Nutzer vom pr0gramm übernommen."
-      },
-      {
-        "type": "Neu",
-        "change": "Profilbilder in der Übersicht deiner Unterhaltungen."
-      },
-      {
         "type": "Feature",
         "change": "'Gesehen' wird jetzt schneller und sparsamer mit der Webseite synchronisiert."
       },
       {
         "type": "Feature",
         "change": "Die Einstellungen sind übersichtlicher nach Themen sortiert."
+      },
+      {
+        "type": "Fix",
+        "change": "Gedrehte Videos im Vollbild sind auf Handys mit Kamera-Aussparung wieder mittig."
       },
       {
         "type": "Fix",
