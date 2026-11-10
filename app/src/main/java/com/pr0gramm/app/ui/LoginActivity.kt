@@ -1,5 +1,6 @@
 package com.pr0gramm.app.ui
 
+import com.pr0gramm.app.Pr0Domain
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
@@ -286,7 +287,7 @@ class LoginActivity : BaseAppCompatActivity("LoginActivity") {
     private fun onRegisterClicked() {
         Track.registerLinkClicked()
 
-        val uri = Uri.parse("https://pr0gramm.com/pr0mium/iap?iap=true")
+        val uri = Uri.parse("https://$Pr0Domain/pr0mium/iap?iap=true")
         BrowserHelper.openCustomTab(this, uri)
     }
 

@@ -1,5 +1,6 @@
 package com.pr0gramm.app.ui
 
+import com.pr0gramm.app.Pr0Domain
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -370,7 +371,7 @@ class MainActivity : BaseAppCompatActivity("MainActivity"),
 
                     setAction("pr0mium") {
                         Track.registerLinkClicked()
-                        val uri = Uri.parse("https://pr0gramm.com/pr0mium/iap?iap=true")
+                        val uri = Uri.parse("https://$Pr0Domain/pr0mium/iap?iap=true")
                         BrowserHelper.openCustomTab(this@MainActivity, uri)
                     }
 
@@ -388,7 +389,7 @@ class MainActivity : BaseAppCompatActivity("MainActivity"),
 
             setAction("pr0mium") {
                 Track.registerLinkClicked()
-                val uri = Uri.parse("https://pr0gramm.com/pr0mium/iap?iap=true")
+                val uri = Uri.parse("https://$Pr0Domain/pr0mium/iap?iap=true")
                 BrowserHelper.openCustomTab(this@MainActivity, uri)
             }
 

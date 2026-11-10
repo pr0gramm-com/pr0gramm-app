@@ -1,5 +1,6 @@
 package com.pr0gramm.app.ui.fragments.conversation
 
+import com.pr0gramm.app.Pr0Domain
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -236,7 +237,7 @@ class ConversationFragment : BaseFragment("ConversationFragment", R.layout.fragm
     private fun openUserProfile() {
         requireContext().startActivity<MainActivity> { intent ->
             intent.action = Intent.ACTION_VIEW
-            intent.data = Uri.parse("https://pr0gramm.com/user/$conversationName")
+            intent.data = Uri.parse("https://$Pr0Domain/user/$conversationName")
         }
     }
 

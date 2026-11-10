@@ -1,5 +1,6 @@
 package com.pr0gramm.app.ui.views
 
+import com.pr0gramm.app.isPr0Host
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
@@ -256,7 +257,7 @@ class UserInfoView(context: Context) : FrameLayout(context) {
                 val uri = appLink.link?.let { Uri.parse(it) }
                 if (uri != null) {
                     appLinkView.setOnClickListener {
-                        val handover = "pr0gramm.com" in uri.host ?: ""
+                        val handover = isPr0Host(uri.host)
                         BrowserHelper.openCustomTab(context, uri, handover)
                     }
                 }

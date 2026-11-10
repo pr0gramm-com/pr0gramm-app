@@ -1,5 +1,6 @@
 package com.pr0gramm.app.ui.fragments
 
+import com.pr0gramm.app.Pr0Domain
 import android.content.Context
 import android.net.Uri
 import android.view.View
@@ -57,7 +58,7 @@ class AdViewHolder private constructor(val adView: AdManagerAdView, itemView: Vi
                 }
 
                 setOnClickListener {
-                    BrowserHelper.openCustomTab(context, Uri.parse("https://pr0gramm.com/pr0mium"))
+                    BrowserHelper.openCustomTab(context, Uri.parse("https://$Pr0Domain/pr0mium"))
                 }
             }
 

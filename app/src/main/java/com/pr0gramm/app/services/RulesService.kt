@@ -1,5 +1,6 @@
 package com.pr0gramm.app.services
 
+import com.pr0gramm.app.Pr0Domain
 import android.widget.TextView
 import com.pr0gramm.app.R
 import com.pr0gramm.app.util.AndroidUtility
@@ -20,7 +21,7 @@ class RulesService(private val okHttpClient: OkHttpClient) {
         // now try to fetch the updated text
         ignoreAllExceptions {
             val text = runInterruptible(Dispatchers.IO) {
-                val url = "https://pr0gramm.com/media/templates/rules.html"
+                val url = "https://$Pr0Domain/media/templates/rules.html"
                 val request = Request.Builder().url(url).build()
                 val response = okHttpClient.newCall(request).execute()
                 if (response.isSuccessful) response.body.string() else null

@@ -3,6 +3,7 @@ package com.pr0gramm.app.services
 import android.content.Context
 import android.net.Uri
 import androidx.core.net.toUri
+import com.pr0gramm.app.Pr0Domain
 import com.pr0gramm.app.Settings
 import com.pr0gramm.app.api.pr0gramm.Thumbnail
 import com.pr0gramm.app.feed.FeedItem
@@ -95,7 +96,7 @@ class UriHelper private constructor(private val context: Context) {
             return Uri.parse("https:$image")
         }
 
-        val builder = Uri.parse("https://pr0gramm.com/media/badges/").buildUpon()
+        val builder = Uri.parse("https://$Pr0Domain/media/badges/").buildUpon()
         return if (image.startsWith("/")) {
             builder.path(image).build()
         } else {
@@ -106,7 +107,7 @@ class UriHelper private constructor(private val context: Context) {
     private fun start(): Uri.Builder {
         return Uri.Builder()
             .scheme("https")
-            .authority("pr0gramm.com")
+            .authority(Pr0Domain)
     }
 
     object NoPreload {
@@ -163,7 +164,7 @@ class UriHelper private constructor(private val context: Context) {
         private fun start(subdomain: String): Uri.Builder {
             return Uri.Builder()
                 .scheme("https")
-                .authority("$subdomain.pr0gramm.com")
+                .authority("$subdomain.$Pr0Domain")
         }
     }
 

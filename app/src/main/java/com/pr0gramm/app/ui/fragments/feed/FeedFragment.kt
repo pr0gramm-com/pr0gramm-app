@@ -1,5 +1,6 @@
 package com.pr0gramm.app.ui.fragments.feed
 
+import com.pr0gramm.app.Pr0Domain
 import androidx.core.os.BundleCompat
 import android.content.Context
 import android.net.Uri
@@ -959,7 +960,7 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
     }
 
     private fun openUserInAdmin() {
-        val uri = "https://pr0gramm.com/admin/?view=users&action=show&id=${userStateModel.userInfo?.info?.user?.id}"
+        val uri = "https://$Pr0Domain/admin/?view=users&action=show&id=${userStateModel.userInfo?.info?.user?.id}"
         BrowserHelper.openCustomTab(requireContext(), Uri.parse(uri), handover = true)
     }
 
@@ -992,7 +993,7 @@ class FeedFragment : BaseFragment("FeedFragment", R.layout.fragment_feed), Filte
             content(R.string.user_is_not_verified)
 
             positive(R.string.action_verify) {
-                val uri = Uri.parse("https://pr0gramm.com/verify")
+                val uri = Uri.parse("https://$Pr0Domain/verify")
                 BrowserHelper.openCustomTab(requireContext(), uri, handover = true)
             }
 

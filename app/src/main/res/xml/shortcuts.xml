@@ -37,7 +37,7 @@
         android:shortcutShortLabel="@string/action_inbox">
         <intent
             android:action="android.intent.action.VIEW"
-            android:data="https://pr0gramm.com/inbox/messages"
+            android:data="https://pr0.app/inbox/messages"
             android:targetClass="com.pr0gramm.app.ui.MainActivity"
             android:targetPackage="com.pr0gramm.app"/>
     </shortcut>

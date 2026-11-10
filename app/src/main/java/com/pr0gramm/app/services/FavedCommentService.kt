@@ -60,7 +60,7 @@ class FavedCommentService(private val api: Api, private val db: FavedCommentsQue
     }
 
     companion object {
-        private val regex = "^.*pr0gramm.com/".toRegex()
+        private val regex = "^.*(pr0gramm\\.com|pr0\\.app)/".toRegex()
 
         fun commentToMessage(comment: Api.FavedUserComment): Message {
             val thumbnail = comment.thumb.replaceFirst(regex, "/")

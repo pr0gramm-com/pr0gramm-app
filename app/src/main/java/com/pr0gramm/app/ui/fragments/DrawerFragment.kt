@@ -1,5 +1,6 @@
 package com.pr0gramm.app.ui.fragments
 
+import com.pr0gramm.app.Pr0Domain
 import android.graphics.PorterDuffColorFilter
 import android.annotation.SuppressLint
 import android.content.Context
@@ -408,7 +409,7 @@ private class NavigationDelegateAdapter(
                 Track.faqClicked()
                 BrowserHelper.openCustomTab(
                     activity,
-                    Uri.parse("https://pr0gramm.com/faq:all?iap=true"),
+                    Uri.parse("https://$Pr0Domain/faq:all?iap=true"),
                     handover = false
                 )
             }
@@ -417,7 +418,7 @@ private class NavigationDelegateAdapter(
                 Track.privacyClicked()
                 BrowserHelper.openCustomTab(
                     activity,
-                    Uri.parse("https://pr0gramm.com/datasafety?iap=true"),
+                    Uri.parse("https://$Pr0Domain/datasafety?iap=true"),
                     handover = false
                 )
             }
@@ -426,19 +427,19 @@ private class NavigationDelegateAdapter(
                 Track.imprintClicked()
                 BrowserHelper.openCustomTab(
                     activity,
-                    Uri.parse("https://pr0gramm.com/imprint?iap=true"),
+                    Uri.parse("https://$Pr0Domain/imprint?iap=true"),
                     handover = false
                 )
             }
 
             NavigationProvider.ActionType.PREMIUM -> {
                 Track.registerLinkClicked()
-                val uri = Uri.parse("https://pr0gramm.com/pr0mium/iap?iap=true")
+                val uri = Uri.parse("https://$Pr0Domain/pr0mium/iap?iap=true")
                 BrowserHelper.openCustomTab(activity, uri)
             }
 
             NavigationProvider.ActionType.AGE_VERIFICATION -> {
-                val uri = Uri.parse("https://pr0gramm.com/verify")
+                val uri = Uri.parse("https://$Pr0Domain/verify")
                 BrowserHelper.openCustomTab(activity, uri, handover = true)
             }
 

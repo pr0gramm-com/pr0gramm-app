@@ -1,5 +1,7 @@
 package com.pr0gramm.app.util
 
+import com.pr0gramm.app.isPr0Host
+import com.pr0gramm.app.Pr0Domain
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -155,7 +157,7 @@ object BrowserHelper {
         val activity = AndroidUtility.activityFromContext(context)
 
         // we only want to do handover for pr0gramm urls
-        val externalUri = uri.host?.lowercase() != "pr0gramm.com"
+        val externalUri = !isPr0Host(uri.host)
 
         // the user needs to be signed in for handover to make sense
         val userService = context.injector.instance<UserService>()
@@ -174,7 +176,7 @@ object BrowserHelper {
                     api.handoverToken(null)
                 }
 
-                Uri.parse("https://pr0gramm.com/api/user/handoverlogin").buildUpon()
+                Uri.parse("https://$Pr0Domain/api/user/handoverlogin").buildUpon()
                         .appendQueryParameter("path", (uri.path ?: "/") + "?" + (uri.query ?: ""))
                         .appendQueryParameter("token", response.token)
                         .build()

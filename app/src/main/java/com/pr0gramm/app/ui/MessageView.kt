@@ -1,5 +1,6 @@
 package com.pr0gramm.app.ui
 
+import com.pr0gramm.app.Pr0Domain
 import android.content.Context
 import android.util.AttributeSet
 import android.view.View
@@ -87,7 +88,7 @@ class MessageView @JvmOverloads constructor(context: Context, attrs: AttributeSe
             val contentTypes = Settings.contentType
             val blurImage = ContentType.firstOf(message.flags) !in contentTypes
 
-            val url = "https://thumb.pr0gramm.com/$thumbnail"
+            val url = "https://thumb.$Pr0Domain/$thumbnail"
             picasso?.load(url)?.let { req ->
                 if (blurImage) {
                     req.transform(BlurTransformation(12))

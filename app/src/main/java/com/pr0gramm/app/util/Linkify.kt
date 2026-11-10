@@ -1,5 +1,6 @@
 package com.pr0gramm.app.util
 
+import com.pr0gramm.app.isPr0Host
 import android.media.AudioAttributes
 import android.content.Context
 import android.content.Intent
@@ -29,7 +30,7 @@ object Linkify {
 
     private val RE_USERNAME = Pattern.compile("""(?<=^|\s)@[A-Za-z0-9]+""")
     private val RE_GENERIC_LINK =
-        Pattern.compile("""(?:https?://)?(?:www\.)?pr0gramm\.com(/(?:new|top|user)/[^\p{javaWhitespace}]*[a-z0-9])""")
+        Pattern.compile("""(?:https?://)?(?:www\.)?(?:pr0gramm\.com|pr0\.app)(/(?:new|top|user)/[^\p{javaWhitespace}]*[a-z0-9])""")
     private val RE_GENERIC_SHORT_LINK =
         Pattern.compile("""(?<!reddit.com)/((?:new|top|user)/[^\p{javaWhitespace}]*[a-z0-9'"])""")
     private val RE_WEB_LINK = Pattern.compile("""\bhttps?://(?:[^<>\s]+\([^<>\s]+[^<>!,.:\s]|[^(<>\s]+[^<>)!,.:\s])""")
@@ -85,7 +86,7 @@ object Linkify {
 
             val uri = Uri.parse(url)
 
-            val replacement: URLSpan? = if (uri.host == "pr0gramm.com") {
+            val replacement: URLSpan? = if (isPr0Host(uri.host)) {
                 // try to parse the span as a pr0gramm link with a item/comment reference
                 val parsed = FilterParser.parse(uri)
                 val ref = parsed?.start?.takeIf { it.itemId > 0 }

@@ -131,6 +131,8 @@ fun appInjector(app: Application) = Module.build {
 
             .addNetworkInterceptor(
                 DoNotCacheInterceptor(
+                    "vid.$Pr0Domain", "img.$Pr0Domain", "full.$Pr0Domain",
+                    "videos.$Pr0Domain", "images.$Pr0Domain", "fullsize.$Pr0Domain",
                     "vid.pr0gramm.com", "img.pr0gramm.com", "full.pr0gramm.com",
                     "videos.pr0gramm.com", "images.pr0gramm.com", "fullsize.pr0gramm.com",
                 )
@@ -157,7 +159,7 @@ fun appInjector(app: Application) = Module.build {
     }
 
     bind<Api>() with singleton {
-        ApiProvider("https://pr0gramm.com/", instance(), instance()).api
+        ApiProvider("https://$Pr0Domain/", instance(), instance()).api
     }
 
     val seenService = SeenService(app)
@@ -353,7 +355,7 @@ private class UpdateServerTimeInterceptor : Interceptor {
         // we need the time of the network request
         val requestTime = System.currentTimeMillis() - requestStartTime
 
-        if (response.isSuccessful && request.url.host == "pr0gramm.com") {
+        if (response.isSuccessful && isPr0Host(request.url.host)) {
             response.header("Date")?.let { dateValue ->
                 val serverTime = try {
                     format.parse(dateValue)
@@ -380,7 +382,7 @@ object MockUrlInterceptor : Interceptor {
         val request = chain.request()
         val mockUrl = debugConfig.mockApiUrl?.toHttpUrl()
 
-        if (mockUrl != null && request.url.host == "pr0gramm.com") {
+        if (mockUrl != null && isPr0Host(request.url.host)) {
             logger.info { "Call mock for ${request.url}" }
 
             val url = request.url.newBuilder()
@@ -407,7 +409,7 @@ object DebugInterceptor : Interceptor {
 
         if (debugConfig.delayApiRequests) {
             logger.debug { "Delaying request to ${request.url}" }
-            if ("pr0gramm.com" in request.url.toString()) {
+            if (isPr0Host(request.url.host) || isPr0MediaHost(request.url.host)) {
                 TimeUnit.MILLISECONDS.sleep(750)
             } else {
                 TimeUnit.MILLISECONDS.sleep(500)

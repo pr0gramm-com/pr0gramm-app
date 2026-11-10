@@ -2,6 +2,7 @@ package com.pr0gramm.app.api.pr0gramm
 
 import com.pr0gramm.app.Instant
 import com.pr0gramm.app.Logger
+import com.pr0gramm.app.isPr0MediaHost
 import com.pr0gramm.app.model.user.LoginCookie
 import okhttp3.Interceptor
 import okhttp3.Response
@@ -29,7 +30,7 @@ class AgeVerificationInterceptor(
         val request = chain.request()
 
         // only media hosts, never the api itself
-        if (!request.url.host.endsWith(".pr0gramm.com") || !cookieJar.hasCookie()) {
+        if (!isPr0MediaHost(request.url.host) || !cookieJar.hasCookie()) {
             return chain.proceed(request)
         }
 

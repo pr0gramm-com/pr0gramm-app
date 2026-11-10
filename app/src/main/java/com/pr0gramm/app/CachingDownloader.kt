@@ -48,7 +48,7 @@ class CachingDownloader(private val cache: Cache, private val httpClient: OkHttp
     }
 
     private fun shouldUseMemoryCache(url: HttpUrl): Boolean {
-        return url.host == "thumb.pr0gramm.com" || url.toString().endsWith("thumb.jpg")
+        return url.host == "thumb.$Pr0Domain" || url.host == "thumb.pr0gramm.com" || url.toString().endsWith("thumb.jpg")
     }
 
     private fun useCache(request: Request, cache: Cache): Response {

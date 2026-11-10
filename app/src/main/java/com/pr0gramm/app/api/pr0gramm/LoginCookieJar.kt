@@ -5,7 +5,9 @@ import android.content.SharedPreferences
 import androidx.core.content.edit
 import com.pr0gramm.app.Logger
 import com.pr0gramm.app.MoshiInstance
+import com.pr0gramm.app.Pr0Domain
 import com.pr0gramm.app.debugConfig
+import com.pr0gramm.app.isPr0Host
 import com.pr0gramm.app.model.user.LoginCookie
 import com.pr0gramm.app.services.config.ConfigService
 import com.pr0gramm.app.util.LazyStateFlow
@@ -86,8 +88,7 @@ class LoginCookieJar(context: Context, private val preferences: SharedPreference
     }
 
     private fun isNoApiRequest(uri: HttpUrl): Boolean {
-        val isApiRequest = uri.host.equals("pr0gramm.com", ignoreCase = true)
-                || uri.host == debugConfig.mockApiHost
+        val isApiRequest = isPr0Host(uri.host) || uri.host == debugConfig.mockApiHost
 
         return !isApiRequest
     }
@@ -177,6 +178,6 @@ class LoginCookieJar(context: Context, private val preferences: SharedPreference
 }
 
 @Suppress("NOTHING_TO_INLINE")
-private inline fun newCookie(name: String, value: String, domain: String = "pr0gramm.com"): okhttp3.Cookie {
+private inline fun newCookie(name: String, value: String, domain: String = Pr0Domain): okhttp3.Cookie {
     return okhttp3.Cookie.Builder().name(name).value(value).domain(domain).build()
 }

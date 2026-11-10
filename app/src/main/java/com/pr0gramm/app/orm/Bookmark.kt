@@ -1,5 +1,6 @@
 package com.pr0gramm.app.orm
 
+import com.pr0gramm.app.Pr0Domain
 import android.net.Uri
 import com.pr0gramm.app.feed.FeedFilter
 import com.pr0gramm.app.feed.FeedType
@@ -41,7 +42,7 @@ fun Bookmark.migrate(): Bookmark {
 
     val filter = asFeedFilter()
 
-    val uri = Uri.parse("https://pr0gramm.com/").buildUpon()
+    val uri = Uri.parse("https://$Pr0Domain/").buildUpon()
 
     when {
         filter.username != null ->
@@ -65,7 +66,7 @@ val Bookmark.link: String
     get() = migrate()._link!!
 
 val Bookmark.uri: Uri
-    get() = Uri.parse("https://pr0gramm.com").buildUpon().encodedPath(link).build()
+    get() = Uri.parse("https://$Pr0Domain").buildUpon().encodedPath(link).build()
 
 fun bookmarkOf(title: String, filter: FeedFilter): Bookmark {
     return Bookmark(title, filter.tags, filter.username, filter.feedType.name)

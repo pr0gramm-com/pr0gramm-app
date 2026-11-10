@@ -1,5 +1,6 @@
 package com.pr0gramm.app.ui.views
 
+import com.pr0gramm.app.Pr0Domain
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -135,7 +136,7 @@ class SearchOptionsView @JvmOverloads constructor(context: Context, attrs: Attri
     }
 
     private fun showAdvancedHelpPage() {
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://pr0gramm.com/new/2782197"))
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://$Pr0Domain/new/2782197"))
         context.startActivity(intent)
     }
 

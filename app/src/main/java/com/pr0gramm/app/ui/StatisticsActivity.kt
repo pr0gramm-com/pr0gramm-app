@@ -1,5 +1,6 @@
 package com.pr0gramm.app.ui
 
+import com.pr0gramm.app.Pr0Domain
 import android.annotation.SuppressLint
 import android.graphics.Color
 import android.os.Bundle
@@ -226,7 +227,7 @@ class StatisticsActivity : BaseAppCompatActivity("StatisticsActivity") {
             val cell = row.inflateDetachedChild<View>(R.layout.stats_post_cell)
 
             val image = cell.find<ImageView>(R.id.stats_post_image)
-            picasso.load("https://thumb.pr0gramm.com/${item.thumb}").apply {
+            picasso.load("https://thumb.$Pr0Domain/${item.thumb}").apply {
                 if (ContentType.firstOf(item.flags) !in contentTypes) {
                     transform(BlurTransformation(12))
                 }
