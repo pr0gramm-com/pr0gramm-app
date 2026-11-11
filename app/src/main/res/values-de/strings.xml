@@ -320,6 +320,7 @@
     <string name="search_media_all">Alle</string>
     <string name="search_media_images">Bilder</string>
     <string name="search_media_videos">Videos</string>
+    <string name="search_hide_filters">Filter ausblenden</string>
     <string name="search_more_filters">Weitere Filter</string>
     <string name="preload_ongoing">Vorladen…</string>
     <string name="preload_failed">Vorladen fehlgeschlagen</string>

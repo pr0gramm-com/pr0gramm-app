@@ -54,7 +54,7 @@
         <TextView
             android:id="@+id/minimum_score_label"
             style="@style/SearchLabel"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="16dp"
             android:text="@string/search_score_0" />
 
         <SeekBar
@@ -69,48 +69,10 @@
             android:thumbTint="?colorAccent" />
 
         <LinearLayout
-            android:id="@+id/filters_toggle"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:background="?selectableItemBackground"
-            android:gravity="center_vertical"
-            android:paddingStart="16dp"
-            android:paddingEnd="12dp">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/search_more_filters"
-                android:textAppearance="@style/TextAppearance.AppCompat.Body2" />
-
-            <Button
-                android:id="@+id/search_reset"
-                style="@style/SearchButton"
-                android:text="@string/search_reset"
-                android:visibility="gone" />
-
-            <ImageButton
-                android:id="@+id/search_advanced"
-                style="@style/Widget.AppCompat.Button.Borderless"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:contentDescription="@string/search_advanced"
-                android:visibility="gone"
-                app:srcCompat="@drawable/ic_white_action_help" />
-
-            <ImageView
-                android:id="@+id/filters_toggle_arrow"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:rotation="180"
-                app:srcCompat="@drawable/ic_arrow_up" />
-        </LinearLayout>
-
-        <LinearLayout
             android:id="@+id/filters"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
             android:baselineAligned="false"
             android:visibility="gone">
 
@@ -122,7 +84,7 @@
 
                 <TextView
                     style="@style/SearchLabel"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="16dp"
                     android:text="@string/search_media" />
 
                 <LinearLayout
@@ -147,6 +109,13 @@
                     android:layout_marginTop="8dp"
                     android:layout_marginRight="16dp"
                     android:orientation="horizontal" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
 
                 <TextView
                     style="@style/SearchLabel"
@@ -161,17 +130,10 @@
                     android:layout_marginTop="8dp"
                     android:layout_marginRight="16dp"
                     android:orientation="horizontal" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical">
 
                 <TextView
                     style="@style/SearchLabel"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="16dp"
                     android:text="@string/search_without_custom_tags" />
 
                 <com.pr0gramm.app.ui.views.PlainEditText
@@ -183,6 +145,63 @@
                     android:layout_marginRight="16dp"
                     android:hint="@string/search_custom_excludes_hint" />
             </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/filters_toggle"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:background="?selectableItemBackground"
+            android:gravity="center_vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp">
+
+            <TextView
+                android:id="@+id/filters_toggle_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/search_more_filters"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body2" />
+
+            <ImageView
+                android:id="@+id/filters_toggle_arrow"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginStart="4dp"
+                android:rotation="180"
+                app:srcCompat="@drawable/ic_arrow_up" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <Button
+                android:id="@+id/search_reset"
+                style="@style/SearchButton"
+                android:text="@string/search_reset"
+                android:visibility="gone" />
+
+            <ImageButton
+                android:id="@+id/search_advanced"
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:contentDescription="@string/search_advanced"
+                android:visibility="gone"
+                app:srcCompat="@drawable/ic_white_action_help" />
+
+            <Button
+                android:id="@+id/search_submit"
+                style="@style/SearchButton"
+                android:layout_height="36dp"
+                android:layout_marginStart="4dp"
+                android:background="@drawable/bg_search_button"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:text="@string/action_search_simple"
+                android:textColor="@color/white"
+                android:visibility="gone" />
         </LinearLayout>
     </LinearLayout>
 

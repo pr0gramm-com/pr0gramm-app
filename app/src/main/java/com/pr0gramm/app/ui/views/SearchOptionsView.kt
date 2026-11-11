@@ -6,6 +6,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.os.Parcelable
+import android.transition.TransitionManager
 import android.util.AttributeSet
 import android.view.View
 import android.view.ViewGroup
@@ -72,8 +73,13 @@ class SearchOptionsView @JvmOverloads constructor(context: Context, attrs: Attri
         }
 
         views.searchButton.setOnClickListener { handleSearchButtonClicked() }
+        views.searchSubmit.setOnClickListener { handleSearchButtonClicked() }
         views.searchReset.setOnClickListener { reset() }
-        views.filtersToggle.setOnClickListener { setFiltersExpanded(!views.filters.isVisible) }
+        views.filtersToggle.setOnClickListener {
+            // slides the toggle row down to the end of the filters and fades them in
+            TransitionManager.beginDelayedTransition(this)
+            setFiltersExpanded(!views.filters.isVisible)
+        }
         views.searchCancel.setOnClickListener { cancel() }
         views.searchAdvanced.setOnClickListener { showAdvancedHelpPage() }
 
@@ -142,7 +148,8 @@ class SearchOptionsView @JvmOverloads constructor(context: Context, attrs: Attri
     override fun onSaveInstanceState(): Parcelable {
         return Bundle().apply {
             putParcelable("viewState", super.onSaveInstanceState())
-            putBundle("customState", currentState())
+            // only kept across rotation, a new search starts collapsed
+            putBundle("customState", currentState()?.apply { putBoolean("filtersExpanded", views.filters.isVisible) })
         }
     }
 
@@ -196,7 +203,7 @@ class SearchOptionsView @JvmOverloads constructor(context: Context, attrs: Attri
         updateTagsCheckboxes()
 
         // never hide active filters
-        if (excludedTags.isNotEmpty() || requiredTags.isNotEmpty() || !views.customExcludes.text.isNullOrBlank()) {
+        if (state.getBoolean("filtersExpanded") || excludedTags.isNotEmpty() || requiredTags.isNotEmpty() || !views.customExcludes.text.isNullOrBlank()) {
             setFiltersExpanded(true)
         }
     }
@@ -205,7 +212,12 @@ class SearchOptionsView @JvmOverloads constructor(context: Context, attrs: Attri
         views.filters.isVisible = expanded
         views.searchReset.isVisible = expanded
         views.searchAdvanced.isVisible = expanded
+        views.searchSubmit.isVisible = expanded
         views.filtersToggleArrow.rotation = if (expanded) 0f else 180f
+
+        // the label steps back once the filters are open
+        views.filtersToggleLabel.setText(if (expanded) R.string.search_hide_filters else R.string.search_more_filters)
+        views.filtersToggleLabel.alpha = if (expanded) 0.7f else 1f
     }
 
     private fun handleSearchButtonClicked() {

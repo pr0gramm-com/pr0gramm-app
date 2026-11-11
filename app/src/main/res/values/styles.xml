@@ -245,37 +245,37 @@
     <style name="AppTheme.Orange.NoActionBar.WhiteAccent">
         <item name="colorControlNormal">@color/white</item>
         <item name="colorControlActivated">@color/white</item>
-        <item name="colorControlHighlight">@color/white</item>
+        <item name="colorControlHighlight">#33ffffff</item>
     </style>
 
     <style name="AppTheme.Green.NoActionBar.WhiteAccent">
         <item name="colorControlNormal">@color/white</item>
         <item name="colorControlActivated">@color/white</item>
-        <item name="colorControlHighlight">@color/white</item>
+        <item name="colorControlHighlight">#33ffffff</item>
     </style>
 
     <style name="AppTheme.Olive.NoActionBar.WhiteAccent">
         <item name="colorControlNormal">@color/white</item>
         <item name="colorControlActivated">@color/white</item>
-        <item name="colorControlHighlight">@color/white</item>
+        <item name="colorControlHighlight">#33ffffff</item>
     </style>
 
     <style name="AppTheme.Pink.NoActionBar.WhiteAccent">
         <item name="colorControlNormal">@color/white</item>
         <item name="colorControlActivated">@color/white</item>
-        <item name="colorControlHighlight">@color/white</item>
+        <item name="colorControlHighlight">#33ffffff</item>
     </style>
 
     <style name="AppTheme.Blue.NoActionBar.WhiteAccent">
         <item name="colorControlNormal">@color/white</item>
         <item name="colorControlActivated">@color/white</item>
-        <item name="colorControlHighlight">@color/white</item>
+        <item name="colorControlHighlight">#33ffffff</item>
     </style>
 
     <style name="AppTheme.Black.NoActionBar.WhiteAccent">
         <item name="colorControlNormal">@color/white</item>
         <item name="colorControlActivated">@color/white</item>
-        <item name="colorControlHighlight">@color/white</item>
+        <item name="colorControlHighlight">#33ffffff</item>
     </style>
 
     <style name="AppTheme.Orange.NoActionBar.TranslucentStatus">

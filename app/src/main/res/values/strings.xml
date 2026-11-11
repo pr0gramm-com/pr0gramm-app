@@ -343,6 +343,7 @@
     <string name="search_media_all">All</string>
     <string name="search_media_images">Images</string>
     <string name="search_media_videos">Videos</string>
+    <string name="search_hide_filters">Hide filters</string>
     <string name="search_more_filters">More filters</string>
     <string name="search_advanced">Help</string>
     <string name="search_reset">Reset</string>
