@@ -632,9 +632,6 @@
     <string name="pref_pseudo_language_title">Sprache</string>
     <string name="pref_pseudo_language_summary">Ändere die Sprache der App unabhängig deiner Systemsprache</string>
     <string name="language_picker_title">Sprache wählen</string>
-    <string name="language_picker_subtitle">Bitte wähle eine der verfügbaren Sprachen.</string>
-    <string name="language_picker_dismiss">Abbrechen</string>
-    <string name="language_picker_confirm">Bestätigen</string>
     <string name="prefcat_feed_summary">Start-Feed, Gesehen-Markierung und Kategorien im Menü.</string>
     <string name="prefcat_post_summary">Tap-Aktionen, Tags, Kommentare und Menüeinträge.</string>
     <string name="prefcat_post__controls">Bedienung</string>

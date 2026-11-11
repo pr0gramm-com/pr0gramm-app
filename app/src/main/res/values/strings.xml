@@ -652,9 +652,6 @@
     <string name="pref_pseudo_language_title">Language</string>
     <string name="pref_pseudo_language_summary">Change the app language independent of your system language</string>
     <string name="language_picker_title">Choose language</string>
-    <string name="language_picker_subtitle">Please choose one of the available languages.</string>
-    <string name="language_picker_dismiss">Dismiss</string>
-    <string name="language_picker_confirm">Confirm</string>
     <string name="prefcat_feed_summary">Start feed, seen markers and categories in the drawer.</string>
     <string name="prefcat_post_summary">Tap actions, tags, comments and menu items.</string>
     <string name="prefcat_post__controls">Controls</string>
