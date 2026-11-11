@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteFullException
 import android.graphics.Point
 import android.graphics.drawable.Drawable
 import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.os.Build
 import android.view.WindowManager
 import android.os.Looper
@@ -162,6 +163,12 @@ object AndroidUtility {
 
         val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         return cm.isActiveNetworkMetered
+    }
+
+    fun isOffline(context: Context): Boolean {
+        val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val capabilities = cm.getNetworkCapabilities(cm.activeNetwork)
+        return capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) != true
     }
 
     /**

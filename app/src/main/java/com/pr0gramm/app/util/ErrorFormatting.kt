@@ -40,6 +40,12 @@ object ErrorFormatting {
          */
         fun getMessage(context: Context, thr: Throwable): String {
             Logger("ErrorFormatting").warn("Formatting error:", thr)
+
+            // without a network the low level socket error does not tell the user anything
+            if (thr.hasCauseOfType<IOException>() && AndroidUtility.isOffline(context)) {
+                return context.getString(R.string.error_offline)
+            }
+
             return message(thr, context)
         }
 

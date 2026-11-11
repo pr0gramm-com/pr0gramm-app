@@ -22,6 +22,7 @@
     <string name="error_conversion">Die Antwort des pr0gramms konnte nicht verarbeitet werden. Möglicherweise blockiert dein aktuelles WLAN das pr0gramm.</string>
     <string name="error_exception_of_type">Es ist ein Fehler vom Typ %s aufgetreten</string>
     <string name="error_host_not_found">Bitte überprüfe deine Internetverbindung.</string>
+    <string name="error_offline">Du bist offline. Bitte überprüfe deine Internetverbindung.</string>
     <string name="error_not_authorized">Schaut so aus, als wärst du nicht angemeldet oder gesperrt.</string>
     <string name="error_not_found">Die angefragte Ressource konnte nicht gefunden werden (Fehler 404).</string>
     <string name="error_nullpointer">Hoppla, da ist etwas schiefgelaufen. Bitte versuche es noch einmal.</string>

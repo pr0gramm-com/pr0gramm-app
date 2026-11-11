@@ -23,6 +23,7 @@
     <string name="error_conversion">An error occurred while decoding the api response</string>
     <string name="error_exception_of_type">No message provided, type of error was %s</string>
     <string name="error_host_not_found">A hostname could not be resolved. Please check your connectivity.</string>
+    <string name="error_offline">You are offline. Please check your internet connection.</string>
     <string name="error_not_authorized">Looks like you are not signed in (or banned)</string>
     <string name="error_not_found">The request returned not found (404)</string>
     <string name="error_nullpointer">A programming error occurred. I am very sorry.</string>
