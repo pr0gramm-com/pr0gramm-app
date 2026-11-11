@@ -205,15 +205,6 @@
                 android:value=".ui.MainActivity" />
         </activity>
         <activity
-            android:name=".ui.DigestsActivity"
-            android:label="@string/inbox_type_digests"
-            android:parentActivityName=".ui.MainActivity"
-            android:theme="@style/AppTheme.Orange.NoActionBar">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".ui.MainActivity" />
-        </activity>
-        <activity
             android:name=".ui.ConversationActivity"
             android:label="@string/inbox_activity_title"
             android:parentActivityName=".ui.InboxActivity"

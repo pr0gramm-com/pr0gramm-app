@@ -167,6 +167,8 @@ class DrawerFragment : BaseFragment("DrawerFragment", R.layout.left_drawer) {
          */
         fun onNavigateToCollections(username: String)
 
+        fun onNavigateToHighlights()
+
         fun hintBookmarksEditableWithPremium()
     }
 
@@ -383,10 +385,8 @@ private class NavigationDelegateAdapter(
                 callback.onOtherNavigationItemClicked()
             }
 
-            NavigationProvider.ActionType.HIGHLIGHTS -> {
-                activity.startActivity<DigestsActivity>()
-                callback.onOtherNavigationItemClicked()
-            }
+            NavigationProvider.ActionType.HIGHLIGHTS ->
+                callback.onNavigateToHighlights()
 
             NavigationProvider.ActionType.COLLECTIONS -> {
                 val username = item.filter?.username ?: return debugCrash()
