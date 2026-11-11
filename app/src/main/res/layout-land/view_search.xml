@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:app="http://schemas.android.com/apk/res-auto"
-              xmlns:tools="http://schemas.android.com/tools"
-              android:layout_width="match_parent"
-              android:layout_height="wrap_content"
-              android:clickable="true"
-              android:orientation="vertical">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingBottom="8dp">
 
     <LinearLayout
         android:id="@+id/search_term_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="?colorPrimary"
+        android:clickable="true"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:theme="?searchTheme">
@@ -21,153 +21,169 @@
             style="@style/Widget.AppCompat.Button.Borderless"
             android:layout_width="?actionBarSize"
             android:layout_height="?actionBarSize"
-            app:srcCompat="@drawable/ic_white_action_back"/>
+            app:srcCompat="@drawable/ic_white_action_back" />
 
         <com.pr0gramm.app.ui.views.PlainTextAutoCompleteTextView
             android:id="@+id/search_term"
-            style="@style/Widget.AppCompat.EditText"
+            style="@style/SearchField"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:hint="@string/action_search_simple"
-            android:imeOptions="actionSearch"
-            android:inputType="text"
-            android:lines="1"
-            android:minHeight="?actionBarSize" />
+            android:hint="@string/action_search_simple" />
 
         <ImageButton
-            android:id="@+id/reset_button"
+            android:id="@+id/search_button"
             style="@style/Widget.AppCompat.Button.Borderless"
             android:layout_width="?actionBarSize"
             android:layout_height="?actionBarSize"
-            app:srcCompat="@drawable/ic_white_action_clear"/>
+            android:contentDescription="@string/action_search_simple"
+            app:srcCompat="@drawable/ic_white_action_search" />
 
     </LinearLayout>
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="4dp"
-        android:background="?dropshadowPrimaryDark"/>
 
     <LinearLayout
         android:id="@+id/extended_search_fields"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?colorPrimaryDark"
-        android:baselineAligned="false"
-        android:gravity="top">
+        android:background="@drawable/bg_search_panel"
+        android:clickable="true"
+        android:elevation="4dp"
+        android:orientation="vertical"
+        android:paddingBottom="8dp"
+        android:theme="?searchTheme">
+
+        <TextView
+            android:id="@+id/minimum_score_label"
+            style="@style/SearchLabel"
+            android:layout_marginTop="12dp"
+            android:text="@string/search_score_0" />
+
+        <SeekBar
+            android:id="@+id/minimum_score_slider"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginRight="16dp"
+            android:layout_marginBottom="4dp"
+            android:progressTint="?colorAccent"
+            android:thumbTint="?colorAccent" />
 
         <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:theme="?searchTheme">
+            android:id="@+id/filters_toggle"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:background="?selectableItemBackground"
+            android:gravity="center_vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="12dp">
 
             <TextView
-                android:id="@+id/minimum_score_label"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="16dp"
-                android:layout_marginRight="16dp"
-                android:layout_marginTop="12dp"
-                android:text="@string/search_score_0"
-                android:textAppearance="@style/TextAppearance.AppCompat.Small"/>
+                android:layout_weight="1"
+                android:text="@string/search_more_filters"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body2" />
 
-            <SeekBar
-                android:id="@+id/minimum_score_slider"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="4dp"
-                android:layout_marginLeft="16dp"
-                android:layout_marginRight="16dp"
-                android:layout_marginTop="12dp"
-                android:textAppearance="@style/TextAppearance.AppCompat.Body1"/>
+            <Button
+                android:id="@+id/search_reset"
+                style="@style/SearchButton"
+                android:text="@string/search_reset"
+                android:visibility="gone" />
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="16dp"
-                android:layout_marginRight="16dp"
-                android:layout_marginTop="16dp"
-                android:text="@string/search_without_custom_tags"
-                android:textAppearance="@style/TextAppearance.AppCompat.Small"/>
+            <ImageButton
+                android:id="@+id/search_advanced"
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:contentDescription="@string/search_advanced"
+                android:visibility="gone"
+                app:srcCompat="@drawable/ic_white_action_help" />
 
-            <com.pr0gramm.app.ui.views.PlainEditText
-                android:id="@+id/custom_excludes"
-                style="@style/Widget.AppCompat.EditText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="16dp"
-                android:layout_marginRight="16dp"
-                android:hint="süßvieh kadse"
-                android:imeOptions="actionSearch"
-                android:inputType="text"
-                android:lines="1"
-                tools:ignore="HardcodedText"/>
-
+            <ImageView
+                android:id="@+id/filters_toggle_arrow"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:rotation="180"
+                app:srcCompat="@drawable/ic_arrow_up" />
         </LinearLayout>
 
         <LinearLayout
-            android:layout_width="0dp"
+            android:id="@+id/filters"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="16dp"
-                android:layout_marginRight="16dp"
-                android:layout_marginTop="12dp"
-                android:text="@string/search_without_tags"
-                android:textAppearance="@style/TextAppearance.AppCompat.Small"/>
+            android:baselineAligned="false"
+            android:visibility="gone">
 
             <LinearLayout
-                android:id="@+id/without_checks"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="16dp"
-                android:layout_marginRight="16dp"
-                android:layout_marginTop="4dp"
-                android:orientation="vertical"
-                android:textAppearance="@style/TextAppearance.AppCompat.Body1"/>
+                android:layout_weight="1"
+                android:orientation="vertical">
 
+                <TextView
+                    style="@style/SearchLabel"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/search_media" />
+
+                <LinearLayout
+                    android:id="@+id/media_checks"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="16dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginRight="16dp"
+                    android:orientation="horizontal" />
+
+                <TextView
+                    style="@style/SearchLabel"
+                    android:layout_marginTop="16dp"
+                    android:text="@string/search_only" />
+
+                <LinearLayout
+                    android:id="@+id/only_checks"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="16dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginRight="16dp"
+                    android:orientation="horizontal" />
+
+                <TextView
+                    style="@style/SearchLabel"
+                    android:layout_marginTop="16dp"
+                    android:text="@string/search_show_tags" />
+
+                <LinearLayout
+                    android:id="@+id/without_checks"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="16dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginRight="16dp"
+                    android:orientation="horizontal" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    style="@style/SearchLabel"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/search_without_custom_tags" />
+
+                <com.pr0gramm.app.ui.views.PlainEditText
+                    android:id="@+id/custom_excludes"
+                    style="@style/SearchField"
+                    android:layout_width="match_parent"
+                    android:layout_marginLeft="16dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginRight="16dp"
+                    android:hint="@string/search_custom_excludes_hint" />
+            </LinearLayout>
         </LinearLayout>
-
     </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="right"
-        android:background="?colorPrimaryDark"
-        android:gravity="right">
-
-        <Button
-            android:id="@+id/search_advanced"
-            style="@style/Widget.AppCompat.Button.Borderless"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:layout_marginRight="8dp"
-            android:minWidth="64dp"
-            android:text="@string/search_advanced"/>
-
-        <Button
-            android:id="@+id/search_button"
-            style="@style/Widget.AppCompat.Button.Borderless"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:layout_marginRight="8dp"
-            android:minWidth="64dp"
-            android:text="@string/search_search"/>
-    </LinearLayout>
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="4dp"
-        android:background="@drawable/dropshadow_light"/>
 
 </LinearLayout>

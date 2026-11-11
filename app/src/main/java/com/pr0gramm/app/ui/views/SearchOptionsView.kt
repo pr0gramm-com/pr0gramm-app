@@ -9,11 +9,10 @@ import android.os.Parcelable
 import android.util.AttributeSet
 import android.view.View
 import android.view.ViewGroup
-import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.view.inputmethod.EditorInfo
+import android.widget.CheckBox
 import android.widget.FrameLayout
 import android.widget.TextView
-import androidx.appcompat.widget.AppCompatCheckBox
 import androidx.core.view.isVisible
 import com.pr0gramm.app.R
 import com.pr0gramm.app.databinding.ViewSearchBinding
@@ -24,8 +23,6 @@ import com.pr0gramm.app.ui.RecentSearchesAutoCompleteAdapter
 import com.pr0gramm.app.util.AndroidUtility
 import com.pr0gramm.app.util.Listener
 import com.pr0gramm.app.util.di.injector
-import com.pr0gramm.app.util.dp
-import com.pr0gramm.app.util.find
 import com.pr0gramm.app.util.invoke
 import com.pr0gramm.app.util.layoutInflater
 import com.pr0gramm.app.util.setOnProgressChanged
@@ -42,6 +39,7 @@ class SearchOptionsView @JvmOverloads constructor(context: Context, attrs: Attri
     var searchCanceled: Listener<Unit>? = null
 
     private val excludedTags = hashSetOf<String>()
+    private val requiredTags = hashSetOf<String>()
 
     private val views = ViewSearchBinding.inflate(layoutInflater, this, true)
 
@@ -73,10 +71,11 @@ class SearchOptionsView @JvmOverloads constructor(context: Context, attrs: Attri
             views.customExcludes.setOnEditorActionListener(editorListener)
         }
 
-        views.resetButton.setOnClickListener { reset() }
+        views.searchButton.setOnClickListener { handleSearchButtonClicked() }
+        views.searchReset.setOnClickListener { reset() }
+        views.filtersToggle.setOnClickListener { setFiltersExpanded(!views.filters.isVisible) }
         views.searchCancel.setOnClickListener { cancel() }
         views.searchAdvanced.setOnClickListener { showAdvancedHelpPage() }
-        views.searchButton.setOnClickListener { handleSearchButtonClicked() }
 
         if (!isInEditMode) {
             initAutoCompleteView(context.injector.instance())
@@ -92,7 +91,6 @@ class SearchOptionsView @JvmOverloads constructor(context: Context, attrs: Attri
 
     fun enableSimpleSearch() {
         views.extendedSearchFields.isVisible = false
-        find<View>(R.id.search_advanced).isVisible = false
     }
 
     private var filterScoreValue: Int
@@ -128,6 +126,7 @@ class SearchOptionsView @JvmOverloads constructor(context: Context, attrs: Attri
         filterScoreValue = 0
 
         excludedTags.clear()
+        requiredTags.clear()
         updateTagsCheckboxes()
     }
 
@@ -166,6 +165,7 @@ class SearchOptionsView @JvmOverloads constructor(context: Context, attrs: Attri
             putCharSequence("queryTerm", views.searchTerm.text)
             putCharSequence("customWithoutTerm", views.customExcludes.text)
             putStringArray("selectedWithoutTags", excludedTags.toTypedArray())
+            putStringArray("selectedRequiredTags", requiredTags.toTypedArray())
         }
     }
 
@@ -189,8 +189,23 @@ class SearchOptionsView @JvmOverloads constructor(context: Context, attrs: Attri
         // set new tags
         excludedTags += state.getStringArray("selectedWithoutTags") ?: emptyArray()
 
+        requiredTags.clear()
+        requiredTags += state.getStringArray("selectedRequiredTags") ?: emptyArray()
+
         // rebuild the checkboxes
         updateTagsCheckboxes()
+
+        // never hide active filters
+        if (excludedTags.isNotEmpty() || requiredTags.isNotEmpty() || !views.customExcludes.text.isNullOrBlank()) {
+            setFiltersExpanded(true)
+        }
+    }
+
+    private fun setFiltersExpanded(expanded: Boolean) {
+        views.filters.isVisible = expanded
+        views.searchReset.isVisible = expanded
+        views.searchAdvanced.isVisible = expanded
+        views.filtersToggleArrow.rotation = if (expanded) 0f else 180f
     }
 
     private fun handleSearchButtonClicked() {
@@ -205,6 +220,9 @@ class SearchOptionsView @JvmOverloads constructor(context: Context, attrs: Attri
         if (score != 0) {
             specialTerms.add("s:$score")
         }
+
+        // each required tag or expression must match
+        specialTerms += requiredTags.sorted()
 
         // add tags to ignore
         val withoutTags = buildCurrentExcludedTags()
@@ -251,34 +269,64 @@ class SearchOptionsView @JvmOverloads constructor(context: Context, attrs: Attri
     }
 
     private fun updateTagsCheckboxes() {
-        val container = find<ViewGroup>(R.id.without_checks)
+        // "video" in excludedTags means images only, in requiredTags videos only.
+        val mediaContainer = views.mediaChecks
+        mediaContainer.removeAllViews()
 
-        container.removeAllViews()
+        val mediaTypes = listOf(
+            R.string.search_media_all to null,
+            R.string.search_media_images to excludedTags,
+            R.string.search_media_videos to requiredTags,
+        )
 
-        val params = LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
-        params.rightMargin = context.dp(8)
-
-        val names = listOf("sound", "video", "repost", "ftb")
-        val tags = listOf("f:sound", "video", "f:repost", "m:ftb")
-
-        for (idx in tags.indices) {
-            val tagValue = tags[idx]
-
-            val checkbox = AppCompatCheckBox(context)
-            checkbox.text = names[idx]
-            checkbox.isChecked = excludedTags.contains(tagValue)
-            checkbox.layoutParams = params
-
-            checkbox.setOnCheckedChangeListener { _, isChecked ->
-                if (isChecked) {
-                    excludedTags.add(tagValue)
-                } else {
-                    excludedTags.remove(tagValue)
-                }
+        for ((name, target) in mediaTypes) {
+            val selected = if (target == null) {
+                "video" !in excludedTags && "video" !in requiredTags
+            } else {
+                "video" in target
             }
 
-            container.addView(checkbox)
+            addChip(mediaContainer, context.getString(name), selected) {
+                excludedTags.remove("video")
+                requiredTags.remove("video")
+                target?.add("video")
+                updateTagsCheckboxes()
+            }
         }
+
+        val onlyContainer = views.onlyChecks
+        onlyContainer.removeAllViews()
+
+        val onlyTags = listOf(
+            "OC" to "\"original content\"",
+            "HD" to "(q:hd|q:1080p|q:4k)",
+        )
+
+        for ((name, tagValue) in onlyTags) {
+            addChip(onlyContainer, name, tagValue in requiredTags) { isChecked ->
+                if (isChecked) requiredTags.add(tagValue) else requiredTags.remove(tagValue)
+            }
+        }
+
+        val showContainer = views.withoutChecks
+        showContainer.removeAllViews()
+
+        val showTags = listOf("sound" to "f:sound", "repost" to "f:repost", "ftb" to "m:ftb")
+
+        for ((name, tagValue) in showTags) {
+            // checked means the tag is shown, unchecked excludes it
+            addChip(showContainer, name, tagValue !in excludedTags) { isChecked ->
+                if (isChecked) excludedTags.remove(tagValue) else excludedTags.add(tagValue)
+            }
+        }
+    }
+
+    private fun addChip(container: ViewGroup, text: String, checked: Boolean, onChange: (Boolean) -> Unit) {
+        val checkbox = container.layoutInflater.inflate(R.layout.search_chip, container, false) as CheckBox
+        checkbox.text = text
+        checkbox.isChecked = checked
+        checkbox.setOnCheckedChangeListener { _, isChecked -> onChange(isChecked) }
+        container.addView(checkbox)
     }
 
     override fun setPadding(left: Int, top: Int, right: Int, bottom: Int) {

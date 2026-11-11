@@ -302,6 +302,35 @@
         <item name="android:windowTranslucentStatus">true</item>
     </style>
 
+    <!-- search panel, see view_search.xml -->
+    <style name="SearchField" parent="Widget.AppCompat.EditText">
+        <item name="android:layout_height">40dp</item>
+        <item name="android:background">@drawable/bg_search_field</item>
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:paddingEnd">16dp</item>
+        <item name="android:paddingTop">0dp</item>
+        <item name="android:paddingBottom">0dp</item>
+        <item name="android:imeOptions">actionSearch</item>
+        <item name="android:inputType">text</item>
+        <item name="android:maxLines">1</item>
+    </style>
+
+    <style name="SearchLabel">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginLeft">16dp</item>
+        <item name="android:layout_marginRight">16dp</item>
+        <item name="android:textAppearance">@style/TextAppearance.AppCompat.Body2</item>
+    </style>
+
+    <style name="SearchButton" parent="Widget.AppCompat.Button.Borderless">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:minWidth">64dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="textAllCaps">false</item>
+    </style>
+
     <style name="Button" parent="Widget.AppCompat.Button.Colored">
         <item name="android:textAppearance">@style/TextAppearance.AppCompat.Widget.Button</item>
     </style>
