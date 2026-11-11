@@ -9,6 +9,6 @@
 
     <corners android:radius="2dp" />
 
-    <solid android:color="@color/grey_200" />
+    <solid android:color="@color/bottomsheet_handle" />
 </shape>
 

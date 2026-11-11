@@ -17,7 +17,7 @@
         <item name="buttonStyle">@style/Button</item>
         <item name="secondaryBackground">@color/secondary_background</item>
         <item name="drawerTheme">@style/ThemeOverlay.AppCompat.Light</item>
-        <item name="popupTheme">@style/ThemeOverlay.AppCompat.Light</item>
+        <item name="popupTheme">@style/ThemeOverlay.AppCompat.DayNight</item>
         <item name="bottomSheetBackground">@drawable/bottomsheet</item>
         <item name="bottomSheetHandle">@drawable/bottomsheet_handle</item>
 
@@ -153,23 +153,23 @@
     </style>
 
     <!-- And for everything based on alert dialogs -->
-    <style name="AppTheme.Dialog.Orange" parent="Theme.AppCompat.Light.Dialog.Alert">
+    <style name="AppTheme.Dialog.Orange" parent="Theme.AppCompat.DayNight.Dialog.Alert">
         <item name="colorAccent">@color/orange_accent</item>
     </style>
 
-    <style name="AppTheme.Dialog.Green" parent="Theme.AppCompat.Light.Dialog.Alert">
+    <style name="AppTheme.Dialog.Green" parent="Theme.AppCompat.DayNight.Dialog.Alert">
         <item name="colorAccent">@color/green_accent</item>
     </style>
 
-    <style name="AppTheme.Dialog.Olive" parent="Theme.AppCompat.Light.Dialog.Alert">
+    <style name="AppTheme.Dialog.Olive" parent="Theme.AppCompat.DayNight.Dialog.Alert">
         <item name="colorAccent">@color/olive_accent</item>
     </style>
 
-    <style name="AppTheme.Dialog.Pink" parent="Theme.AppCompat.Light.Dialog.Alert">
+    <style name="AppTheme.Dialog.Pink" parent="Theme.AppCompat.DayNight.Dialog.Alert">
         <item name="colorAccent">@color/pink_accent</item>
     </style>
 
-    <style name="AppTheme.Dialog.Blue" parent="Theme.AppCompat.Light.Dialog.Alert">
+    <style name="AppTheme.Dialog.Blue" parent="Theme.AppCompat.DayNight.Dialog.Alert">
         <item name="colorAccent">@color/blue_accent</item>
     </style>
 

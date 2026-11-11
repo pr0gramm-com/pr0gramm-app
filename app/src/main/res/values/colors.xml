@@ -77,4 +77,8 @@
     <color name="icon_color">#d23b22</color>
 
     <color name="subtitle_background">@color/transparent_black</color>
+
+    <!-- bottom sheets follow the system dark mode, see values-night -->
+    <color name="bottomsheet_background">@color/white</color>
+    <color name="bottomsheet_handle">@color/grey_200</color>
 </resources>

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="bottomsheet_background">#2F2F2F</color>
+    <color name="bottomsheet_handle">@color/grey_800</color>
+</resources>
