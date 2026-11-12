@@ -303,7 +303,7 @@
     </style>
 
     <!-- search panel, see view_search.xml -->
-    <style name="SearchField" parent="Widget.AppCompat.EditText">
+    <style name="SearchField" parent="Widget.AppCompat.AutoCompleteTextView">
         <item name="android:layout_height">40dp</item>
         <item name="android:background">@drawable/bg_search_field</item>
         <item name="android:paddingStart">16dp</item>
