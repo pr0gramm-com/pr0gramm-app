@@ -331,6 +331,19 @@
         <item name="textAllCaps">false</item>
     </style>
 
+    <!-- filled, rounded accent button -->
+    <style name="PillButton" parent="Widget.AppCompat.Button.Borderless">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">40dp</item>
+        <item name="android:minWidth">88dp</item>
+        <item name="android:paddingStart">20dp</item>
+        <item name="android:paddingEnd">20dp</item>
+        <item name="android:background">@drawable/bg_pill_button</item>
+        <item name="android:textColor">@color/pill_button_text</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="textAllCaps">false</item>
+    </style>
+
     <style name="Button" parent="Widget.AppCompat.Button.Colored">
         <item name="android:textAppearance">@style/TextAppearance.AppCompat.Widget.Button</item>
     </style>
