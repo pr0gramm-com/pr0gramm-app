@@ -649,4 +649,11 @@
     <string name="prefcat_storage">Speicher</string>
     <string name="prefcat_sync_summary">Seiteneinstellungen und gesehene Posts mit deinem Account synchronisieren.</string>
     <string name="prefcat_about">Info &amp; Updates</string>
+    <string name="action_edit_comment">Bearbeiten</string>
+    <string name="edit_comment_title">Kommentar bearbeiten</string>
+    <string name="comment_edited_successful">Kommentar bearbeitet</string>
+    <string name="error_comment_edit_expired">Kommentare können nur in den ersten fünf Minuten nach dem Schreiben bearbeitet werden.</string>
+    <string name="error_comment_edit">Der Kommentar konnte nicht bearbeitet werden (%s).</string>
+    <string name="edit_comment_countdown">Du kannst deinen Kommentar noch %s bearbeiten.</string>
+    <string name="edit_comment_expired">Die Bearbeitungszeit ist abgelaufen, der Kommentar kann nicht mehr geändert werden.</string>
 </resources>

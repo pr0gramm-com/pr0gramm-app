@@ -473,7 +473,15 @@ class PostFragment : BaseFragment("PostFragment"), NewTagDialogFragment.OnAddNew
 
     private val writeCommentLauncher = registerForActivityResult(StartActivityForResult()) { result ->
         val data = result.data
-        if (result.resultCode == Activity.RESULT_OK && data != null) {
+        if (result.resultCode != Activity.RESULT_OK || data == null) {
+            return@registerForActivityResult
+        }
+
+        if (WriteMessageActivity.isEditedCommentResult(data)) {
+            // the edit response has no comments, so load them again
+            model.refreshAsync(bustCache = true)
+            view?.let { Snackbar.make(it, R.string.comment_edited_successful, Snackbar.LENGTH_LONG).configureNewStyle().show() }
+        } else {
             onNewComments(WriteMessageActivity.getNewCommentFromActivityResult(data))
         }
     }
@@ -1276,6 +1284,11 @@ class PostFragment : BaseFragment("PostFragment"), NewTagDialogFragment.OnAddNew
         override fun onReportCommentClicked(comment: Api.Comment) {
             val dialog = ReportDialog.forComment(feedItem, comment.id)
             dialog.maybeShow(parentFragmentManager)
+        }
+
+        override fun onEditCommentClicked(comment: Api.Comment) {
+            val context = context ?: return
+            writeCommentLauncher.launch(WriteMessageActivity.editComment(context, comment))
         }
 
         override fun collapseComment(comment: Api.Comment) {

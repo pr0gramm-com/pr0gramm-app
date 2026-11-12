@@ -1,6 +1,7 @@
 package com.pr0gramm.app.services
 
 import com.pr0gramm.app.Logger
+import com.pr0gramm.app.R
 import com.pr0gramm.app.Stopwatch
 import com.pr0gramm.app.api.pr0gramm.Api
 import com.pr0gramm.app.db.AppDB
@@ -9,6 +10,7 @@ import com.pr0gramm.app.feed.FeedItem
 import com.pr0gramm.app.orm.CachedVote
 import com.pr0gramm.app.orm.Vote
 import com.pr0gramm.app.util.LongSparseArray
+import com.pr0gramm.app.util.StringException
 import com.pr0gramm.app.util.checkNotMainThread
 import com.pr0gramm.app.util.doInBackground
 import com.pr0gramm.app.util.unsigned
@@ -21,6 +23,7 @@ import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.withContext
 import okio.buffer
 import okio.source
+import retrofit2.HttpException
 import java.io.ByteArrayInputStream
 
 
@@ -217,6 +220,28 @@ class VoteService(
             }
 
             response.tags
+        }
+    }
+
+    /**
+     * Replaces the text of the users own comment. The server only allows this
+     * within five minutes after posting.
+     */
+    suspend fun editComment(commentId: Long, comment: String) {
+        val error = try {
+            api.editOwnComment(null, commentId, comment).error
+        } catch (err: HttpException) {
+            // the error code might also come with a non 200 status
+            val body = err.response()?.errorBody()?.string() ?: throw err
+            Regex("\"error\"\\s*:\\s*\"(\\w+)\"").find(body)?.groupValues?.get(1) ?: throw err
+        }
+
+        if (error != null) {
+            throw if (error == "editWindowExpired") {
+                StringException("edit comment: $error", R.string.error_comment_edit_expired)
+            } else {
+                StringException("edit comment: $error") { ctx -> ctx.getString(R.string.error_comment_edit, error) }
+            }
         }
     }
 

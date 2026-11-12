@@ -17,6 +17,8 @@ import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.pr0gramm.app.Duration
+import com.pr0gramm.app.Instant
 import com.pr0gramm.app.R
 import com.pr0gramm.app.api.pr0gramm.Api
 import com.pr0gramm.app.api.pr0gramm.Message
@@ -51,6 +53,7 @@ import com.pr0gramm.app.util.layoutInflater
 import com.pr0gramm.app.util.observeChangeEx
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 
 /**
@@ -69,6 +72,8 @@ class WriteMessageActivity : BaseAppCompatActivity("WriteMessageActivity") {
     private val parentCommentId: Long by lazy { intent.getLongExtra(ARGUMENT_COMMENT_ID, 0) }
     private val itemId: Long by lazy { intent.getLongExtra(ARGUMENT_ITEM_ID, 0) }
     private val titleOverride: String? by lazy { intent.getStringExtra(ARGUMENT_TITLE) }
+    private val editCommentId: Long by lazy { intent.getLongExtra(ARGUMENT_EDIT_COMMENT_ID, 0) }
+    private var editExpired = false
 
     private val parentComments: List<ParentComment> by lazy {
         IntentCompat.getParcelableExtra(intent, ARGUMENT_EXCERPTS, ParentComments::class.java)?.comments ?: listOf()
@@ -98,13 +103,22 @@ class WriteMessageActivity : BaseAppCompatActivity("WriteMessageActivity") {
         views.newMessageText.addTextChangedListener(object : SimpleTextWatcher() {
             override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
                 val tooShort = s.toString().trim().length < 3
-                views.submit.isEnabled = !tooShort
+                views.submit.isEnabled = !tooShort && !editExpired
                 invalidateOptionsMenu()
             }
         })
 
-        val cacheKey = if (isCommentAnswer) "$itemId-$parentCommentId" else "msg-$receiverId"
-        TextViewCache.addCaching(views.newMessageText, cacheKey)
+        if (editCommentId != 0L) {
+            // no draft caching, the text always starts as the current comment
+            views.newMessageText.setText(intent.getStringExtra(ARGUMENT_EDIT_TEXT))
+            views.newMessageText.setSelection(views.newMessageText.length())
+            views.submit.setText(R.string.action_edit_comment)
+            views.editCountdown.isVisible = true
+            launchUntilDestroy { showEditCountdown(intent.getLongExtra(ARGUMENT_EDIT_DEADLINE, 0)) }
+        } else {
+            val cacheKey = if (isCommentAnswer) "$itemId-$parentCommentId" else "msg-$receiverId"
+            TextViewCache.addCaching(views.newMessageText, cacheKey)
+        }
 
         views.newMessageText.setTokenizer(UsernameTokenizer())
         views.newMessageText.setAdapter(UsernameAutoCompleteAdapter(suggestionService, this,
@@ -203,7 +217,18 @@ class WriteMessageActivity : BaseAppCompatActivity("WriteMessageActivity") {
             return
         }
 
-        if (isCommentAnswer) {
+        if (editCommentId != 0L) {
+            launchUntilDestroy(busyIndicator = true) {
+                withViewDisabled(views.submit) {
+                    withContext(NonCancellable + Dispatchers.Default) {
+                        voteService.editComment(editCommentId, message)
+                    }
+
+                    setResult(Activity.RESULT_OK, Intent().putExtra(RESULT_EXTRA_EDITED_COMMENT, true))
+                    finish()
+                }
+            }
+        } else if (isCommentAnswer) {
             val itemId = itemId
             val parentComment = parentCommentId
 
@@ -236,6 +261,24 @@ class WriteMessageActivity : BaseAppCompatActivity("WriteMessageActivity") {
         }
     }
 
+    private suspend fun showEditCountdown(deadline: Long) {
+        while (true) {
+            // Instant.now() follows the server clock
+            val remaining = deadline - Instant.now().millis
+            if (remaining <= 0) {
+                editExpired = true
+                views.submit.isEnabled = false
+                views.editCountdown.setText(R.string.edit_comment_expired)
+                invalidateOptionsMenu()
+                return
+            }
+
+            val seconds = (remaining + 999) / 1000
+            views.editCountdown.text = getString(R.string.edit_comment_countdown, "%d:%02d".format(seconds / 60, seconds % 60))
+            delay(remaining % 1000 + 1)
+        }
+    }
+
     private fun getMessageText(): String {
         return views.newMessageText.text.toString().trim()
     }
@@ -262,7 +305,14 @@ class WriteMessageActivity : BaseAppCompatActivity("WriteMessageActivity") {
         private const val ARGUMENT_EXCERPTS = "WriteMessageFragment.excerpts"
         private const val ARGUMENT_TITLE = "WriteMessageFragment.title"
 
+        private const val ARGUMENT_EDIT_COMMENT_ID = "WriteMessageFragment.editCommentId"
+        private const val ARGUMENT_EDIT_TEXT = "WriteMessageFragment.editText"
+        private const val ARGUMENT_EDIT_DEADLINE = "WriteMessageFragment.editDeadline"
+
+        val EDIT_WINDOW: Duration = Duration.minutes(5)
+
         private const val RESULT_EXTRA_NEW_COMMENT = "WriteMessageFragment.result.newComment"
+        private const val RESULT_EXTRA_EDITED_COMMENT = "WriteMessageFragment.result.editedComment"
 
         fun intent(context: Context, message: Message): Intent {
             return activityIntent<WriteMessageActivity>(context) {
@@ -306,6 +356,19 @@ class WriteMessageActivity : BaseAppCompatActivity("WriteMessageActivity") {
                 putExtra(ARGUMENT_COMMENT_ID, commentId)
                 putExtra(ARGUMENT_EXCERPTS, ParentComments(parentComments))
             }
+        }
+
+        fun editComment(context: Context, comment: Api.Comment): Intent {
+            return activityIntent<WriteMessageActivity>(context) {
+                putExtra(ARGUMENT_EDIT_COMMENT_ID, comment.id)
+                putExtra(ARGUMENT_EDIT_TEXT, comment.content)
+                putExtra(ARGUMENT_EDIT_DEADLINE, (comment.created + EDIT_WINDOW).millis)
+                putExtra(ARGUMENT_TITLE, context.getString(R.string.edit_comment_title))
+            }
+        }
+
+        fun isEditedCommentResult(data: Intent): Boolean {
+            return data.getBooleanExtra(RESULT_EXTRA_EDITED_COMMENT, false)
         }
 
         fun getNewCommentFromActivityResult(data: Intent): Api.NewComment {

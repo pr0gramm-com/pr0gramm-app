@@ -107,6 +107,14 @@ interface Api {
     ): NewComment
 
     @FormUrlEncoded
+    @POST("/api/comments/editOwn")
+    suspend fun editOwnComment(
+            @Field("_nonce") nonce: Nonce?,
+            @Field("commentId") commentId: Long,
+            @Field("comment") comment: String
+    ): EditOwnComment
+
+    @FormUrlEncoded
     @POST("/api/comments/delete")
     suspend fun hardDeleteComment(
             @Field("_nonce") nonce: Nonce?,
@@ -731,6 +739,12 @@ interface Api {
     class NewComment(
             val commentId: Long? = null,
             val comments: List<Comment> = listOf()
+    )
+
+    @JsonClass(generateAdapter = true)
+    class EditOwnComment(
+            val success: Boolean = true,
+            val error: String? = null,
     )
 
     @JsonClass(generateAdapter = true)

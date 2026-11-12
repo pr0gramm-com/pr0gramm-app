@@ -669,5 +669,12 @@
     <string name="prefcat_storage">Storage</string>
     <string name="prefcat_sync_summary">Sync site settings and seen items with your account.</string>
     <string name="prefcat_about">About &amp; updates</string>
+    <string name="action_edit_comment">Edit</string>
+    <string name="edit_comment_title">Edit comment</string>
+    <string name="comment_edited_successful">Comment edited</string>
+    <string name="error_comment_edit_expired">Comments can only be edited within five minutes after posting.</string>
+    <string name="error_comment_edit">Could not edit the comment (%s).</string>
+    <string name="edit_comment_countdown">You can edit your comment for another %s.</string>
+    <string name="edit_comment_expired">The edit time is over, the comment can no longer be changed.</string>
 </resources>
 

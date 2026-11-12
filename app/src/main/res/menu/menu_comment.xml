@@ -5,6 +5,10 @@
         android:title="@string/action_copy_link"/>
 
     <item
+        android:id="@+id/action_edit_comment"
+        android:title="@string/action_edit_comment"/>
+
+    <item
         android:id="@+id/action_collapse"
         android:title="@string/action_collapse"/>
 

@@ -11,6 +11,7 @@ import androidx.appcompat.widget.PopupMenu
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.pr0gramm.app.Duration
+import com.pr0gramm.app.ui.WriteMessageActivity
 import com.pr0gramm.app.Instant
 import com.pr0gramm.app.R
 import com.pr0gramm.app.api.pr0gramm.Api
@@ -230,6 +231,13 @@ class CommentView(parent: ViewGroup) : RecyclerView.ViewHolder(inflateCommentVie
             item.isVisible = userService.userIsAdmin
         }
 
+        popup.menu.findItem(R.id.action_edit_comment)?.let { item ->
+            // the server only allows editing own comments for five minutes
+            val comment = entry.comment
+            item.isVisible = comment.name.equals(userService.name, ignoreCase = true)
+                    && comment.created + WriteMessageActivity.EDIT_WINDOW > Instant.now()
+        }
+
         popup.menu.findItem(R.id.action_collapse)?.let { item ->
             item.isVisible = entry.canCollapse
         }
@@ -243,6 +251,7 @@ class CommentView(parent: ViewGroup) : RecyclerView.ViewHolder(inflateCommentVie
             R.id.action_copy_link -> l.onCopyCommentLink(entry.comment)
             R.id.action_delete_comment -> l.onDeleteCommentClicked(entry.comment)
             R.id.action_block_user -> l.onBlockUserClicked(entry.comment)
+            R.id.action_edit_comment -> l.onEditCommentClicked(entry.comment)
             R.id.action_collapse -> l.collapseComment(entry.comment)
             R.id.action_report -> l.onReportCommentClicked(entry.comment)
         }
@@ -266,6 +275,8 @@ class CommentView(parent: ViewGroup) : RecyclerView.ViewHolder(inflateCommentVie
         fun onBlockUserClicked(comment: Api.Comment): Boolean
 
         fun onReportCommentClicked(comment: Api.Comment)
+
+        fun onEditCommentClicked(comment: Api.Comment)
 
         fun collapseComment(comment: Api.Comment)
 

@@ -133,7 +133,7 @@ class PostViewModel(
         }
     }
 
-    private suspend fun refreshInternal(initial: Boolean) {
+    private suspend fun refreshInternal(initial: Boolean, bustCache: Boolean = false) {
         if (item.deleted) {
             mutableState.update { previousState ->
                 previousState.copy(commentsLoading = false)
@@ -162,7 +162,7 @@ class PostViewModel(
                 }
 
                 // query the post info
-                val post = feedService.post(this@PostViewModel.item.id, requiresCacheBust)
+                val post = feedService.post(this@PostViewModel.item.id, requiresCacheBust || bustCache)
 
                 // wait for both results
                 Pair(itemAsync?.await() ?: item, post)
@@ -207,9 +207,9 @@ class PostViewModel(
         return inMemoryCacheService.enhanceTags(item.id, tags).sortedWith(comparator)
     }
 
-    fun refreshAsync() {
+    fun refreshAsync(bustCache: Boolean = false) {
         viewModelScope.launch {
-            refreshInternal(initial = false)
+            refreshInternal(initial = false, bustCache = bustCache)
         }
     }
 

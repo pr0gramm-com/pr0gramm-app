@@ -32,23 +32,39 @@
                 android:id="@+id/new_message_text"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="@color/input_background"
+                android:background="@drawable/bg_input_field"
                 android:gravity="start|top"
                 android:hint="@string/write_message_placeholder"
                 android:inputType="textMultiLine|textCapSentences"
                 android:minLines="5"
-                android:padding="8sp" />
+                android:padding="12dp" />
         </FrameLayout>
 
-        <Button
-            android:id="@+id/submit"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="end"
-            android:layout_marginTop="8dp"
-            android:enabled="false"
-            android:text="@string/action_send"
-            tools:ignore="UnusedAttribute" />
+            android:layout_marginTop="12dp"
+            android:gravity="end|center_vertical">
+
+            <TextView
+                android:id="@+id/edit_countdown"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="16dp"
+                android:layout_weight="1"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                android:textColor="?android:textColorSecondary"
+                android:visibility="gone"
+                tools:text="You can edit your comment for another 4:37."
+                tools:visibility="visible" />
+
+            <Button
+                android:id="@+id/submit"
+                style="@style/PillButton"
+                android:enabled="false"
+                android:text="@string/action_send"
+                tools:ignore="UnusedAttribute" />
+        </LinearLayout>
 
         <TextView
             android:id="@+id/authors_title"
