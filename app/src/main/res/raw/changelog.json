@@ -1,5 +1,18 @@
 [
   {
+    "version": 209,
+    "changes": [
+      {
+        "type": "Fix",
+        "change": "Gesehene Posts werden auch in den Highlights markiert."
+      },
+      {
+        "type": "Fix",
+        "change": "Der Plus-Button im Post sitzt bei hohen Bildern wieder unter dem Bild."
+      }
+    ]
+  },
+  {
     "version": 208,
     "changes": [
       {
