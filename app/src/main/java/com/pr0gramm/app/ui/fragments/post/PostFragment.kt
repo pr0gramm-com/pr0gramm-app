@@ -1149,8 +1149,8 @@ class PostFragment : BaseFragment("PostFragment"), NewTagDialogFragment.OnAddNew
 
             views.voteAnimationIndicator.translationY = voteIndicatorY
 
-            // padding + height of the fab button
-            val fabTopThreshold = viewerHeight - recyclerHeight + views.fab.context.dp(32 + 56)
+            // padding + height of the fab button, plus its margin above the navigation bar
+            val fabTopThreshold = viewerHeight - recyclerHeight + views.fab.marginBottom + views.fab.context.dp(32 + 56)
             val fabHideThreshold = fabTopThreshold + views.fab.context.dp(256)
 
             views.fab.translationY = (fabTopThreshold - scroll).coerceAtLeast(0f)
