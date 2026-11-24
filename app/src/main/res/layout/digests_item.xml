@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
@@ -10,6 +11,16 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:scaleType="centerCrop" />
+
+    <ImageView
+        android:id="@+id/seen"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/transparent_black"
+        android:importantForAccessibility="no"
+        android:scaleType="center"
+        android:visibility="gone"
+        app:srcCompat="@drawable/ic_check" />
 
     <com.pr0gramm.app.ui.views.BusyIndicator
         android:id="@+id/busy_indicator"

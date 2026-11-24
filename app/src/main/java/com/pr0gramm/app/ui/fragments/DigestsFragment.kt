@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.pr0gramm.app.Logger
 import com.pr0gramm.app.R
+import com.pr0gramm.app.Settings
 import com.pr0gramm.app.api.pr0gramm.Api
 import com.pr0gramm.app.api.pr0gramm.Thumbnail
 import com.pr0gramm.app.databinding.DigestsHeaderBinding
@@ -28,6 +29,7 @@ import com.pr0gramm.app.feed.FeedService
 import com.pr0gramm.app.feed.FeedType
 import com.pr0gramm.app.services.DigestsService
 import com.pr0gramm.app.services.InMemoryCacheService
+import com.pr0gramm.app.services.SeenService
 import com.pr0gramm.app.services.ThemeHelper
 import com.pr0gramm.app.services.UriHelper
 import com.pr0gramm.app.ui.DelegateAdapter
@@ -44,6 +46,7 @@ import com.pr0gramm.app.ui.staticLayoutAdapterDelegate
 import com.pr0gramm.app.ui.viewModels
 import com.pr0gramm.app.util.AndroidUtility
 import com.pr0gramm.app.util.di.injector
+import com.pr0gramm.app.util.di.instance
 import com.pr0gramm.app.util.dp
 import com.pr0gramm.app.util.layoutInflater
 import com.squareup.picasso.Picasso
@@ -55,6 +58,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
@@ -78,7 +82,12 @@ class DigestsFragment : BaseFragment("DigestsFragment", R.layout.fragment_inbox)
         )
     }
 
-    private val adapter = DigestsAdapter { item, busyIndicator -> itemClicked(item, busyIndicator) }
+    private val seenService: SeenService by instance()
+
+    private val adapter = DigestsAdapter(
+        isSeen = { id -> Settings.markItemsAsSeen && seenService.isSeen(id) },
+        itemClicked = { item, busyIndicator -> itemClicked(item, busyIndicator) },
+    )
 
     private var openJob: Job? = null
 
@@ -122,6 +131,11 @@ class DigestsFragment : BaseFragment("DigestsFragment", R.layout.fragment_inbox)
                     views.refresh.isRefreshing = false
                 }
             }
+        }
+
+        // posts opened from here are marked as seen, update the overlays
+        launchInViewScope {
+            seenService.currentGeneration.drop(1).collect { adapter.notifyDataSetChanged() }
         }
     }
 
@@ -254,10 +268,10 @@ class DigestsViewModel(
     )
 }
 
-private class DigestsAdapter(itemClicked: ItemClicked) : DelegateAdapter<Any>() {
+private class DigestsAdapter(isSeen: (Long) -> Boolean, itemClicked: ItemClicked) : DelegateAdapter<Any>() {
     init {
         delegates += DigestHeaderDelegate()
-        delegates += FeedItemDelegate(itemClicked)
+        delegates += FeedItemDelegate(isSeen, itemClicked)
         delegates += staticLayoutAdapterDelegate(R.layout.feed_hint_loading, LoadingHint)
         delegates += ErrorAdapterDelegate()
     }
@@ -317,7 +331,7 @@ private object LoadingHint
 
 private typealias ItemClicked = (Api.DigestsInbox.ItemHighlight, busyIndicator: View) -> Unit
 
-private class FeedItemDelegate(private val itemClicked: ItemClicked) :
+private class FeedItemDelegate(private val isSeen: (Long) -> Boolean, private val itemClicked: ItemClicked) :
     ListItemTypeAdapterDelegate<Api.DigestsInbox.ItemHighlight, Any, DigestsItemViewHolder>(Api.DigestsInbox.ItemHighlight::class) {
     override fun onCreateViewHolder(parent: ViewGroup): DigestsItemViewHolder {
         val views = DigestsItemBinding.inflate(parent.layoutInflater)
@@ -328,6 +342,7 @@ private class FeedItemDelegate(private val itemClicked: ItemClicked) :
         val imageView = holder.views.image
 
         holder.views.busyIndicator.isVisible = false
+        holder.views.seen.isVisible = isSeen(value.id)
         imageView.setOnClickListener { itemClicked(value, holder.views.busyIndicator) }
 
         val thumbnail = Thumbnail(value.id, value.thumbnail)
